@@ -30,7 +30,6 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         log.info("OAuth2 로그인 요청 진입");
-
         // DefaultOAuth2UserService는 loadUser를 통해 DefaultOAuth2User를 반환한다.
         // loadUser는 사용자 정보 제공 uri로 요청을 보내서, userInfo를 얻어낸다.
         OAuth2UserService<OAuth2UserRequest, OAuth2User> delegate = new DefaultOAuth2UserService();

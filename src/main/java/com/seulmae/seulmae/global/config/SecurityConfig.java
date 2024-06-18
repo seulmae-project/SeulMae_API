@@ -67,6 +67,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(new AntPathRequestMatcher("/api/token")).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/users/sms-certification/send").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/users/sms-certification/confirm").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/users/email/duplication").permitAll()
+//                        .requestMatchers(HttpMethod.POST, "/api/users/email/search").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/api/users/pw").permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/api/**")).authenticated()
                         .anyRequest().permitAll()) //여기 부분 다시 고민해보자
                 .oauth2Login(oauth2 -> oauth2
@@ -114,7 +119,7 @@ public class SecurityConfig {
 
     @Bean
     public LoginFailureHandler loginFailureHandler() {
-        return new LoginFailureHandler();
+        return new LoginFailureHandler(objectMapper);
     }
 
     /**

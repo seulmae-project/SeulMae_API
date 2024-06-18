@@ -1,6 +1,7 @@
 package com.seulmae.seulmae.global.config.jwt;
 
 import com.seulmae.seulmae.global.util.PasswordUtil;
+import com.seulmae.seulmae.user.Role;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.user.repository.UserRepository;
 import com.seulmae.seulmae.user.service.JwtService;
@@ -49,11 +50,15 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
         String refreshToken = jwtService.extractRefreshToken(request)
                 .filter(jwtService::isValidToken)
                 .orElse(null);
-
+        
         if (refreshToken != null) {
             checkRefreshToken(refreshToken)
                     .ifPresent(user -> {
-                        jwtService.sendAccessTokenAndRefreshToken(response, jwtService.createAccessToken(user.getEmail()), reIssueRefreshToken(user));
+                        try {
+                            jwtService.sendAccessTokenAndRefreshToken(response, jwtService.createAccessToken(user.getEmail()), reIssueRefreshToken(user));
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
                     });
             return;
         }
@@ -61,10 +66,8 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
         // 리프레쉬 토큰이 없다거나 유효하지 않다면, accessToken을 검사하고 인증을 처리한다.
         // accessToken이 없거나 유효하지 않다면, 인증 객체가 담기지 않은 상태로 다음 필터로 넘어가기 때문에 403 에러 발생
         // 유효하다면, 인증 객체에 담긴 상태로 다음 필터로 넘어가기 때문에 인증성공
-        if (refreshToken == null) {
-            checkAccessTokenAndAuthentication(request, response, filterChain);
-            filterChain.doFilter(request, response);
-        }
+        checkAccessTokenAndAuthentication(request, response, filterChain);
+        filterChain.doFilter(request, response);
     }
 
 
@@ -89,15 +92,12 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
      */
     public void checkAccessTokenAndAuthentication(HttpServletRequest request, HttpServletResponse response,
                                  FilterChain filterChain) {
-
         jwtService.extractAccessToken(request)
                 .filter(jwtService::isValidToken)
                 .ifPresent(accessToken -> jwtService.extractEmailFromAccessToken(accessToken)
                         .ifPresent(email -> userRepository.findByEmail(email)
                                 .ifPresent(this::saveAuthentication)));
     }
-
-    public void authenticate() {}
 
 
     /**
@@ -121,10 +121,13 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
             password = PasswordUtil.generateRandomPassword();
         }
 
-        UserDetails userDetailsUser = org.springframework.security.core.userdetails.User.builder()
-                .username(user.getEmail())
+        UserDetails userDetailsUser = User.builder()
+                .idUser(user.getIdUser())
+                .email(user.getEmail())
                 .password(password)
-                .roles(user.getAuthorityRole().name())
+                .authorityRole(Role.valueOf(user.getAuthorityRole().name()))
+                .socialType(user.getSocialType())
+                .socialId(user.getSocialId())
                 .build();
 
         Authentication authentication =

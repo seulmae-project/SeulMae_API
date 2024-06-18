@@ -2,6 +2,13 @@ package com.seulmae.seulmae.user.service;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.seulmae.seulmae.global.util.enums.SuccessCode;
+import com.seulmae.seulmae.global.util.enums.SuccessResponse;
+import com.seulmae.seulmae.user.Role;
+import com.seulmae.seulmae.user.dto.response.LoginSuccessResponse;
+import com.seulmae.seulmae.user.dto.response.TokenResponse;
+import com.seulmae.seulmae.user.entity.CustomOAuth2User;
 import com.seulmae.seulmae.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -9,8 +16,10 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -40,8 +49,10 @@ public class JwtService {
     private static final String REFRESH_TOKEN_SUBJECT = "RefreshToken";
     private static final String EMAIL_CLAIM = "email";
     private static final String BEARER = "Bearer ";
+    private static final String CONTENT_TYPE = "application/json";
 
     private final UserRepository userRepository;
+    private final ObjectMapper objectMapper;
 
     /**
      * AccessToken 생성
@@ -69,20 +80,52 @@ public class JwtService {
     /**
      * AccessToken 헤더에 송출하기
      */
-    public void sendAccessToken(HttpServletResponse response, String accessToken) {
+    public void sendAccessToken(HttpServletResponse response, String accessToken) throws IOException {
         response.setStatus(HttpServletResponse.SC_OK);
-        response.setHeader(accessHeader, accessToken);
+        response.setContentType(CONTENT_TYPE);
+        response.getWriter()
+                .write(objectMapper.writeValueAsString(
+                                new TokenResponse(accessToken, BEARER)
+                        )
+                );
+//        response.setHeader(accessHeader, accessToken);
         log.info("재발급된 Access Token: ", accessToken);
     }
 
     /**
-     * AccessToken & RefreshToken 헤더에 송출
+     * AccessToken & RefreshToken 바디(헤더는 임시 주석처리)에 송출
      */
-    public void sendAccessTokenAndRefreshToken(HttpServletResponse response, String accessToken, String refreshToken) {
+    public void sendAccessTokenAndRefreshToken(HttpServletResponse response, String accessToken, String refreshToken) throws IOException {
         response.setStatus(HttpServletResponse.SC_OK);
-        response.setHeader(accessHeader, accessToken);
-        response.setHeader(refreshHeader, refreshToken);
-        log.info("AccessToken & RefreshToken 헤더 설정 완료");
+        response.setContentType(CONTENT_TYPE);
+        TokenResponse tokenResponse = new TokenResponse(accessToken, refreshToken, BEARER);
+        response.getWriter()
+                .write(objectMapper.writeValueAsString(
+                        new SuccessResponse(SuccessCode.LOGIN_SUCCESS, new LoginSuccessResponse(tokenResponse, null))
+                        )
+                );
+//        response.setHeader(accessHeader, accessToken);
+//        response.setHeader(refreshHeader, refreshToken);
+        log.info("AccessToken & RefreshToken 바디 전달 완료");
+
+    }
+
+    /**
+     * 소셜로그인용 첫 로그인시 사용하는 메서드(GUEST 추가 정보 얻기 위함)
+     */
+    public void sendAccessTokenAndRefreshToken(HttpServletResponse response, String accessToken, String refreshToken, CustomOAuth2User oAuth2User) throws IOException {
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.setContentType(CONTENT_TYPE);
+        Role role = oAuth2User.getRole();
+        TokenResponse tokenResponse = new TokenResponse(accessToken, refreshToken, BEARER);
+        response.getWriter()
+                .write(objectMapper.writeValueAsString(
+                                new SuccessResponse(SuccessCode.LOGIN_SUCCESS, new LoginSuccessResponse(tokenResponse, role))
+                        )
+                );
+//        response.setHeader(accessHeader, accessToken);
+//        response.setHeader(refreshHeader, refreshToken);
+        log.info("AccessToken & RefreshToken 바디 전달 완료");
 
     }
 
@@ -91,8 +134,8 @@ public class JwtService {
      */
     public Optional<String> extractAccessToken(HttpServletRequest request) {
         return Optional.ofNullable(request.getHeader(accessHeader))
-                .filter(refreshToken -> refreshToken.startsWith(BEARER))
-                .map(refreshToken -> refreshToken.replace(BEARER, ""));
+                .filter(accessToken -> accessToken.startsWith(BEARER))
+                .map(accessToken -> accessToken.replace(BEARER, ""));
     }
 
 
@@ -100,9 +143,9 @@ public class JwtService {
      * RefreshToken 추출
      */
     public Optional<String> extractRefreshToken(HttpServletRequest request) {
-        return Optional.ofNullable(request.getHeader(accessHeader))
-                .filter(accessToken -> accessToken.startsWith(BEARER))
-                .map(accessToken -> accessToken.replace(BEARER, ""));
+        return Optional.ofNullable(request.getHeader(refreshHeader))
+                .filter(refreshToken -> refreshToken.startsWith(BEARER))
+                .map(refreshToken -> refreshToken.replace(BEARER, ""));
     }
 
     /**
