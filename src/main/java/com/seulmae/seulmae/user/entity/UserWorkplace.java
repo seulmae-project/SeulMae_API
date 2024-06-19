@@ -16,11 +16,11 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "user_workplace")
-public class UserWorkPlace {
+public class UserWorkplace {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_user_workplace", updatable = false)
-    private Long idUserWorkPlace;
+    private Long idUserWorkplace;
 
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id_user", nullable = false)
@@ -39,5 +39,5 @@ public class UserWorkPlace {
 
     @LastModifiedDate
     @Column(name = "revision_date_user_workplace")
-    private LocalDateTime revisionDateUserWorkPlace;
+    private LocalDateTime revisionDateUserWorkplace;
 }
