@@ -14,9 +14,11 @@ import com.seulmae.seulmae.user.service.SmsService;
 import com.seulmae.seulmae.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.AccessDeniedException;
 
@@ -27,27 +29,46 @@ public class UserController {
     private final UserService userService;
     private final SmsService smsService;
 
+    /**
+     * 회원가입
+     * @param userSignUpDto
+     * @param file
+     * @return
+     */
     @PostMapping("")
-    public ResponseEntity<?> signUp(@RequestBody UserSignUpDto userSignUpDto) {
-        userService.createUser(userSignUpDto);
+    public ResponseEntity<?> signUp(@RequestPart UserSignUpDto userSignUpDto,  @RequestPart(required = false, name = "file") MultipartFile file) {
+        userService.createUser(userSignUpDto, file);
         return new ResponseEntity<>(new SuccessResponse(SuccessCode.SIGNUP_SUCCESS), HttpStatus.CREATED);
     }
 
     // 로그아웃
-    // 이건 프론트에서 알아서 토큰을 db에서 지우면 됨 ^^
-    // 아니면 레디스로 내가 구현해야함 ㅡㅡ
+    // 이건 프론트에서 알아서 토큰을 스토리지에서 지우면 됨 ^^
 
-    // 프로필 수정
+    /**
+     * 프로필 수정
+     * @param id
+     * @param updateUserRequest
+     * @param file
+     * @param user
+     * @return
+     * @throws AccessDeniedException
+     */
     @PutMapping("")
     public ResponseEntity<?>updateProfile(@RequestParam Long id,
-                                          @RequestBody UpdateUserRequest request,
+                                          @RequestPart UpdateUserRequest updateUserRequest,
+                                          @RequestPart(required = false, name ="file") MultipartFile file,
                                           @AuthenticationPrincipal User user) throws AccessDeniedException {
 
-        userService.updateUser(id, user.getIdUser(), request);
+        userService.updateUser(id, user.getIdUser(), updateUserRequest, file);
         return new ResponseEntity<>(new SuccessResponse(SuccessCode.UPDATE_SUCCESS), HttpStatus.OK);
     }
 
 
+    /**
+     * 휴대폰 인증번호 신청
+     * @param request
+     * @return
+     */
     @PostMapping("/sms-certification/send")
     public ResponseEntity<?> sendSMS(@RequestBody SmsSendingRequest request) {
         smsService.sendSMS(request.setPhoneNumber(request.getPhoneNumber()));
@@ -55,24 +76,48 @@ public class UserController {
         return new ResponseEntity<>(new SuccessResponse(SuccessCode.SEND_SMS_SUCCESS, result), HttpStatus.OK);
     }
 
+    /**
+     * 휴대폰 인증번호 확인
+     * @param request
+     * @return
+     */
     @PostMapping("/sms-certification/confirm")
     public ResponseEntity<?> verifySMS(@RequestBody SmsCertificationRequest request) {
         smsService.verifySMS(request);
         return new ResponseEntity<>(new SuccessResponse(SuccessCode.VERIFY_SMS_SUCCESS), HttpStatus.OK);
     }
 
+    /**
+     * 소셜로그인 추가 정보 업데이트
+     * @param oAuth2AdditionalDataRequest
+     * @param file
+     * @param user
+     * @return
+     */
     @PutMapping("/extra-profile")
-    public ResponseEntity<?> updateAdditionalProfileData(@RequestBody OAuth2AdditionalDataRequest request,
+    public ResponseEntity<?> updateAdditionalProfileData(@RequestPart OAuth2AdditionalDataRequest oAuth2AdditionalDataRequest,
+                                                         @RequestPart(required = false, name = "file") MultipartFile file,
                                                          @AuthenticationPrincipal User user) {
-        userService.updateAdditionalProfile(user.getSocialId(), user.getSocialType(), request);
+        userService.updateAdditionalProfile(user.getSocialId(), user.getSocialType(), oAuth2AdditionalDataRequest, file);
         return new ResponseEntity<>(new SuccessResponse(SuccessCode.UPDATE_SUCCESS), HttpStatus.CREATED);
     }
+
+    /**
+     * 이메일 중복 확인
+     * @param request
+     * @return
+     */
     @PostMapping("/email/duplication")
     public ResponseEntity<?> checkEmail(@RequestBody CheckEmailRequest request) {
        Boolean result = userService.isDuplicatedEmail(request.getEmail());
        return new ResponseEntity<>(new SuccessResponse(SuccessCode.INSERT_SUCCESS, result), HttpStatus.OK);
     }
 
+    /**
+     * 비밀번호 변경
+     * @param request
+     * @return
+     */
     @PutMapping("/pw")
     public ResponseEntity<?>changePassword(@RequestBody ChangePasswordRequest request) {
         try {
@@ -84,10 +129,13 @@ public class UserController {
 
     }
 
-    @GetMapping("/api/jwt-test")
-    public String jwtTest() {
-        return "jwtTest 요청 성공";
-    }
+    // TODO: 탈퇴
+
+    // TODO: 휴대폰번호 변경
+
+
+    // TODO: 유저의 프로필 데이터 조회
+
 }
 //    @PostMapping("/email/search")
 //    public ResponseEntity<?>searchEmail(@RequestBody SearchAuthRequest request) {

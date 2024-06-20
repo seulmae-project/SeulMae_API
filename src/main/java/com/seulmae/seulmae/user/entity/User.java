@@ -51,8 +51,8 @@ public class User implements UserDetails {
     private Boolean isMale;
 
     //[TODO] MULTIPART 구현
-    @Column(name = "image_url")
-    private String imageURL;
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private UserImage userImage;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "authority_role")
@@ -84,14 +84,14 @@ public class User implements UserDetails {
     private LocalDateTime delDateUser;
 
 
-    public User(String email, String phoneNumber, String password, String name, String birthday, Boolean isMale, String imageURL, Role role) {
+    public User(String email, String phoneNumber, String password, String name, String birthday, Boolean isMale, UserImage userImage, Role role) {
         this.email = email;
         this.phoneNumber = phoneNumber;
         this.password = password;
         this.name = name;
         this.birthday = birthday;
         this.isMale = isMale;
-        this.imageURL = imageURL;
+        this.userImage = userImage;
         this.authorityRole = role;
     }
 
@@ -105,7 +105,7 @@ public class User implements UserDetails {
                 ", name='" + name + '\'' +
                 ", birthday='" + birthday + '\'' +
                 ", isMale=" + isMale +
-                ", imageURL='" + imageURL + '\'' +
+                ", userImage='" + userImage + '\'' +
                 ", authorityRole=" + authorityRole +
                 ", socialType=" + socialType +
                 ", socialId='" + socialId + '\'' +
@@ -126,8 +126,8 @@ public class User implements UserDetails {
         this.name = name;
     }
 
-    public void updateImageUrl(String imageURL) {
-        this.imageURL = imageURL;
+    public void updateUserImage(UserImage userImage) {
+        this.userImage = userImage;
     }
 
     public void updatePhoneNumber(String phoneNumber) {
@@ -140,11 +140,10 @@ public class User implements UserDetails {
     }
 
 
-    public void updateAdditionalInfo(String name, Boolean isMale, String birthday, String imageURL) {
+    public void updateAdditionalInfo(String name, Boolean isMale, String birthday) {
         this.name = name;
         this.isMale = isMale;
         this.birthday = birthday;
-        this.imageURL = imageURL;
     }
 
     /** 암호화 **/
