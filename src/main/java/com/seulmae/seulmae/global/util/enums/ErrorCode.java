@@ -66,11 +66,13 @@ public enum ErrorCode {
 
     NO_SUCH_ELEMENT(404, "G016", "NO_SUCH_ELEMENT"),
 
+    UNAUTHORIZED(401, "G022", "UNAUTHORIZED"),
     MethodArgumentNotValidException(422, "G017", "MethodArgumentNotValidException"),
     JwtTokenIsExpired(401,"G018" , "Jwt token is expired" ),
     JwtTokenIsNotValidException(401,"G019" ,"Jwt token is not valid" ),
     InvalidPasswordException(401,"G020" ,"Password does not match" ),
     NoSuchUserException(401,"G021" ,"No such user exist" );
+
 
     // 에러 코드의 '코드 상태'을 반환한다.
     private final int status;
