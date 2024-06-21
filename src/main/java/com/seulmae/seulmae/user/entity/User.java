@@ -146,6 +146,12 @@ public class User implements UserDetails {
         this.birthday = birthday;
     }
 
+    /** 회원 탈퇴 **/
+    public void deleteUser() {
+        this.isDelUser = true;
+        this.delDateUser = LocalDateTime.now();
+    }
+
     /** 암호화 **/
     public void encodePassword(PasswordEncoder passwordEncoder) {
         this.password = passwordEncoder.encode(this.password);

@@ -25,7 +25,7 @@ public enum SuccessCode {
     //엑셀 등 파일 생성 성공 코드
     GENERATE_SUCCESS(205, "205", "GENERATE SUCCESS"),
 
-    SEND_SMS_SUCCESS(201, "201", "SMS sent successfully!"),
+    SEND_SMS_SUCCESS(200, "200", "SMS sent successfully!"),
     VERIFY_SMS_SUCCESS(200, "200", "SMS verify successfully!");
 
     /**

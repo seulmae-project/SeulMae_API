@@ -6,12 +6,15 @@ import com.seulmae.seulmae.global.util.enums.SuccessCode;
 import com.seulmae.seulmae.global.util.enums.SuccessResponse;
 import com.seulmae.seulmae.user.dto.request.*;
 import com.seulmae.seulmae.user.dto.response.FindAuthResponse;
+import com.seulmae.seulmae.user.dto.response.UserProfileResponse;
 import com.seulmae.seulmae.user.entity.CustomOAuth2User;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.user.exception.InvalidPasswordException;
 import com.seulmae.seulmae.user.exception.MatchPasswordException;
 import com.seulmae.seulmae.user.service.SmsService;
 import com.seulmae.seulmae.user.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -61,6 +64,19 @@ public class UserController {
 
         userService.updateUser(id, user.getIdUser(), updateUserRequest, file);
         return new ResponseEntity<>(new SuccessResponse(SuccessCode.UPDATE_SUCCESS), HttpStatus.OK);
+    }
+
+    /**
+     * 유저 프로필 단일 조회
+     * @param id
+     * @param request
+     * @return
+     */
+    @GetMapping("")
+    public ResponseEntity<?>getUserProfile(@RequestParam Long id,
+                                           HttpServletRequest request) {
+        UserProfileResponse result = userService.getUserProfile(id, request);
+        return new ResponseEntity<>(new SuccessResponse(SuccessCode.SELECT_SUCCESS, result), HttpStatus.OK);
     }
 
 
@@ -129,10 +145,42 @@ public class UserController {
 
     }
 
-    // TODO: 탈퇴
+    /**
+     * 회원탈퇴
+     * @param id
+     * @param user
+     * @return
+     */
+    @DeleteMapping("")
+    public ResponseEntity<?> deleteUser(@RequestParam Long id,
+                                        @AuthenticationPrincipal User user) {
+        try {
+            userService.deleteUser(id, user);
+            return new ResponseEntity<>(new SuccessResponse(SuccessCode.DELETE_SUCCESS), HttpStatus.NO_CONTENT);
+        } catch (AccessDeniedException e) {
+            return new ResponseEntity<>(new ErrorResponse(ErrorCode.UNAUTHORIZED, e.getMessage()), HttpStatus.UNAUTHORIZED);
+        }
 
-    // TODO: 휴대폰번호 변경
+    }
 
+    /**
+     * 휴대폰 번호 변경
+     * @param id
+     * @param request
+     * @param user
+     * @return
+     */
+    @PutMapping("/phone")
+    public ResponseEntity<?>changePhoneNumber(@RequestParam Long id,
+                                              @RequestBody ChangePhoneNumberRequest request,
+                                              @AuthenticationPrincipal User user) {
+        try {
+            userService.changePhoneNumber(id, request, user);
+            return new ResponseEntity<>(new SuccessResponse(SuccessCode.UPDATE_SUCCESS), HttpStatus.OK);
+        } catch (AccessDeniedException e) {
+            return new ResponseEntity<>(new ErrorResponse(ErrorCode.UNAUTHORIZED, e.getMessage()), HttpStatus.UNAUTHORIZED);
+        }
+    }
 
     // TODO: 유저의 프로필 데이터 조회
 

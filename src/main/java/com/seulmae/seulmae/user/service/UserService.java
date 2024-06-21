@@ -2,18 +2,18 @@ package com.seulmae.seulmae.user.service;
 
 import com.seulmae.seulmae.global.util.FileUtil;
 import com.seulmae.seulmae.global.util.PasswordUtil;
+import com.seulmae.seulmae.global.util.UrlUtil;
 import com.seulmae.seulmae.user.Role;
 import com.seulmae.seulmae.user.SocialType;
-import com.seulmae.seulmae.user.dto.request.ChangePasswordRequest;
-import com.seulmae.seulmae.user.dto.request.OAuth2AdditionalDataRequest;
-import com.seulmae.seulmae.user.dto.request.UpdateUserRequest;
-import com.seulmae.seulmae.user.dto.request.UserSignUpDto;
+import com.seulmae.seulmae.user.dto.request.*;
 import com.seulmae.seulmae.user.dto.response.FindAuthResponse;
+import com.seulmae.seulmae.user.dto.response.UserProfileResponse;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.user.entity.UserImage;
 import com.seulmae.seulmae.user.exception.InvalidPasswordException;
 import com.seulmae.seulmae.user.repository.UserImageRepository;
 import com.seulmae.seulmae.user.repository.UserRepository;
+import com.seulmae.seulmae.workplace.entity.Workplace;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +35,7 @@ public class UserService {
 
     private final PasswordEncoder passwordEncoder;
 
-    private String fileEndPoint = "/api/users/file";
+    private final String FILE_ENDPOINT = "/api/users/file";
 
     @Transactional
     public void createUser(UserSignUpDto userSignUpDto, MultipartFile file) {
@@ -85,11 +85,16 @@ public class UserService {
 
         if (file != null & !file.isEmpty()) {
             try {
-                UserImage userImage = userImageRepository.findByUser(targetUser)
-                        .orElseThrow(() -> new NoSuchElementException("해당하는 이미지가 존재하지 않습니다."));
                 String fileName = file.getOriginalFilename();
                 String filePath = "C:\\Users\\hany\\uploads\\users\\" + targetUser.getIdUser();
-                userImage.update(fileName, filePath, FileUtil.getFileExtension(file));
+                userImageRepository.findByUser(targetUser)
+                        .ifPresentOrElse(userImage -> userImage.update(fileName, filePath, FileUtil.getFileExtension(file)),
+                                () -> {
+                                    UserImage newUserImage = new UserImage(targetUser, fileName, filePath, FileUtil.getFileExtension(file));
+                                    targetUser.updateUserImage(newUserImage);
+                                    userRepository.save(targetUser);
+                                });
+
                 // TODO: 서버에 저장된 기존 사진은 어떻게 할 것인가? 지우기 VS 남겨두기
                 FileUtil.uploadFile(filePath, fileName, file);
             } catch (Exception e) {
@@ -99,9 +104,9 @@ public class UserService {
 
     }
 
-    public void logout(HttpServletRequest request, HttpServletResponse response) {
-        new SecurityContextLogoutHandler().logout(request, response, SecurityContextHolder.getContext().getAuthentication());
-    }
+//    public void logout(HttpServletRequest request, HttpServletResponse response) {
+//        new SecurityContextLogoutHandler().logout(request, response, SecurityContextHolder.getContext().getAuthentication());
+//    }
 
     /**
      * ROLE UPDATE: GUEST -> USER
@@ -116,11 +121,17 @@ public class UserService {
 
         if (file != null & !file.isEmpty()) {
             try {
-                UserImage userImage = userImageRepository.findByUser(user)
-                        .orElseThrow(() -> new NoSuchElementException("해당하는 이미지가 존재하지 않습니다."));
                 String fileName = file.getOriginalFilename();
                 String filePath = "C:\\Users\\hany\\uploads\\users\\" + user.getIdUser();
-                userImage.update(fileName, filePath, FileUtil.getFileExtension(file));
+
+                userImageRepository.findByUser(user)
+                        .ifPresentOrElse(_userImage ->
+                                        _userImage.update(fileName, filePath, FileUtil.getFileExtension(file)),
+                                () -> {
+                                    UserImage newUserImage = new UserImage(user, fileName, filePath, FileUtil.getFileExtension(file));
+                                    user.updateUserImage(newUserImage);
+                                    userRepository.save(user);
+                                });
                 // TODO: 서버에 저장된 기존 사진은 어떻게 할 것인가? 지우기 VS 남겨두기
                 FileUtil.uploadFile(filePath, fileName, file);
             } catch (Exception e) {
@@ -174,4 +185,36 @@ public class UserService {
     public boolean isDuplicatedPhoneNumber(String phoneNumber) {
         return userRepository.existsByPhoneNumber(phoneNumber);
     }
+
+    @Transactional
+    public void changePhoneNumber(Long id, ChangePhoneNumberRequest request, User user) throws AccessDeniedException {
+        if (!id.equals(user.getIdUser())) {
+            throw new AccessDeniedException("프로필을 수정할 권한이 없습니다.");
+        }
+        checkDuplicatedPhoneNumber(request.getPhoneNumber());
+        user.updatePhoneNumber(request.getPhoneNumber());
+    }
+
+    @Transactional
+    public void deleteUser(Long id, User user) throws AccessDeniedException {
+        if (!id.equals(user.getIdUser())) {
+            throw new AccessDeniedException("프로필을 수정할 권한이 없습니다.");
+        }
+        user.deleteUser();
+        userImageRepository.findByUser(user)
+                .ifPresentOrElse(UserImage::delete, null);
+
+    }
+
+    public String getUserImageURL(User user, HttpServletRequest request) {
+        Long userImageId = user.getUserImage().getIdUserImage();
+        return userImageId != null ? UrlUtil.getBaseUrl(request) + FILE_ENDPOINT + "?userImageId=" + userImageId : null;
+    }
+
+    public UserProfileResponse getUserProfile(Long id, HttpServletRequest request) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("해당 UserId가 존재하지 않습니다."));
+        return new UserProfileResponse(user.getName(), getUserImageURL(user, request));
+    }
+
 }

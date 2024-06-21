@@ -2,6 +2,7 @@ package com.seulmae.seulmae.user.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
@@ -42,6 +43,12 @@ public class UserImage {
     @Column(name = "revision_date_user_image")
     private LocalDateTime revisionDateUserImage;
 
+    @Column(name = "is_del_user_image")
+    private Boolean isDelUserImage = false;
+
+    @Column(name = "del_date_user_image")
+    private LocalDateTime delDateUserImage;
+
     public UserImage(User user, String userImageName, String userImagePath, String userImageExtension) {
         this.user = user;
         this.userImageName = userImageName;
@@ -53,6 +60,11 @@ public class UserImage {
         this.userImageName = userImageName;
         this.userImagePath = userImagePath;
         this.userImageExtension = userImageExtension;
+    }
+
+    public void delete() {
+        this.isDelUserImage = true;
+        this.delDateUserImage = LocalDateTime.now();
     }
 
 
