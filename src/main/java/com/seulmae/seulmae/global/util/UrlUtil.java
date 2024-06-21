@@ -9,5 +9,4 @@ public class UrlUtil {
     public static String getBaseUrl(HttpServletRequest request) {
         return request.getRequestURL().toString().replace(request.getRequestURI(), "");
     }
-
 }

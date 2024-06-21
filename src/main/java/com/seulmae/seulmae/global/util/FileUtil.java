@@ -1,5 +1,6 @@
 package com.seulmae.seulmae.global.util;
 
+
 import org.apache.tika.Tika;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -37,6 +38,17 @@ public class FileUtil {
         file.transferTo(saveFile);
     }
 
+    public static ResponseEntity<byte[]> getImage(String imagePath, String imageName) throws IOException {
+        File file = new File(imagePath + "/" + imageName);
+
+        HttpHeaders headers = new HttpHeaders();
+
+        headers.add("Content-Type", Files.probeContentType(file.toPath()));
+
+        return new ResponseEntity<byte[]>(FileCopyUtils.copyToByteArray(file), headers, HttpStatus.OK);
+    }
+
+
     public static void downloadImageFromUrl(String filePath, String fileName, String url) {
         File dir = new File(filePath);
         String filePathWithName = filePath + "/" + fileName;
@@ -56,15 +68,6 @@ public class FileUtil {
             throw new RuntimeException(e);
         }
     }
-
-
-    public static ResponseEntity<byte[]> getImage(String imagePath, String imageName) throws IOException {
-        File file = new File(imagePath + "/" + imageName);
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-Type", Files.probeContentType(file.toPath()));
-        return new ResponseEntity<byte[]>(FileCopyUtils.copyToByteArray(file), headers, HttpStatus.OK);
-    }
-
 
     public static String getFileExtension(MultipartFile file) {
         String originalFilename = file.getOriginalFilename();
@@ -86,7 +89,6 @@ public class FileUtil {
         }
     }
 
-
     public static boolean isAllowedExtension(String fileExtension) {
         String lowerCaseFileExtension = fileExtension.toLowerCase();
         for (String extension : PUBLIC_KEY_EXTENSIONS) {
@@ -104,7 +106,7 @@ public class FileUtil {
         }
         return convFile;
     }
-
+  
     public static String extractUrlName(String url) {
         try {
             URL urlObj = new URL(url);
