@@ -6,11 +6,15 @@ import lombok.Getter;
 public class ChangePhoneNumberRequest {
     private String phoneNumber;
 
+    public ChangePhoneNumberRequest() {
+    }
+
     public ChangePhoneNumberRequest(String phoneNumber) {
         this.phoneNumber = setPhoneNumber(phoneNumber);
     }
 
     private String setPhoneNumber(String phoneNumber) {
+        System.out.println("실행된다.");
         this.phoneNumber = phoneNumber.replaceAll("-", "");
         return phoneNumber;
     }

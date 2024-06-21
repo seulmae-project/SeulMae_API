@@ -7,17 +7,14 @@ import com.seulmae.seulmae.global.util.enums.SuccessResponse;
 import com.seulmae.seulmae.user.dto.request.*;
 import com.seulmae.seulmae.user.dto.response.FindAuthResponse;
 import com.seulmae.seulmae.user.dto.response.UserProfileResponse;
-import com.seulmae.seulmae.user.entity.CustomOAuth2User;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.user.exception.InvalidPasswordException;
 import com.seulmae.seulmae.user.exception.MatchPasswordException;
 import com.seulmae.seulmae.user.service.SmsService;
 import com.seulmae.seulmae.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -156,7 +153,7 @@ public class UserController {
                                         @AuthenticationPrincipal User user) {
         try {
             userService.deleteUser(id, user);
-            return new ResponseEntity<>(new SuccessResponse(SuccessCode.DELETE_SUCCESS), HttpStatus.NO_CONTENT);
+            return new ResponseEntity<>(new SuccessResponse(SuccessCode.DELETE_SUCCESS, "탈퇴가 완료됐습니다."), HttpStatus.NO_CONTENT);
         } catch (AccessDeniedException e) {
             return new ResponseEntity<>(new ErrorResponse(ErrorCode.UNAUTHORIZED, e.getMessage()), HttpStatus.UNAUTHORIZED);
         }
@@ -179,10 +176,10 @@ public class UserController {
             return new ResponseEntity<>(new SuccessResponse(SuccessCode.UPDATE_SUCCESS), HttpStatus.OK);
         } catch (AccessDeniedException e) {
             return new ResponseEntity<>(new ErrorResponse(ErrorCode.UNAUTHORIZED, e.getMessage()), HttpStatus.UNAUTHORIZED);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(new ErrorResponse(ErrorCode.BAD_REQUEST_ERROR, e.getMessage()), HttpStatus.BAD_REQUEST);
         }
     }
-
-    // TODO: 유저의 프로필 데이터 조회
 
 }
 //    @PostMapping("/email/search")
@@ -190,10 +187,3 @@ public class UserController {
 //        FindAuthResponse result = userService.getEmail(request.getPhoneNumber());
 //        return new ResponseEntity<>(new SuccessResponse(SuccessCode.SELECT_SUCCESS, result), HttpStatus.OK);
 //    }
-
-// 인증번호 발송
-// 일반 회원가입 - 인증번호 확인
-// 소셜로그인 추가 정보 입력 후 유저 정보 수정
-// 이메일 중복 확인
-// 아이디 찾기 - 이메일 조회
-// 비번 찾기 - 비밀번호 변경

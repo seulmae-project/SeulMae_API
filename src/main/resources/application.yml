@@ -8,6 +8,12 @@ spring:
   profiles:
     active: local
 
+  servlet:
+    multipart:
+      enabled: true # 파일 업로드 가능여부 설정
+      max-file-size: 10MB # 파일 하나 당 최대 크기
+      max-request-size: 10MB # 한번에 최대 업로드 가능한 용량
+      location: # 업로드 파일 경로
 
 file:
   storage:

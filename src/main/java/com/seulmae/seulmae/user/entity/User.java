@@ -17,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Getter
@@ -110,6 +111,19 @@ public class User implements UserDetails {
                 ", socialType=" + socialType +
                 ", socialId='" + socialId + '\'' +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return Objects.equals(idUser, user.idUser);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(idUser);
     }
 
     // 유저 권한 설정 메소드
