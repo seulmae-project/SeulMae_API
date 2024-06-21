@@ -38,10 +38,10 @@ public class LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
                     userRepository.saveAndFlush(user);
                 });
 
-        response.setStatus(HttpServletResponse.SC_OK);
-        response.setCharacterEncoding("UTF-8");
-        response.setContentType("application/json");
-        response.getWriter().write("로그인 성공!");
+//        response.setStatus(HttpServletResponse.SC_OK);
+//        response.setCharacterEncoding("UTF-8");
+//        response.setContentType("application/json");
+//        response.getWriter().write("로그인 성공!");
 
         log.info("로그인에 성공하였습니다. 이메일: " + email);
         log.info("로그인에 성공하였습니다. AccessToken: " + accessToken);

@@ -40,12 +40,11 @@ public class CustomUsernamePasswordAuthenticationFilter extends AbstractAuthenti
         if (request.getContentType() == null || !request.getContentType().equals(CONTENT_TYPE)) {
             throw new AuthenticationServiceException("Authentication Content-Type not supported: " + request.getContentType());
         }
-
+        System.out.println("3. 인증 시도");
         String messageBody = StreamUtils.copyToString(request.getInputStream(), StandardCharsets.UTF_8);
         Map<String, String> usernamePasswordMap = objectMapper.readValue(messageBody, Map.class);
         String email = usernamePasswordMap.get(USERNAME_KEY);
         String password = usernamePasswordMap.get(PASSWORD_KEY);
-
         UsernamePasswordAuthenticationToken authRequest = new UsernamePasswordAuthenticationToken(email, password);
 
         return this.getAuthenticationManager().authenticate(authRequest);

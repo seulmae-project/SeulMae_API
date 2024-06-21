@@ -1,9 +1,12 @@
 package com.seulmae.seulmae.user.service;
 
+import com.seulmae.seulmae.global.config.oauth2.userInfo.OAuth2UserInfo;
+import com.seulmae.seulmae.global.util.FileUtil;
 import com.seulmae.seulmae.user.SocialType;
 import com.seulmae.seulmae.user.dto.request.OAuthAttributesDto;
 import com.seulmae.seulmae.user.entity.CustomOAuth2User;
 import com.seulmae.seulmae.user.entity.User;
+import com.seulmae.seulmae.user.entity.UserImage;
 import com.seulmae.seulmae.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,13 +27,14 @@ import java.util.Map;
 public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
     private final UserRepository userRepository;
 
+    private final UserImageService userImageService;
+
     private static final String KAKAO = "kakao";
 
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         log.info("OAuth2 로그인 요청 진입");
-
         // DefaultOAuth2UserService는 loadUser를 통해 DefaultOAuth2User를 반환한다.
         // loadUser는 사용자 정보 제공 uri로 요청을 보내서, userInfo를 얻어낸다.
         OAuth2UserService<OAuth2UserRequest, OAuth2User> delegate = new DefaultOAuth2UserService();
@@ -69,8 +73,11 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         User findUser = userRepository.findBySocialTypeAndSocialId(socialType, attributes.getOAuth2UserInfo().getId()).orElse(null);
 
         if (findUser == null) {
-            return saveUser(attributes, socialType);
+            User savedUser = saveUser(attributes, socialType);
+            saveUserImage(savedUser, attributes.getOAuth2UserInfo());
+            return savedUser;
         }
+
         return findUser;
     }
 
@@ -79,5 +86,14 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         return userRepository.save(user);
     }
 
+    private void saveUserImage(User user, OAuth2UserInfo oAuth2UserInfo) {
+        String imageURL = oAuth2UserInfo.getImageURL();
+        String imageUrlName = FileUtil.extractUrlName(imageURL);
+        String imageUrlPath = "C:\\Users\\hany\\uploads\\users\\" + user.getIdUser();
 
+        UserImage userImage = new UserImage(user, imageUrlName, imageUrlPath, FileUtil.getFileExtension(imageURL));
+        user.updateUserImage(userImage);
+        FileUtil.downloadImageFromUrl(imageUrlPath, imageUrlName, imageURL);
+        userRepository.save(user);
+    }
 }

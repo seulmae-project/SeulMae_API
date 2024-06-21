@@ -33,7 +33,11 @@ dependencies {
 	implementation 'javax.xml.bind:jaxb-api:2.3.1' // XML 문서와 Java 객체 간 매핑 자동화
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 
+	implementation 'net.nurigo:sdk:4.3.0'
 
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+	implementation group: 'org.apache.tika', name: 'tika-core', version: '2.7.0'
 
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'com.h2database:h2'

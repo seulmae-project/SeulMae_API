@@ -5,6 +5,7 @@ import com.seulmae.seulmae.global.config.oauth2.userInfo.OAuth2UserInfo;
 import com.seulmae.seulmae.user.Role;
 import com.seulmae.seulmae.user.SocialType;
 import com.seulmae.seulmae.user.entity.User;
+import com.seulmae.seulmae.user.entity.UserImage;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -56,10 +57,11 @@ public class OAuthAttributesDto {
         return User.builder()
                 .socialType(socialType)
                 .socialId(oAuth2UserInfo.getId())
-                .email(UUID.randomUUID() + "socialUserSeulMae.com")
-                .imageURL(oAuth2UserInfo.getImageURL())
+                .email(UUID.randomUUID() + "@SeulMae.com")
+//                .userImage(oAuth2UserInfo.getImageURL())
                 .authorityRole(Role.GUEST)
                 .build();
     }
+
 
 }

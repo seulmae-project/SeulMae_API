@@ -26,4 +26,24 @@ public class PasswordUtil {
         return password.toString();
         //StringBuffer를 String으로 변환해서 return 하려면 toString()을 사용하면 된다.
     }
+
+    public static boolean isValidPassword(String password) {
+        // 길이 체크
+        if (password.length() < 8) {
+            return false;
+        }
+
+        // 영문자, 숫자, 특수문자 체크
+        if (!password.matches(".*[A-Za-z].*")) {
+            return false;
+        }
+        if (!password.matches(".*\\d.*")) {
+            return false;
+        }
+        if (!password.matches(".*[!@#$%^&*(),.?\":{}|<>].*")) {
+            return false;
+        }
+
+        return true;
+    }
 }
