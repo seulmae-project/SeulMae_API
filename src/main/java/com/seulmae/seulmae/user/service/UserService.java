@@ -193,6 +193,7 @@ public class UserService {
         }
         checkDuplicatedPhoneNumber(request.getPhoneNumber());
         user.updatePhoneNumber(request.getPhoneNumber());
+        userRepository.save(user);
     }
 
     @Transactional
@@ -203,6 +204,11 @@ public class UserService {
         user.deleteUser();
         userImageRepository.findByUser(user)
                 .ifPresentOrElse(UserImage::delete, null);
+        /**
+         * todo
+         * 1. 추후에 탈퇴할 경우, del처리 해야할 부분 있으면 추가해야 함.
+         * 2. del 처리할 경우, 로그인이나 기타 처리가 되지 않아야 함.
+         */
 
     }
 
