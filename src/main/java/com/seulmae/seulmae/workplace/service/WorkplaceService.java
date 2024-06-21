@@ -1,7 +1,10 @@
 package com.seulmae.seulmae.workplace.service;
 
 import com.seulmae.seulmae.global.util.FileUtil;
+import com.seulmae.seulmae.global.util.UUIDUtil;
 import com.seulmae.seulmae.global.util.UrlUtil;
+import com.seulmae.seulmae.user.entity.UserWorkplace;
+import com.seulmae.seulmae.user.repository.UserWorkplaceRepository;
 import com.seulmae.seulmae.workplace.dto.WorkplaceAddDto;
 import com.seulmae.seulmae.workplace.dto.WorkplaceInfoDto;
 import com.seulmae.seulmae.workplace.dto.WorkplaceListInfoDto;
@@ -13,10 +16,12 @@ import com.seulmae.seulmae.workplace.vo.AddressVo;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Null;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -27,44 +32,42 @@ import java.util.Optional;
 public class WorkplaceService {
 
     private final WorkplaceRepository workplaceRepository;
-    private String fileEndPoint = "/api/workplace/v1/file";
+    private final WorkplaceFileService workplaceFileService;
+    private final UserWorkplaceRepository userWorkplaceRepository;
+
+    @Value("${file.endPoint.workplace}")
+    private String fileEndPoint;
 
     @Transactional
     public void addWorkplace(WorkplaceAddDto workplaceAddDto, List<MultipartFile> multipartFileList) {
-        Workplace workplace = new Workplace(workplaceAddDto);
+        AddressVo addressVo = AddressVo.builder()
+                .mainAddress(workplaceAddDto.getMainAddress())
+                .subAddress(workplaceAddDto.getSubAddress())
+                .build();
+
+        Workplace workplace = Workplace.builder()
+                .workplaceCode(UUIDUtil.generateShortUUID())
+                .workplaceName(workplaceAddDto.getWorkplaceName())
+                .addressVo(addressVo)
+                .workplaceTel(workplaceAddDto.getWorkplaceTel())
+                .build();
 
         /** id 생성을 위해 먼저 한 번 저장 **/
         workplaceRepository.save(workplace);
 
-        int i = 1;
-        List<WorkplaceImage> workplaceImages = new ArrayList<>();
-
-        if (multipartFileList != null && !multipartFileList.isEmpty()) {
-
-            for (MultipartFile multipartFile : multipartFileList) {
-
-                if (multipartFile != null && !multipartFile.isEmpty()) {
-                    try {
-                        String fileName = multipartFile.getOriginalFilename();
-//                String filePath = "/app/workplace" + workplace.getIdWorkPlace();
-                        String filePath = "C:\\workplace\\" + workplace.getIdWorkPlace();
-                        WorkplaceImage workplaceImage = new WorkplaceImage(workplace, fileName, filePath, FileUtil.getFileExtension(multipartFile), i);
-                        workplaceImage.setWorkplace(workplace);
-
-                        workplaceImages.add(workplaceImage);
-
-                        FileUtil.uploadFile(filePath, fileName, multipartFile);
-                        i++;
-                    } catch (Exception e) {
-                        // 예외 처리
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }
+        List<WorkplaceImage> workplaceImages = workplaceFileService.addWorkplaceImage(workplace, multipartFileList);
 
         workplace.setWorkplaceImages(workplaceImages);
         workplaceRepository.save(workplace);
+
+
+//        UserWorkplace userWorkplace = UserWorkplace.builder()
+//                .user()
+//                .workplace(workplace)
+//                .isManager(true)
+//                .build();
+//
+//        userWorkplaceRepository.save(userWorkplace);
     }
 
     @Transactional
@@ -94,18 +97,26 @@ public class WorkplaceService {
     }
 
     @Transactional
-    public void modifyWorkplace(WorkplaceModifyDto workplaceModifyDto, List<MultipartFile> multipartFileList) {
+    public void modifyWorkplace(WorkplaceModifyDto workplaceModifyDto, List<MultipartFile> multipartFileList) throws IOException {
         Workplace workplace = workplaceRepository.findById(workplaceModifyDto.getWorkplaceId()).orElseThrow(() -> new NullPointerException("This workplaceId doesn't exist."));
 
-        workplace.builder()
-                .idWorkPlace(workplace.getIdWorkPlace())
-                .workplaceCode(workplace.getWorkplaceCode())
-                .workplaceName(workplaceModifyDto.getWorkplaceName())
-                .addressVo(new AddressVo(workplaceModifyDto.getMainAddress(), workplaceModifyDto.getSubAddress()))
-                .workplaceTel(workplaceModifyDto.getWorkplaceTel())
+        AddressVo addressVo = AddressVo.builder()
+                .mainAddress(workplaceModifyDto.getMainAddress())
+                .subAddress(workplaceModifyDto.getSubAddress())
                 .build();
 
-        workplaceRepository.save(workplace);
+        Workplace updatedWorkplace = Workplace.builder()
+                .idWorkPlace(workplace.getIdWorkPlace())
+                .workplaceName(workplaceModifyDto.getWorkplaceName())
+                .addressVo(addressVo)
+                .workplaceTel(workplaceModifyDto.getWorkplaceTel())
+                .regDateWorkplace(workplace.getRegDateWorkplace())
+                .build();
+
+        List<WorkplaceImage> workplaceImageList = workplaceFileService.modifyWorkplaceImage(updatedWorkplace, multipartFileList);
+
+        updatedWorkplace.setWorkplaceImages(workplaceImageList);
+        workplaceRepository.save(updatedWorkplace);
     }
 
     @Transactional

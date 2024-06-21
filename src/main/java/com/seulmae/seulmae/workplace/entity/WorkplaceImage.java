@@ -1,10 +1,7 @@
 package com.seulmae.seulmae.workplace.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -12,9 +9,11 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Builder
 @Table(name = "workplace_image")
+@AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WorkplaceImage {
 
     @Id
@@ -41,15 +40,6 @@ public class WorkplaceImage {
 
     @Column(name = "sequence")
     private Integer sequence;
-
-    public WorkplaceImage(Workplace workplace, String workplaceImageName, String workplaceImagePath, String workplaceImageExtension, Integer sequence) {
-        this.workplace = workplace;
-        this.workplaceImageName = workplaceImageName;
-        this.workplaceImagePath = workplaceImagePath;
-        this.workplaceImageExtension = workplaceImageExtension;
-        this.regDateWorkplaceImage = LocalDateTime.now();
-        this.sequence = sequence;
-    }
 
     public void setWorkplace(Workplace workplace) {
         this.workplace = workplace;

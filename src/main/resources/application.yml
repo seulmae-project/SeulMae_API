@@ -9,3 +9,10 @@ spring:
     active: local
 
 
+file:
+  storage:
+    path:
+      workplace: C:\workplace\
+
+  endPoint:
+    workplace: /api/workplace/v1/file

@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -45,7 +46,7 @@ public class WorkplaceController {
     }
 
     @PatchMapping("modify")
-    public ResponseEntity<?> modifyWorkplace(@RequestPart WorkplaceModifyDto workplaceModifyDto, @RequestPart(required = false) List<MultipartFile> multipartFileList) {
+    public ResponseEntity<?> modifyWorkplace(@RequestPart WorkplaceModifyDto workplaceModifyDto, @RequestPart(required = false) List<MultipartFile> multipartFileList) throws IOException {
         workplaceService.modifyWorkplace(workplaceModifyDto, multipartFileList);
         SuccessResponse successResponse = new SuccessResponse(SuccessCode.UPDATE_SUCCESS);
         return new ResponseEntity<>(successResponse, HttpStatus.OK);

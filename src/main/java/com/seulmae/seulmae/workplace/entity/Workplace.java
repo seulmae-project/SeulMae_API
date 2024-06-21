@@ -47,24 +47,11 @@ public class Workplace {
     @Column(name = "reg_date_workplace")
     private LocalDateTime regDateWorkplace;
 
-    @Column(name = "is_del_user")
+    @Column(name = "is_del_workplace")
     private Boolean isDelWorkplace = false;
 
-    @Column(name = "del_date_user")
+    @Column(name = "del_date_workplace")
     private LocalDateTime delDateWorkplace;
-
-    public Workplace(WorkplaceAddDto workplaceAddDto) {
-        this.workplaceCode = UUID.randomUUID().toString();
-        this.workplaceName = workplaceAddDto.getWorkplaceName();
-        this.addressVo = new AddressVo(
-                workplaceAddDto.getMainAddress(),
-                workplaceAddDto.getSubAddress()
-        );
-        this.workplaceTel = workplaceAddDto.getWorkplaceTel();
-        this.regDateWorkplace = LocalDateTime.now();
-        this.delDateWorkplace = null;
-    }
-
 
     public void setWorkplaceImages(List<WorkplaceImage> workplaceImages) {
         this.workplaceImages = workplaceImages;
