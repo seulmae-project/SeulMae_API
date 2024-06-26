@@ -26,7 +26,9 @@ public enum SuccessCode {
     GENERATE_SUCCESS(205, "205", "GENERATE SUCCESS"),
 
     SEND_SMS_SUCCESS(200, "200", "SMS sent successfully!"),
-    VERIFY_SMS_SUCCESS(200, "200", "SMS verify successfully!");
+    VERIFY_SMS_SUCCESS(200, "200", "SMS verify successfully!"),
+
+    SEND_SUCCESS(200, "200", "SEND SUCCESS");
 
     /**
      * ******************************* Success Code Constructor ***************************************
