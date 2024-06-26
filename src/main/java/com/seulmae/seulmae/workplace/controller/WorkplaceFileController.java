@@ -9,12 +9,12 @@ import java.io.IOException;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/workplace/v1")
+@RequestMapping("/api/workplace/file/v1")
 public class WorkplaceFileController {
 
     private final WorkplaceFileService workplaceFileService;
 
-    @GetMapping("file")
+    @GetMapping("")
     public ResponseEntity<?> getWorkplaceImage(@RequestParam Long workplaceImageId) throws IOException {
         return workplaceFileService.getWorkplaceImage(workplaceImageId);
     }
