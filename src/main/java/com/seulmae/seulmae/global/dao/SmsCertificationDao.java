@@ -1,4 +1,4 @@
-package com.seulmae.seulmae.user.repository;
+package com.seulmae.seulmae.global.dao;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;

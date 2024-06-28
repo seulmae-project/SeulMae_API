@@ -2,7 +2,7 @@ package com.seulmae.seulmae.user.service;
 
 import com.seulmae.seulmae.global.util.SmsCertificationUtil;
 import com.seulmae.seulmae.user.dto.request.SmsCertificationRequest;
-import com.seulmae.seulmae.user.repository.SmsCertificationDao;
+import com.seulmae.seulmae.global.dao.SmsCertificationDao;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

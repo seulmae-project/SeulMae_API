@@ -3,6 +3,7 @@ package com.seulmae.seulmae.workplace.service;
 import com.seulmae.seulmae.global.util.FileUtil;
 import com.seulmae.seulmae.global.util.UUIDUtil;
 import com.seulmae.seulmae.global.util.UrlUtil;
+import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.user.entity.UserWorkplace;
 import com.seulmae.seulmae.user.repository.UserWorkplaceRepository;
 import com.seulmae.seulmae.workplace.dto.WorkplaceAddDto;
@@ -39,7 +40,7 @@ public class WorkplaceService {
     private String fileEndPoint;
 
     @Transactional
-    public void addWorkplace(WorkplaceAddDto workplaceAddDto, List<MultipartFile> multipartFileList) {
+    public void addWorkplace(WorkplaceAddDto workplaceAddDto, List<MultipartFile> multipartFileList, User user) {
         AddressVo addressVo = AddressVo.builder()
                 .mainAddress(workplaceAddDto.getMainAddress())
                 .subAddress(workplaceAddDto.getSubAddress())
@@ -60,14 +61,13 @@ public class WorkplaceService {
         workplace.setWorkplaceImages(workplaceImages);
         workplaceRepository.save(workplace);
 
+        UserWorkplace userWorkplace = UserWorkplace.builder()
+                .user(user)
+                .workplace(workplace)
+                .isManager(true)
+                .build();
 
-//        UserWorkplace userWorkplace = UserWorkplace.builder()
-//                .user()
-//                .workplace(workplace)
-//                .isManager(true)
-//                .build();
-//
-//        userWorkplaceRepository.save(userWorkplace);
+        userWorkplaceRepository.save(userWorkplace);
     }
 
     @Transactional
@@ -89,7 +89,7 @@ public class WorkplaceService {
 
     @Transactional
     public WorkplaceInfoDto getSpecificWorkplace(Long workplaceId, HttpServletRequest request) {
-        Workplace workplace = workplaceRepository.findById(workplaceId).orElseThrow(() -> new NullPointerException("This workplaceId doesn't exist."));
+        Workplace workplace = getWorkplaceById(workplaceId);
 
         List<String> workplaceImageUrlList = getWorkplaceImageUrlList(workplace, request);
 
@@ -98,7 +98,7 @@ public class WorkplaceService {
 
     @Transactional
     public void modifyWorkplace(WorkplaceModifyDto workplaceModifyDto, List<MultipartFile> multipartFileList) throws IOException {
-        Workplace workplace = workplaceRepository.findById(workplaceModifyDto.getWorkplaceId()).orElseThrow(() -> new NullPointerException("This workplaceId doesn't exist."));
+        Workplace workplace = getWorkplaceById(workplaceModifyDto.getWorkplaceId());
 
         AddressVo addressVo = AddressVo.builder()
                 .mainAddress(workplaceModifyDto.getMainAddress())
@@ -121,13 +121,17 @@ public class WorkplaceService {
 
     @Transactional
     public void deleteWorkplace(Long workplaceId) {
-        Workplace workplace = workplaceRepository.findById(workplaceId).orElseThrow(() -> new NullPointerException("This workplaceId doesn't exist."));
+        Workplace workplace = getWorkplaceById(workplaceId);
 
         workplace.deleteWorkplace();
 
         workplaceRepository.save(workplace);
     }
 
+    public Workplace getWorkplaceById(Long workplaceId) {
+        return workplaceRepository.findById(workplaceId)
+                .orElseThrow(() -> new NullPointerException("This workplaceId doesn't exist."));
+    }
     public String getWorkplaceThumbnailUrl(Workplace workplace, HttpServletRequest request) {
 
         Long workplaceImageId = workplace.getWorkplaceImages() != null ?

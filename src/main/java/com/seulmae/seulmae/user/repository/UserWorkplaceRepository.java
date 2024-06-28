@@ -18,4 +18,9 @@ public interface UserWorkplaceRepository extends JpaRepository<UserWorkplace, Lo
     @Query("SELECT uw.workplace FROM UserWorkplace uw " +
             "WHERE uw.user = :user")
     List<Workplace> findWorkplacesByUser(User user);
+
+    boolean existsByWorkplaceAndUserAndIsManager(Workplace workplace, User user, boolean isManager);
+
+    boolean existsByWorkplaceAndUser(Workplace workplace, User user);
+
 }
