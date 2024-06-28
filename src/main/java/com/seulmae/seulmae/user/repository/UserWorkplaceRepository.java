@@ -11,4 +11,8 @@ import java.util.Optional;
 @Repository
 public interface UserWorkplaceRepository extends JpaRepository<UserWorkplace, Long> {
     Optional<User> findUserByWorkplaceAndIsManager(Workplace workplace, boolean isManager);
+
+    boolean existsByWorkplaceAndUserAndIsManager(Workplace workplace, User user, boolean isManager);
+
+    boolean existsByWorkplaceAndUser(Workplace workplace, User user);
 }
