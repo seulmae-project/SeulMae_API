@@ -7,7 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Getter
 @NoArgsConstructor
 public class UserSignUpDto {
-    private String email;
+    private String accountId;
     private String password;
     private String phoneNumber;
     private String name;

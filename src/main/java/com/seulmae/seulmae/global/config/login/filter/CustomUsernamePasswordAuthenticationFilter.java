@@ -22,7 +22,7 @@ public class CustomUsernamePasswordAuthenticationFilter extends AbstractAuthenti
     private static final String DEFAULT_LOGIN_REQUEST_URL = "/api/users/login";
     private static final String HTTP_METHOD = "POST";
     private static final String CONTENT_TYPE = "application/json";
-    private static final String USERNAME_KEY = "email";
+    private static final String USERNAME_KEY = "accountId";
     private static final String PASSWORD_KEY = "password";
 
     private final ObjectMapper objectMapper;
@@ -43,9 +43,9 @@ public class CustomUsernamePasswordAuthenticationFilter extends AbstractAuthenti
         System.out.println("3. 인증 시도");
         String messageBody = StreamUtils.copyToString(request.getInputStream(), StandardCharsets.UTF_8);
         Map<String, String> usernamePasswordMap = objectMapper.readValue(messageBody, Map.class);
-        String email = usernamePasswordMap.get(USERNAME_KEY);
+        String accountId = usernamePasswordMap.get(USERNAME_KEY);
         String password = usernamePasswordMap.get(PASSWORD_KEY);
-        UsernamePasswordAuthenticationToken authRequest = new UsernamePasswordAuthenticationToken(email, password);
+        UsernamePasswordAuthenticationToken authRequest = new UsernamePasswordAuthenticationToken(accountId, password);
 
         return this.getAuthenticationManager().authenticate(authRequest);
     }

@@ -8,23 +8,26 @@ import com.seulmae.seulmae.user.SocialType;
 import com.seulmae.seulmae.user.dto.request.*;
 import com.seulmae.seulmae.user.dto.response.FindAuthResponse;
 import com.seulmae.seulmae.user.dto.response.UserProfileResponse;
+import com.seulmae.seulmae.user.dto.response.UserWorkplaceInfoResponse;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.user.entity.UserImage;
+import com.seulmae.seulmae.user.entity.UserWorkplace;
+import com.seulmae.seulmae.user.exception.InvalidAccountIdException;
 import com.seulmae.seulmae.user.exception.InvalidPasswordException;
 import com.seulmae.seulmae.user.repository.UserImageRepository;
 import com.seulmae.seulmae.user.repository.UserRepository;
+import com.seulmae.seulmae.user.repository.UserWorkplaceRepository;
 import com.seulmae.seulmae.workplace.entity.Workplace;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.AccessDeniedException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 @Service
@@ -32,6 +35,7 @@ import java.util.NoSuchElementException;
 public class UserService {
     private final UserRepository userRepository;
     private final UserImageRepository userImageRepository;
+    private final UserWorkplaceRepository userWorkplaceRepository;
 
     private final PasswordEncoder passwordEncoder;
 
@@ -40,12 +44,13 @@ public class UserService {
     @Transactional
     public void createUser(UserSignUpDto userSignUpDto, MultipartFile file) {
 
-        checkDuplicatedEmail(userSignUpDto.getEmail());
+        checkDuplicatedAccountId(userSignUpDto.getAccountId());
         checkDuplicatedPhoneNumber(userSignUpDto.getPhoneNumber());
         checkPasswordValidation(userSignUpDto.getPassword());
+        checkAccountIdValidation(userSignUpDto.getAccountId());
 
         User user = User.builder()
-                .email(userSignUpDto.getEmail())
+                .accountId(userSignUpDto.getAccountId())
                 .phoneNumber(userSignUpDto.getPhoneNumber())
                 .password(userSignUpDto.getPassword())
                 .name(userSignUpDto.getName())
@@ -57,7 +62,7 @@ public class UserService {
         user.encodePassword(passwordEncoder);
         userRepository.save(user);
 
-        if (file != null & !file.isEmpty()) {
+        if (file != null && !file.isEmpty()) {
             try {
                 String fileName = file.getOriginalFilename();
                 String filePath = "C:\\Users\\hany\\uploads\\users\\" + user.getIdUser();
@@ -69,7 +74,6 @@ public class UserService {
                 e.printStackTrace();
             }
         }
-
     }
 
     @Transactional
@@ -83,7 +87,7 @@ public class UserService {
 
         targetUser.updateName(updateUserRequest.getName());
 
-        if (file != null & !file.isEmpty()) {
+        if (file != null && !file.isEmpty()) {
             try {
                 String fileName = file.getOriginalFilename();
                 String filePath = "C:\\Users\\hany\\uploads\\users\\" + targetUser.getIdUser();
@@ -101,7 +105,6 @@ public class UserService {
                 e.printStackTrace();
             }
         }
-
     }
 
 //    public void logout(HttpServletRequest request, HttpServletResponse response) {
@@ -119,7 +122,7 @@ public class UserService {
         user.authorizeUser();
 //        userRepository.save(user);
 
-        if (file != null & !file.isEmpty()) {
+        if (file != null && !file.isEmpty()) {
             try {
                 String fileName = file.getOriginalFilename();
                 String filePath = "C:\\Users\\hany\\uploads\\users\\" + user.getIdUser();
@@ -141,28 +144,28 @@ public class UserService {
 
     }
 
-    public FindAuthResponse getEmail(String phoneNumber) {
+    public FindAuthResponse getAccountId(String phoneNumber) {
         String rePhoneNumber = phoneNumber.replace("-", "");
         User user = userRepository.findByPhoneNumber(rePhoneNumber)
                 .orElse(null);
-        return new FindAuthResponse(user == null ? null : user.getEmail());
+        return new FindAuthResponse(user == null ? null : user.getAccountId());
     }
 
     @Transactional
     public void changePassword(ChangePasswordRequest request) {
         checkPasswordValidation(request.getPassword());
 
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new NoSuchElementException("해당 이메일과 일치하는 유저가 존재하지 않습니다."));
+        User user = userRepository.findByAccountId(request.getAccountId())
+                .orElseThrow(() -> new NoSuchElementException("해당 아이디와 일치하는 유저가 존재하지 않습니다."));
 
         user.changePassword(passwordEncoder, request.getPassword());
         userRepository.save(user);
     }
 
 
-    public void checkDuplicatedEmail(String email) {
-        if (isDuplicatedEmail(email)) {
-            throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
+    public void checkDuplicatedAccountId(String accountId) {
+        if (isDuplicatedAccountId(accountId)) {
+            throw new IllegalArgumentException("이미 존재하는 아이디입니다.");
         }
     }
 
@@ -178,12 +181,32 @@ public class UserService {
         }
     }
 
-    public boolean isDuplicatedEmail(String email) {
-        return userRepository.existsByEmail(email);
+    public void checkAccountIdValidation(String accountId) {
+        if (!isCorrectAccountId(accountId)) {
+            throw new InvalidAccountIdException("아이디로 영문 또는 숫자 5자 이상을 입력해주세요.");
+        }
+    }
+
+    public boolean isDuplicatedAccountId(String accountId) {
+        return userRepository.existsByAccountId(accountId);
     }
 
     public boolean isDuplicatedPhoneNumber(String phoneNumber) {
         return userRepository.existsByPhoneNumber(phoneNumber);
+    }
+
+    public boolean isCorrectAccountId(String accountId) {
+            // 길이 체크
+            if (accountId.length() < 5) {
+                return false;
+            }
+
+            // 영어와 숫자로만 이루어져 있는지 체크 (^[a-zA-Z0-9]*$)
+            if (!accountId.matches("^[a-zA-Z0-9]*$")) {
+                return false;
+            }
+
+            return true;
     }
 
     @Transactional
@@ -205,7 +228,7 @@ public class UserService {
         userImageRepository.findByUser(user)
                 .ifPresentOrElse(UserImage::delete, null);
         /**
-         * todo
+         * [TODO]
          * 1. 추후에 탈퇴할 경우, del처리 해야할 부분 있으면 추가해야 함.
          * 2. del 처리할 경우, 로그인이나 기타 처리가 되지 않아야 함.
          */
@@ -220,7 +243,15 @@ public class UserService {
     public UserProfileResponse getUserProfile(Long id, HttpServletRequest request) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("해당 UserId가 존재하지 않습니다."));
-        return new UserProfileResponse(user.getName(), getUserImageURL(user, request));
+        List<Workplace> workplaces = userWorkplaceRepository.findWorkplacesByUser(user);
+
+        List<UserWorkplaceInfoResponse> userWorkplaceInfoResponses = new ArrayList<>();
+
+        for (Workplace workplace : workplaces) {
+            userWorkplaceInfoResponses.add(new UserWorkplaceInfoResponse(workplace.getWorkplaceName(), workplace.getAddressVo()));
+        }
+
+        return new UserProfileResponse(user.getName(),getUserImageURL(user, request), user.getPhoneNumber(), userWorkplaceInfoResponses);
     }
 
 }

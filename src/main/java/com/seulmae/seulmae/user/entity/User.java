@@ -32,8 +32,8 @@ public class User implements UserDetails {
     @Column(name = "id_user", updatable = false)
     private Long idUser;
 
-    @Column(name = "email", unique = true)
-    private String email;
+    @Column(name = "account_id", unique = true)
+    private String accountId;
 
     @Column(name = "phone_number", unique = true)
     private String phoneNumber;
@@ -51,7 +51,6 @@ public class User implements UserDetails {
     @Column(name = "is_male")
     private Boolean isMale;
 
-    //[TODO] MULTIPART 구현
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private UserImage userImage;
 
@@ -85,8 +84,8 @@ public class User implements UserDetails {
     private LocalDateTime delDateUser;
 
 
-    public User(String email, String phoneNumber, String password, String name, String birthday, Boolean isMale, UserImage userImage, Role role) {
-        this.email = email;
+    public User(String accountId, String phoneNumber, String password, String name, String birthday, Boolean isMale, UserImage userImage, Role role) {
+        this.accountId = accountId;
         this.phoneNumber = phoneNumber;
         this.password = password;
         this.name = name;
@@ -100,7 +99,7 @@ public class User implements UserDetails {
     public String toString() {
         return "User{" +
                 "idUser=" + idUser +
-                ", email='" + email + '\'' +
+                ", accountId='" + accountId + '\'' +
                 ", phoneNumber='" + phoneNumber + '\'' +
                 ", password='" + password + '\'' +
                 ", name='" + name + '\'' +
@@ -197,7 +196,7 @@ public class User implements UserDetails {
 
     @Override
     public String getUsername() {
-        return this.email;
+        return this.accountId;
     }
 
     @Override

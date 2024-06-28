@@ -69,7 +69,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/users/sms-certification/send").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/users/sms-certification/confirm").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/users/email/duplication").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/users/id/duplication").permitAll()
 //                        .requestMatchers(HttpMethod.POST, "/api/users/email/search").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/api/users/pw").permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/api/**")).authenticated()

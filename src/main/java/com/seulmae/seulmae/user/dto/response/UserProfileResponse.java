@@ -1,16 +1,17 @@
 package com.seulmae.seulmae.user.dto.response;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
+@AllArgsConstructor
 public class UserProfileResponse {
     private String name;
     private String userImageURL;
-
-    public UserProfileResponse(String name, String userImageURL) {
-        this.name = name;
-        this.userImageURL = userImageURL;
-    }
+    private String phoneNumber;
+    private List<UserWorkplaceInfoResponse> userWorkplaceInfoResponses;
 }

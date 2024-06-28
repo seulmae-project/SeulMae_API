@@ -55,7 +55,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
             checkRefreshToken(refreshToken)
                     .ifPresent(user -> {
                         try {
-                            jwtService.sendAccessTokenAndRefreshToken(response, jwtService.createAccessToken(user.getEmail()), reIssueRefreshToken(user));
+                            jwtService.sendAccessTokenAndRefreshToken(response, jwtService.createAccessToken(user.getAccountId()), reIssueRefreshToken(user));
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -86,16 +86,16 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
     /**
      * 엑세스 토큰을 요청에서 추출하고
      * 유효한지 확인한다음에,
-     * 유효하면 이메일을 추출하고,
-     * 해당 이메일을 통해 유저를 얻어내고,
+     * 유효하면 아이디를 추출하고,
+     * 해당 아이디를 통해 유저를 얻어내고,
      * 유저 객체를 authentication에 저장
      */
     public void checkAccessTokenAndAuthentication(HttpServletRequest request, HttpServletResponse response,
                                  FilterChain filterChain) {
         jwtService.extractAccessToken(request)
                 .filter(jwtService::isValidToken)
-                .ifPresent(accessToken -> jwtService.extractEmailFromAccessToken(accessToken)
-                        .ifPresent(email -> userRepository.findByEmail(email)
+                .ifPresent(accessToken -> jwtService.extractAccountIdFromAccessToken(accessToken)
+                        .ifPresent(accountId -> userRepository.findByAccountId(accountId)
                                 .ifPresent(this::saveAuthentication)));
     }
 
@@ -123,7 +123,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
         UserDetails userDetailsUser = User.builder()
                 .idUser(user.getIdUser())
-                .email(user.getEmail())
+                .accountId(user.getAccountId())
                 .password(password)
                 .authorityRole(Role.valueOf(user.getAuthorityRole().name()))
                 .socialType(user.getSocialType())

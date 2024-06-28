@@ -31,7 +31,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
         // 첫 로그인인 경우
         if (oAuth2User.getRole().equals(Role.GUEST)) {
-            String accessToken = jwtService.createAccessToken(oAuth2User.getEmail());
+            String accessToken = jwtService.createAccessToken(oAuth2User.getAccountId());
 //            response.addHeader(jwtService.getAccessHeader(), "Bearer " + accessToken);
 //            response.sendRedirect("api/users/signup"); // 프론트의 회원가입 추가 정보 입력 폼으로 리다이렉트
             jwtService.sendAccessTokenAndRefreshToken(response, accessToken, null, oAuth2User);
@@ -43,11 +43,11 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     // TODO : 소셜 로그인 시에도 무조건 토큰 생성하지 말고 JWT 인증 필터처럼 RefreshToken 유/무/만기에 따라 다르게 처리해보기
     private void loginSuccess(HttpServletResponse response, CustomOAuth2User oAuth2User) throws IOException {
-        String accessToken = jwtService.createAccessToken(oAuth2User.getEmail());
+        String accessToken = jwtService.createAccessToken(oAuth2User.getAccountId());
         String refreshToken = jwtService.createRefreshToken();
 //        response.addHeader(jwtService.getAccessHeader(), "Bearer " + accessToken);
 //        response.addHeader(jwtService.getRefreshHeader(), "Bearer " + refreshToken);
         jwtService.sendAccessTokenAndRefreshToken(response, accessToken, refreshToken);
-        jwtService.updateRefreshToken(oAuth2User.getEmail(), refreshToken);
+        jwtService.updateRefreshToken(oAuth2User.getAccountId(), refreshToken);
     }
 }

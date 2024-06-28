@@ -5,6 +5,6 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class FindAuthResponse {
-    private String accountId;
+public class AccountDuplicatedResponse {
+    boolean isDuplicated;
 }
