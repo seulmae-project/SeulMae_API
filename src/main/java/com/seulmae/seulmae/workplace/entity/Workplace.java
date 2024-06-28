@@ -1,27 +1,22 @@
 package com.seulmae.seulmae.workplace.entity;
 
-import com.seulmae.seulmae.workplace.dto.WorkplaceAddDto;
-import com.seulmae.seulmae.workplace.dto.WorkplaceModifyDto;
 import com.seulmae.seulmae.workplace.vo.AddressVo;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.cglib.core.Local;
 import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Getter
+@Builder
+@AllArgsConstructor
 @Table(name = "workplace")
 @EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
-@Builder
 public class Workplace {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
