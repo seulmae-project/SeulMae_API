@@ -4,5 +4,5 @@ import lombok.Getter;
 
 @Getter
 public class SmsSendingForPasswordRequest extends SmsSendingRequest {
-    private String email;
+    private String accountId;
 }

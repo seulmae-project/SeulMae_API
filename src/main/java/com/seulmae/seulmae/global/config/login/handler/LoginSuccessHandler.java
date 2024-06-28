@@ -26,13 +26,13 @@ public class LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-        String email = extractUsername(authentication);
-        String accessToken = jwtService.createAccessToken(email);
+        String accountId = extractUsername(authentication);
+        String accessToken = jwtService.createAccessToken(accountId);
         String refreshToken = jwtService.createRefreshToken();
 
         jwtService.sendAccessTokenAndRefreshToken(response, accessToken, refreshToken);
 
-        userRepository.findByEmail(email)
+        userRepository.findByAccountId(accountId)
                 .ifPresent(user -> {
                     user.updateRefreshToken(refreshToken);
                     userRepository.saveAndFlush(user);
@@ -43,7 +43,7 @@ public class LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 //        response.setContentType("application/json");
 //        response.getWriter().write("로그인 성공!");
 
-        log.info("로그인에 성공하였습니다. 이메일: " + email);
+        log.info("로그인에 성공하였습니다. 아이디: " + accountId);
         log.info("로그인에 성공하였습니다. AccessToken: " + accessToken);
         log.info("발급된 AccessToken 만료 기간: : " + accessTokenExpiration);
 

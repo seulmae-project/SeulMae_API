@@ -16,7 +16,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -47,7 +46,7 @@ public class JwtService {
 
     private static final String ACCESS_TOKEN_SUBJECT = "AccessToken";
     private static final String REFRESH_TOKEN_SUBJECT = "RefreshToken";
-    private static final String EMAIL_CLAIM = "email";
+    private static final String ACCOUNT_CLAIM = "accountId";
     private static final String BEARER = "Bearer ";
     private static final String CONTENT_TYPE = "application/json";
 
@@ -57,12 +56,12 @@ public class JwtService {
     /**
      * AccessToken 생성
      */
-    public String createAccessToken(String email) {
+    public String createAccessToken(String accountId) {
         Date now = new Date();
         return JWT.create()
                 .withSubject(ACCESS_TOKEN_SUBJECT)
                 .withExpiresAt(new Date(now.getTime() + accessTokenExpirationPeriod))
-                .withClaim(EMAIL_CLAIM, email) // 클레임으로 email(식별자) 사용
+                .withClaim(ACCOUNT_CLAIM, accountId) // 클레임으로 accountId(식별자) 사용
                 .sign(Algorithm.HMAC512(secretKey));
     }
 
@@ -149,14 +148,14 @@ public class JwtService {
     }
 
     /**
-     * AccessToken에서 이메일 추출
+     * AccessToken에서 아이디 추출
      */
-    public Optional<String> extractEmailFromAccessToken(String accessToken) {
+    public Optional<String> extractAccountIdFromAccessToken(String accessToken) {
         try {
             return Optional.ofNullable(JWT.require(Algorithm.HMAC512(secretKey))
                     .build() // 반환된 빌더로 JWT verifier 생성
                     .verify(accessToken) // 검증하고 유효하지 않다면 예외 발생
-                    .getClaim(EMAIL_CLAIM)
+                    .getClaim(ACCOUNT_CLAIM)
                     .asString());
         } catch (Exception e) {
             log.error("액세스 토큰이 유효하지 않습니다.");
@@ -167,8 +166,8 @@ public class JwtService {
     /**
      * RefreshToken DB 저장(업데이트)
      */
-    public void updateRefreshToken(String email, String refreshToken) {
-        userRepository.findByEmail(email)
+    public void updateRefreshToken(String accountId, String refreshToken) {
+        userRepository.findByAccountId(accountId)
                 .ifPresentOrElse(
                         user -> user.updateRefreshToken(refreshToken),
                         () -> new NoSuchElementException("일치하는 회원이 존재하지 않습니다.")
