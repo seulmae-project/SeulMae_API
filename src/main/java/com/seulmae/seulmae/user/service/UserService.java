@@ -77,26 +77,26 @@ public class UserService {
     }
 
     @Transactional
-    public void updateUser(Long id, Long loginId, UpdateUserRequest updateUserRequest, MultipartFile file) throws AccessDeniedException {
-        if (id != loginId) {
+    public void updateUser(Long id, User user, UpdateUserRequest updateUserRequest, MultipartFile file) throws AccessDeniedException {
+        if (id != user.getIdUser()) {
             throw new AccessDeniedException("프로필을 수정할 권한이 없습니다.");
         }
 
-        User targetUser = userRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("대상 유저를 찾을 수 없습니다."));
+//        User targetUser = userRepository.findById(loginId)
+//                .orElseThrow(() -> new NoSuchElementException("대상 유저를 찾을 수 없습니다."));
 
-        targetUser.updateName(updateUserRequest.getName());
+        user.updateName(updateUserRequest.getName());
 
         if (file != null && !file.isEmpty()) {
             try {
                 String fileName = file.getOriginalFilename();
-                String filePath = "C:\\Users\\hany\\uploads\\users\\" + targetUser.getIdUser();
-                userImageRepository.findByUser(targetUser)
+                String filePath = "C:\\Users\\hany\\uploads\\users\\" + user.getIdUser();
+                userImageRepository.findByUser(user)
                         .ifPresentOrElse(userImage -> userImage.update(fileName, filePath, FileUtil.getFileExtension(file)),
                                 () -> {
-                                    UserImage newUserImage = new UserImage(targetUser, fileName, filePath, FileUtil.getFileExtension(file));
-                                    targetUser.updateUserImage(newUserImage);
-                                    userRepository.save(targetUser);
+                                    UserImage newUserImage = new UserImage(user, fileName, filePath, FileUtil.getFileExtension(file));
+                                    user.updateUserImage(newUserImage);
+//                                    userRepository.save(targetUser);
                                 });
 
                 // TODO: 서버에 저장된 기존 사진은 어떻게 할 것인가? 지우기 VS 남겨두기
@@ -105,6 +105,7 @@ public class UserService {
                 e.printStackTrace();
             }
         }
+        userRepository.save(user);
     }
 
 //    public void logout(HttpServletRequest request, HttpServletResponse response) {

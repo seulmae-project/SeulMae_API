@@ -65,7 +65,7 @@ public class AnnouncementService {
 
         // 조회수가 올라가는 메서드를 따로 생성한다.
         String redisAnnouncementKey = announcementId.toString();
-        String redisUserKey = user.getEmail();
+        String redisUserKey = user.getAccountId();
         int views = countViews(redisAnnouncementKey, redisUserKey);
 
         announcement.updateViews(views);
