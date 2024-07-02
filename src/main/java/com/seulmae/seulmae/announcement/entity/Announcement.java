@@ -65,10 +65,10 @@ public class Announcement {
         this.isImportant = isImportant;
     }
 
-    public void update(String title, String content,boolean isImportant) {
+    public void update(String title, String content, Boolean isImportant) {
         this.title = title;
         this.content = content;
-        this.isImportant = isImportant;
+        this.isImportant = isImportant != null ? isImportant : false;
     }
 
     public void delete() {

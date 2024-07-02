@@ -1,4 +1,4 @@
-package com.seulmae.seulmae.user;
+package com.seulmae.seulmae.util;
 
 import com.seulmae.seulmae.user.entity.User;
 import org.springframework.security.core.Authentication;

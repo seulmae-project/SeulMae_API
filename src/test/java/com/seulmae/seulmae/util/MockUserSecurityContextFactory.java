@@ -1,15 +1,11 @@
-package com.seulmae.seulmae.user;
+package com.seulmae.seulmae.util;
 
 import com.seulmae.seulmae.user.entity.User;
-import com.seulmae.seulmae.user.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithSecurityContextFactory;
-import org.springframework.stereotype.Component;
-
 
 
 public class MockUserSecurityContextFactory implements WithSecurityContextFactory<MockUser> {
