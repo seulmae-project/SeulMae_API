@@ -4,8 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.seulmae.seulmae.user.AuthenticationHelper;
 import com.seulmae.seulmae.user.MockUser;
 import com.seulmae.seulmae.user.Role;
-import com.seulmae.seulmae.user.dto.request.UpdateUserRequest;
-import com.seulmae.seulmae.user.dto.request.UserSignUpDto;
+import com.seulmae.seulmae.user.dto.request.*;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.user.repository.UserRepository;
 import org.junit.jupiter.api.AfterEach;
@@ -17,8 +16,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
@@ -26,8 +25,8 @@ import org.springframework.web.context.WebApplicationContext;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
@@ -49,6 +48,9 @@ class UserControllerTest {
 
     @Autowired
     private AuthenticationHelper authenticationHelper;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @BeforeEach
     public void mockMvcSetUp() {
@@ -168,15 +170,6 @@ class UserControllerTest {
         result.andExpect(status().isCreated());
         assertThat(actualLoginMember.getName()).isEqualTo(newName);
 
-
-        // 요청과 응답 로그
-//        MvcResult mvcResult = result.andReturn();
-//
-//        System.out.println("Request URL: " + url);
-//        System.out.println("Request Body: " + requestBody);
-//        System.out.println("Response Status: " + mvcResult.getResponse().getStatus());
-//        System.out.println("Response Content: " + mvcResult.getResponse().getContentAsString());
-
     }
 
     @Test
@@ -205,38 +198,173 @@ class UserControllerTest {
         ResultActions result = mockMvc.perform(get(url)
                 .param("id", String.valueOf(savedUser.getIdUser())));
 
-        MvcResult mvcResult = result.andReturn();
+        result
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.name").value(name))
+                .andExpect(jsonPath("$.data.phoneNumber").value(phoneNumber));
+    }
 
-        System.out.println("Request URL: " + url);
-        System.out.println("Response Status: " + mvcResult.getResponse().getStatus());
-        System.out.println("Response Content: " + mvcResult.getResponse().getContentAsString());
+//    @Test
+//    void sendSMS() {
+//    }
+//
+//    @Test
+//    void verifySMS() {
+//    }
+
+//    @Test
+//    void updateAdditionalProfileData() {
+//    }
+
+    @Test
+    @DisplayName("아이디 중복 확인 - 중복됨")
+    void checkAccountId() throws Exception {
+        final String url = "/api/users/id/duplication";
+
+        final String accountId = "change";
+        final String password = "qwer1234!";
+        final String phoneNumber = "01012341234";
+        final String name = "이름";
+        final Boolean isMale = true;
+        final String birthday = "19931221";
+
+        final String checkAccountId = "change";
+
+        userRepository.save(User.builder()
+                .accountId(accountId)
+                .password(passwordEncoder.encode(password))
+                .phoneNumber(phoneNumber)
+                .name(name)
+                .isMale(isMale)
+                .birthday(birthday)
+                .authorityRole(Role.USER)
+                .build());
+
+        CheckAccountIdRequest checkAccountIdRequest = new CheckAccountIdRequest(checkAccountId);
+        String request = objectMapper.writeValueAsString(checkAccountIdRequest);
+        ResultActions result = mockMvc.perform(post(url)
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(request));
+        result
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.duplicated").value(true));
     }
 
     @Test
-    void sendSMS() {
+    @DisplayName("아이디 중복 확인 - 중복아님")
+    void checkNotDuplicatedAccountId() throws Exception {
+        final String url = "/api/users/id/duplication";
+
+        final String accountId = "change";
+        final String password = "qwer1234!";
+        final String phoneNumber = "01012341234";
+        final String name = "이름";
+        final Boolean isMale = true;
+        final String birthday = "19931221";
+
+        String checkAccountId = "notchange";
+
+        userRepository.save(User.builder()
+                .accountId(accountId)
+                .password(passwordEncoder.encode(password))
+                .phoneNumber(phoneNumber)
+                .name(name)
+                .isMale(isMale)
+                .birthday(birthday)
+                .authorityRole(Role.USER)
+                .build());
+
+        CheckAccountIdRequest checkAccountIdRequest = new CheckAccountIdRequest(checkAccountId);
+        String request = objectMapper.writeValueAsString(checkAccountIdRequest);
+
+        ResultActions result = mockMvc.perform(post(url)
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(request));
+
+        result
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.duplicated").value(false));
     }
 
     @Test
-    void verifySMS() {
+    @DisplayName("비밀번호 변경 - 성공")
+    void changePassword() throws Exception {
+        final String url = "/api/users/pw";
+
+        final String accountId = "test1234";
+        final String password = "qwer1234!";
+        final String phoneNumber = "01012341234";
+        final String name = "이름";
+        final Boolean isMale = true;
+        final String birthday = "19931221";
+
+        final String changePassword = "change1234!";
+
+        User savedUser = userRepository.save(User.builder()
+                .accountId(accountId)
+                .password(passwordEncoder.encode(password))
+                .phoneNumber(phoneNumber)
+                .name(name)
+                .isMale(isMale)
+                .birthday(birthday)
+                .authorityRole(Role.USER)
+                .build());
+
+        ChangePasswordRequest changePasswordRequest = new ChangePasswordRequest(accountId, changePassword);
+        String request = objectMapper.writeValueAsString(changePasswordRequest);
+
+        ResultActions result = mockMvc.perform(put(url)
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(request));
+
+        result.andExpect(status().isOk());
+
+        User finalUser = userRepository.findById(savedUser.getIdUser()).get();
+        assertThat(passwordEncoder.matches(changePassword, finalUser.getPassword())).isTrue();
     }
 
     @Test
-    void updateAdditionalProfileData() {
+    @MockUser()
+    @DisplayName("유저 삭제 - 성공")
+    void deleteUser() throws Exception {
+        // given
+        final String url = "/api/users";
+
+        User actualLoginMember = authenticationHelper.getCurrentUser();
+
+        // when
+        ResultActions result = mockMvc.perform(delete(url)
+                .param("id", String.valueOf(actualLoginMember.getIdUser())));
+
+
+        // then
+        System.out.println(result.andReturn().getResponse().getContentAsString());
+        result.andExpect(status().isNoContent());
+        assertThat(actualLoginMember.getIsDelUser()).isTrue();
     }
 
     @Test
-    void checkAccountId() {
-    }
+    @MockUser()
+    @DisplayName("휴대폰번호 변경 - 성공")
+    void changePhoneNumber() throws Exception {
+        final String url = "/api/users/phone";
+        final String changePhoneNumber = "01063463222";
 
-    @Test
-    void changePassword() {
-    }
+        User actualLoginMember = authenticationHelper.getCurrentUser();
 
-    @Test
-    void deleteUser() {
-    }
+        ChangePhoneNumberRequest changePhoneNumberRequest = new ChangePhoneNumberRequest(changePhoneNumber);
+        String request = objectMapper.writeValueAsString(changePhoneNumberRequest);
 
-    @Test
-    void changePhoneNumber() {
+        ResultActions result = mockMvc.perform(put(url)
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(request)
+                .param("id", String.valueOf(actualLoginMember.getIdUser())));
+
+        result.andExpect(status().isOk());
+        assertThat(actualLoginMember.getPhoneNumber()).isEqualTo(changePhoneNumber);
     }
 }

@@ -1,13 +1,19 @@
 package com.seulmae.seulmae.user;
 
 import com.seulmae.seulmae.user.entity.User;
+import com.seulmae.seulmae.user.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithSecurityContextFactory;
+import org.springframework.stereotype.Component;
+
+
 
 public class MockUserSecurityContextFactory implements WithSecurityContextFactory<MockUser> {
+
     @Override
     public SecurityContext createSecurityContext(MockUser annotation) {
         SecurityContext context = SecurityContextHolder.createEmptyContext();
@@ -21,6 +27,7 @@ public class MockUserSecurityContextFactory implements WithSecurityContextFactor
                 .isMale(annotation.isMale())
                 .birthday(annotation.birthday())
                 .authorityRole(annotation.authorityRole())
+                .isDelUser(annotation.isDelUser())
                 .build();
 
         Authentication auth = new UsernamePasswordAuthenticationToken(mockUser, mockUser.getPassword());

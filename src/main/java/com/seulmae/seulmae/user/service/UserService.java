@@ -227,7 +227,9 @@ public class UserService {
         }
         user.deleteUser();
         userImageRepository.findByUser(user)
-                .ifPresentOrElse(UserImage::delete, null);
+                .ifPresent(UserImage::delete);
+
+        userRepository.save(user);
         /**
          * [TODO]
          * 1. 추후에 탈퇴할 경우, del처리 해야할 부분 있으면 추가해야 함.
@@ -237,8 +239,12 @@ public class UserService {
     }
 
     public String getUserImageURL(User user, HttpServletRequest request) {
-        Long userImageId = user.getUserImage().getIdUserImage();
-        return userImageId != null ? UrlUtil.getBaseUrl(request) + FILE_ENDPOINT + "?userImageId=" + userImageId : null;
+        if (user.getUserImage() != null) {
+            Long userImageId = user.getUserImage().getIdUserImage();
+            System.out.println("userImageId = " + userImageId);
+            return userImageId != null ? UrlUtil.getBaseUrl(request) + FILE_ENDPOINT + "?userImageId=" + userImageId : null;
+        }
+        return null;
     }
 
     public UserProfileResponse getUserProfile(Long id, HttpServletRequest request) {

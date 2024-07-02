@@ -4,6 +4,7 @@ import org.springframework.security.test.context.support.WithSecurityContext;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.time.LocalDateTime;
 
 @Retention(RetentionPolicy.RUNTIME)
 @WithSecurityContext(factory = MockUserSecurityContextFactory.class)
@@ -16,4 +17,5 @@ public @interface MockUser {
     String birthday() default "19920103";
     boolean isMale() default true;
     Role authorityRole() default Role.USER;
+    boolean isDelUser() default false;
 }
