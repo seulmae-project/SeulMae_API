@@ -69,6 +69,7 @@ class AnnouncementControllerTest {
     @BeforeEach
     public void mockMvcSetUp() throws Exception {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
+
         // 사용자 정보 설정
         String accountId = "test1234";
         String password = "qwer1234!";
@@ -89,7 +90,7 @@ class AnnouncementControllerTest {
                 .build());
 
         // SecurityContext 설정
-        Authentication authentication = new UsernamePasswordAuthenticationToken(mockUser, mockUser.getPassword(), AuthorityUtils.createAuthorityList("ROLE_USER"));
+        Authentication authentication = new UsernamePasswordAuthenticationToken(mockUser, mockUser.getPassword(), AuthorityUtils.createAuthorityList(String.valueOf(Role.USER)));
         SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
         securityContext.setAuthentication(authentication);
         SecurityContextHolder.setContext(securityContext);
@@ -165,8 +166,8 @@ class AnnouncementControllerTest {
 
         String request = objectMapper.writeValueAsString(
                 UpdateAnnouncementRequest.builder()
-                .title(changeTitle)
-                .build());
+                        .title(changeTitle)
+                        .build());
 
         ResultActions result = mockMvc.perform(put(url)
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -177,7 +178,7 @@ class AnnouncementControllerTest {
         result.andExpect(status().isCreated());
 
         Announcement updatedAnnouncement = announcementRepository.findById(announcement.getIdAnnouncement())
-                        .orElseThrow(() -> new NoSuchElementException("공지사항 없음"));
+                .orElseThrow(() -> new NoSuchElementException("공지사항 없음"));
         assertThat(updatedAnnouncement.getTitle()).isEqualTo(changeTitle);
     }
 
@@ -191,7 +192,7 @@ class AnnouncementControllerTest {
 
         Workplace workplace = workplaceRepository.findAll().get(0);
         User loginUser = authenticationHelper.getCurrentUser();
-        Announcement announcement =  announcementRepository.save(new Announcement(loginUser, workplace, title, content, isImportant));
+        Announcement announcement = announcementRepository.save(new Announcement(loginUser, workplace, title, content, isImportant));
 
         ResultActions result = mockMvc.perform(get(url)
                 .param("announcementId", String.valueOf(announcement.getIdAnnouncement())));
@@ -204,7 +205,8 @@ class AnnouncementControllerTest {
     }
 
     @Test
-    void getAnnouncements() {
+    @DisplayName("공지 전체 조회 - 성공")
+    void getAnnouncements() throws Exception {
         String url = "/api/announcement/v1/list";
         String title = "첫공지";
         String content = "내용";
@@ -212,19 +214,43 @@ class AnnouncementControllerTest {
 
         Workplace workplace = workplaceRepository.findAll().get(0);
         User loginUser = authenticationHelper.getCurrentUser();
-        Announcement announcement =  announcementRepository.save(new Announcement(loginUser, workplace, title, content, isImportant));
+        announcementRepository.save(new Announcement(loginUser, workplace, title, content, isImportant));
+
+        ResultActions resultActions = mockMvc.perform(get(url)
+                .param("workplaceId", String.valueOf(workplace.getIdWorkPlace())));
+
+        resultActions
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.data[0].title").value(title));
 
     }
 
-    @Test
-    void getImportantAnnouncements() {
-    }
+//    @Test
+//    void getImportantAnnouncements() {
+//    }
+//
+//    @Test
+//    void getMainAnnouncements() {
+//    }
 
     @Test
-    void getMainAnnouncements() {
-    }
+    @DisplayName("공지 삭제 - 성공")
+    void deleteAnnouncement() throws Exception {
+        String url = "/api/announcement/v1";
+        String title = "첫공지";
+        String content = "내용";
+        boolean isImportant = true;
 
-    @Test
-    void deleteAnnouncement() {
+        Workplace workplace = workplaceRepository.findAll().get(0);
+        User loginUser = authenticationHelper.getCurrentUser();
+        Announcement announcement = announcementRepository.save(new Announcement(loginUser, workplace, title, content, isImportant));
+
+        ResultActions resultActions = mockMvc.perform(delete(url)
+                .param("announcementId", String.valueOf(announcement.getIdAnnouncement())));
+
+        resultActions.andExpect(status().isNoContent());
+
+        Announcement deletedAnnouncement = announcementRepository.findById(announcement.getIdAnnouncement()).get();
+        assertThat(deletedAnnouncement.getIsDelAnnouncement()).isTrue();
     }
 }
