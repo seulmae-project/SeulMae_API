@@ -64,8 +64,8 @@ public class UserController {
                                           @AuthenticationPrincipal User user) {
 
         try {
-            userService.updateUser(id, user.getIdUser(), updateUserRequest, file);
-            return new ResponseEntity<>(new SuccessResponse(SuccessCode.UPDATE_SUCCESS), HttpStatus.OK);
+            userService.updateUser(id, user, updateUserRequest, file);
+            return new ResponseEntity<>(new SuccessResponse(SuccessCode.UPDATE_SUCCESS), HttpStatus.CREATED);
         } catch (AccessDeniedException e) {
             return new ResponseEntity<>(new ErrorResponse(ErrorCode.FORBIDDEN_ERROR, e.getMessage()), HttpStatus.FORBIDDEN);
         } catch (Exception e) {
