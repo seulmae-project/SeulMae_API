@@ -75,6 +75,7 @@ public class WorkScheduleService {
         workScheduleRepository.save(workSchedule);
     }
 
+    @Transactional
     public void updateWorkSchedule(Long workScheduleId, WorkScheduleUpdateDto request, User user) {
         WorkSchedule workSchedule = workScheduleRepository.findById(workScheduleId)
                 .orElseThrow(() -> new NoSuchElementException("해당 근무일정 ID가 존재하지 않습니다."));
@@ -94,12 +95,13 @@ public class WorkScheduleService {
                             .workSchedule(updatedWorkSchedule)
                             .day(day)
                             .build();
-                }).toList();
+                }).collect(Collectors.toList());
 
         updatedWorkSchedule.setWorkScheduleDays(workScheduleDays);
         workScheduleRepository.save(updatedWorkSchedule);
     }
 
+    @Transactional
     public void deleteWorkSchedule(Long workScheduleId, User user) {
         WorkSchedule workSchedule = workScheduleRepository.findById(workScheduleId)
                 .orElseThrow(() -> new NoSuchElementException("해당 근무일정 ID가 존재하지 않습니다."));

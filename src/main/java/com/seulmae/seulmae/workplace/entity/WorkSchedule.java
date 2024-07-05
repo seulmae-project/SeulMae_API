@@ -51,17 +51,4 @@ public class WorkSchedule {
         this.workScheduleDays = workScheduleDays;
     }
 
-    @Override
-    public String toString() {
-        return "WorkSchedule{" +
-                "idWorkSchedule=" + idWorkSchedule +
-                ", workplace=" + workplace +
-                ", workScheduleTitle='" + workScheduleTitle + '\'' +
-                ", workScheduleDays=" + workScheduleDays +
-                ", startTime=" + startTime +
-                ", endTime=" + endTime +
-                ", isActive=" + isActive +
-                ", regDateWorkSchedule=" + regDateWorkSchedule +
-                '}';
-    }
 }

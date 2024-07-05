@@ -12,6 +12,7 @@ import com.seulmae.seulmae.workplace.repository.WorkScheduleRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -40,6 +41,7 @@ public class UserWorkScheduleService {
 
     }
 
+    @Transactional
     public void addUserWorkSchedule(UserWorkScheduleAddRequest userWorkScheduleAddRequest, User user) {
         WorkSchedule workSchedule = workScheduleRepository.findById(userWorkScheduleAddRequest.getWorkScheduleId())
                 .orElseThrow(() -> new NoSuchElementException("해당 근무일정 ID가 존재하지 않습니다."));
@@ -56,6 +58,7 @@ public class UserWorkScheduleService {
                 .build());
     }
 
+    @Transactional
     public void modifyUserWorkSchedule(Long userWorkScheduleId, UserWorkScheduleUpdateRequest request, User user) {
         WorkSchedule workSchedule = workScheduleRepository.findById(request.getWorkScheduleId())
                 .orElseThrow(() -> new NoSuchElementException("해당 근무일정 ID가 존재하지 않습니다."));
@@ -69,6 +72,7 @@ public class UserWorkScheduleService {
                 .build());
     }
 
+    @Transactional
     public void deleteUserWorkSchedule(Long userWorkScheduleId, User user) {
         UserWorkSchedule userWorkSchedule = userWorkScheduleRepository.findById(userWorkScheduleId)
                 .orElseThrow(() -> new NoSuchElementException("userWorkSchedule ID가 존재하지 않습니다."));
