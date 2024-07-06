@@ -1,7 +1,7 @@
 package com.seulmae.seulmae.attendance.service;
 
 import com.seulmae.seulmae.attendance.dto.AttendanceApprovalDto;
-import com.seulmae.seulmae.attendance.dto.AttendanceRejectionDto;
+import com.seulmae.seulmae.attendance.dto.AttendanceRequestListDto;
 import com.seulmae.seulmae.attendance.dto.GetOffWorkDto;
 import com.seulmae.seulmae.attendance.entity.Attendance;
 import com.seulmae.seulmae.attendance.entity.AttendanceRequestHistory;
@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -97,8 +98,8 @@ public class AttendanceService {
     }
 
     @Transactional
-    public void sendAttendanceRejection(AttendanceRejectionDto attendanceRejectionDto) {
-        AttendanceRequestHistory attendanceRequestHistory = findByIdUtil.getAttendanceRequestHistoryById(attendanceRejectionDto.getAttendanceRequestHistoryId());
+    public void sendAttendanceRejection(Long attendanceRequestHistoryId) {
+        AttendanceRequestHistory attendanceRequestHistory = findByIdUtil.getAttendanceRequestHistoryById(attendanceRequestHistoryId);
         Attendance attendance = attendanceRequestHistory.getAttendance();
 
         attendance.setUnconfirmedWage(0);
@@ -112,4 +113,15 @@ public class AttendanceService {
 
         /** 거절 알림 **/
     }
+
+    @Transactional
+    public List<AttendanceRequestListDto> getAttendanceRequestList(Long workplaceId) {
+        List<AttendanceRequestListDto> attendanceRequestListDtoList = attendanceRepository.findByWorkplaceId(workplaceId);
+
+        return attendanceRequestListDtoList;
+    }
+
+    /** 별도 요청 시 전송할 데이터의 시간과 일치하고 승인된 요청이 있다면 별도 요청 불가
+     *  별도 요청 시 전송할 데이터의 시간과 일치하지만 거절된 요청이 있다면 별도 요청 가능 **/
+
 }

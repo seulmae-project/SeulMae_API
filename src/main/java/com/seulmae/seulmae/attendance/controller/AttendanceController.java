@@ -1,7 +1,7 @@
 package com.seulmae.seulmae.attendance.controller;
 
 import com.seulmae.seulmae.attendance.dto.AttendanceApprovalDto;
-import com.seulmae.seulmae.attendance.dto.AttendanceRejectionDto;
+import com.seulmae.seulmae.attendance.dto.AttendanceRequestListDto;
 import com.seulmae.seulmae.attendance.dto.GetOffWorkDto;
 import com.seulmae.seulmae.attendance.service.AttendanceService;
 import com.seulmae.seulmae.global.util.enums.SuccessCode;
@@ -12,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -29,7 +31,7 @@ public class AttendanceController {
         attendanceService.goToWork(user, workplaceId);
 
         SuccessResponse successResponse = new SuccessResponse(SuccessCode.INSERT_SUCCESS);
-        return new ResponseEntity<>(successResponse, HttpStatus.OK);
+        return new ResponseEntity<>(successResponse, HttpStatus.CREATED);
     }
 
     /**
@@ -41,30 +43,42 @@ public class AttendanceController {
         attendanceService.getOffWork(user, getOffWorkDto);
 
         SuccessResponse successResponse = new SuccessResponse(SuccessCode.INSERT_SUCCESS);
-        return new ResponseEntity<>(successResponse, HttpStatus.OK);
+        return new ResponseEntity<>(successResponse, HttpStatus.CREATED);
     }
 
     /**
      * 근무자 출/퇴근 승인
-     * @param
+     * @param attendanceApprovalDto
      */
     @PostMapping("manager/approval")
     public ResponseEntity<?> sendAttendanceApproval(@RequestBody AttendanceApprovalDto attendanceApprovalDto) {
         attendanceService.sendAttendanceApproval(attendanceApprovalDto);
 
         SuccessResponse successResponse = new SuccessResponse(SuccessCode.INSERT_SUCCESS);
-        return new ResponseEntity<>(successResponse, HttpStatus.OK);
+        return new ResponseEntity<>(successResponse, HttpStatus.CREATED);
     }
 
     /**
      * 근무자 출/퇴근 거절
-     * @param
+     * @param attendanceRequestHistoryId
      */
     @PostMapping("manager/rejection")
-    public ResponseEntity<?> sendAttendanceRejection(@RequestBody AttendanceRejectionDto attendanceRejectionDto) {
-        attendanceService.sendAttendanceRejection(attendanceRejectionDto);
+    public ResponseEntity<?> sendAttendanceRejection(@RequestParam Long attendanceRequestHistoryId) {
+        attendanceService.sendAttendanceRejection(attendanceRequestHistoryId);
 
         SuccessResponse successResponse = new SuccessResponse(SuccessCode.INSERT_SUCCESS);
+        return new ResponseEntity<>(successResponse, HttpStatus.CREATED);
+    }
+
+    /**
+     * 근무자 출/퇴근 요청 리스트
+     * @param workplaceId
+     */
+    @GetMapping("request/list")
+    public ResponseEntity<?> getAttendanceRequestList(@RequestParam Long workplaceId) {
+        List<AttendanceRequestListDto> attendanceRequestListDtoList = attendanceService.getAttendanceRequestList(workplaceId);
+
+        SuccessResponse successResponse = new SuccessResponse(SuccessCode.SELECT_SUCCESS, attendanceRequestListDtoList);
         return new ResponseEntity<>(successResponse, HttpStatus.OK);
     }
 }
