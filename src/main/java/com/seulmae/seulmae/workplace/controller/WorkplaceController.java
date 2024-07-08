@@ -1,5 +1,6 @@
 package com.seulmae.seulmae.workplace.controller;
 
+import com.seulmae.seulmae.global.util.ResponseUtil;
 import com.seulmae.seulmae.global.util.enums.SuccessCode;
 import com.seulmae.seulmae.global.util.enums.SuccessResponse;
 import com.seulmae.seulmae.user.entity.User;
@@ -36,9 +37,13 @@ public class WorkplaceController {
     public ResponseEntity<?> addWorkplace(@RequestPart WorkplaceAddDto workplaceAddDto,
                                           @RequestPart(required = false, name = "multipartFileList") List<MultipartFile> multipartFileList,
                                           @AuthenticationPrincipal User user) {
-        workplaceService.addWorkplace(workplaceAddDto, multipartFileList, user);
-        SuccessResponse successResponse = new SuccessResponse(SuccessCode.INSERT_SUCCESS);
-        return new ResponseEntity<>(successResponse, HttpStatus.CREATED);
+        try {
+            workplaceService.addWorkplace(workplaceAddDto, multipartFileList, user);
+
+            return ResponseUtil.createSuccessResponse(SuccessCode.INSERT_SUCCESS);
+        } catch (Exception e) {
+            return ResponseUtil.handleException(e);
+        }
     }
 
     /**
@@ -46,9 +51,13 @@ public class WorkplaceController {
      */
     @GetMapping("info/all")
     public ResponseEntity<?> getAllWorkplace(HttpServletRequest request) {
-        List<WorkplaceListInfoDto> workplaceListInfoDtoList = workplaceService.getAllWorkplace(request);
-        SuccessResponse successResponse = new SuccessResponse(SuccessCode.SELECT_SUCCESS, workplaceListInfoDtoList);
-        return new ResponseEntity<>(successResponse, HttpStatus.OK);
+        try {
+            List<WorkplaceListInfoDto> workplaceListInfoDtoList = workplaceService.getAllWorkplace(request);
+
+            return ResponseUtil.createSuccessResponse(SuccessCode.INSERT_SUCCESS, workplaceListInfoDtoList);
+        } catch (Exception e) {
+            return ResponseUtil.handleException(e);
+        }
     }
 
     /**
@@ -57,9 +66,13 @@ public class WorkplaceController {
      */
     @GetMapping("info")
     public ResponseEntity<?> getSpecificWorkplace(@RequestParam Long workplaceId, HttpServletRequest request) {
-        WorkplaceInfoDto workplaceInfoDto = workplaceService.getSpecificWorkplace(workplaceId, request);
-        SuccessResponse successResponse = new SuccessResponse(SuccessCode.SELECT_SUCCESS, workplaceInfoDto);
-        return new ResponseEntity<>(successResponse, HttpStatus.OK);
+        try {
+            WorkplaceInfoDto workplaceInfoDto = workplaceService.getSpecificWorkplace(workplaceId, request);
+
+            return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, workplaceInfoDto);
+        } catch (Exception e) {
+            return ResponseUtil.handleException(e);
+        }
     }
 
     /**
@@ -70,9 +83,13 @@ public class WorkplaceController {
     @PatchMapping("modify")
     public ResponseEntity<?> modifyWorkplace(@RequestPart WorkplaceModifyDto workplaceModifyDto,
                                              @RequestPart(required = false) List<MultipartFile> multipartFileList) throws IOException {
-        workplaceService.modifyWorkplace(workplaceModifyDto, multipartFileList);
-        SuccessResponse successResponse = new SuccessResponse(SuccessCode.UPDATE_SUCCESS);
-        return new ResponseEntity<>(successResponse, HttpStatus.OK);
+        try {
+            workplaceService.modifyWorkplace(workplaceModifyDto, multipartFileList);
+
+            return ResponseUtil.createSuccessResponse(SuccessCode.UPDATE_SUCCESS);
+        } catch (Exception e) {
+            return ResponseUtil.handleException(e);
+        }
     }
 
     /**
@@ -81,8 +98,12 @@ public class WorkplaceController {
      */
     @DeleteMapping("delete")
     public ResponseEntity<?> modifyWorkplace(@RequestParam Long workplaceId) {
-        workplaceService.deleteWorkplace(workplaceId);
-        SuccessResponse successResponse = new SuccessResponse(SuccessCode.DELETE_SUCCESS);
-        return new ResponseEntity<>(successResponse, HttpStatus.OK);
+        try {
+            workplaceService.deleteWorkplace(workplaceId);
+
+            return ResponseUtil.createSuccessResponse(SuccessCode.DELETE_SUCCESS);
+        } catch (Exception e) {
+            return ResponseUtil.handleException(e);
+        }
     }
 }

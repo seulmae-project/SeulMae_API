@@ -78,15 +78,15 @@ public enum ErrorCode {
     private final int status;
 
     // 에러 코드의 '코드간 구분 값'을 반환한다.
-    private final String divisionCode;
+    private final String customStatus;
 
     // 에러 코드의 '코드 메시지'을 반환한다.
     private final String message;
 
     // 생성자 구성
-    ErrorCode(final int status, final String divisionCode, final String message) {
+    ErrorCode(final int status, final String customStatus, final String message) {
         this.status = status;
-        this.divisionCode = divisionCode;
+        this.customStatus = customStatus;
         this.message = message;
     }
 }
