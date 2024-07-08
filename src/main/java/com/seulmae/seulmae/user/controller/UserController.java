@@ -40,7 +40,8 @@ public class UserController {
     public ResponseEntity<?> signUp(@RequestPart UserSignUpDto userSignUpDto,  @RequestPart(required = false, name = "file") MultipartFile file) {
         try {
             userService.createUser(userSignUpDto, file);
-            return new ResponseEntity<>(new SuccessResponse(SuccessCode.SIGNUP_SUCCESS), HttpStatus.CREATED);
+            SuccessResponse<?> successResponse = new SuccessResponse<>(SuccessCode.SIGNUP_SUCCESS);
+            return ResponseEntity.status(successResponse.getStatus()).body(successResponse);
         } catch (Exception e) {
             return new ResponseEntity<>(new ErrorResponse(ErrorCode.BAD_REQUEST_ERROR, e.getMessage()), HttpStatus.BAD_REQUEST);
         }
@@ -179,7 +180,7 @@ public class UserController {
                                         @AuthenticationPrincipal User user) {
         try {
             userService.deleteUser(id, user);
-            return new ResponseEntity<>(new SuccessResponse(SuccessCode.DELETE_SUCCESS, "탈퇴가 완료됐습니다."), HttpStatus.NO_CONTENT);
+            return new ResponseEntity<>(new SuccessResponse(SuccessCode.DELETE_SUCCESS, "탈퇴가 완료됐습니다."), HttpStatus.OK);
         } catch (AccessDeniedException e) {
             return new ResponseEntity<>(new ErrorResponse(ErrorCode.UNAUTHORIZED, e.getMessage()), HttpStatus.UNAUTHORIZED);
         } catch (Exception e) {

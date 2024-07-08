@@ -241,7 +241,6 @@ public class UserService {
     public String getUserImageURL(User user, HttpServletRequest request) {
         if (user.getUserImage() != null) {
             Long userImageId = user.getUserImage().getIdUserImage();
-            System.out.println("userImageId = " + userImageId);
             return userImageId != null ? UrlUtil.getBaseUrl(request) + FILE_ENDPOINT + "?userImageId=" + userImageId : null;
         }
         return null;
