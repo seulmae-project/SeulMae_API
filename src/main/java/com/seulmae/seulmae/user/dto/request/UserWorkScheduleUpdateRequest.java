@@ -5,11 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
+@AllArgsConstructor
 @NoArgsConstructor
-public class UpdateUserRequest {
-    private String name;
-
-    public UpdateUserRequest(String name) {
-        this.name = name;
-    }
+public class UserWorkScheduleUpdateRequest {
+    private Long workScheduleId;
 }

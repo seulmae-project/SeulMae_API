@@ -14,7 +14,6 @@ public class ChangePhoneNumberRequest {
     }
 
     private String setPhoneNumber(String phoneNumber) {
-        System.out.println("실행된다.");
         this.phoneNumber = phoneNumber.replaceAll("-", "");
         return phoneNumber;
     }

@@ -105,10 +105,15 @@ public class User implements UserDetails {
                 ", name='" + name + '\'' +
                 ", birthday='" + birthday + '\'' +
                 ", isMale=" + isMale +
-                ", userImage='" + userImage + '\'' +
+                ", userImage=" + userImage +
                 ", authorityRole=" + authorityRole +
                 ", socialType=" + socialType +
                 ", socialId='" + socialId + '\'' +
+                ", refreshToken='" + refreshToken + '\'' +
+                ", regDateUser=" + regDateUser +
+                ", revisionDateUser=" + revisionDateUser +
+                ", isDelUser=" + isDelUser +
+                ", delDateUser=" + delDateUser +
                 '}';
     }
 

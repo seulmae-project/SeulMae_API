@@ -66,27 +66,27 @@ public enum ErrorCode {
 
     NO_SUCH_ELEMENT(404, "G016", "NO_SUCH_ELEMENT"),
 
-    UNAUTHORIZED(401, "G022", "UNAUTHORIZED"),
-    MethodArgumentNotValidException(422, "G017", "MethodArgumentNotValidException"),
-    JwtTokenIsExpired(401,"G018" , "Jwt token is expired" ),
-    JwtTokenIsNotValidException(401,"G019" ,"Jwt token is not valid" ),
-    InvalidPasswordException(401,"G020" ,"Password does not match" ),
-    NoSuchUserException(401,"G021" ,"No such user exist" );
 
+    METHOD_ARGUMENT_NOT_VALID_EXCEPTION(422, "G017", "MethodArgumentNotValidException"),
+    JWT_TOKEN_IS_EXPIRED(401,"G018" , "Jwt token is expired" ),
+    JWT_TOKEN_IS_NOT_VALID_EXCEPTION(401,"G019" ,"Jwt token is not valid" ),
+    INVALID_PASSWORD_EXCEPTION(401,"G020" ,"Password does not match" ),
+    NO_SUCH_USER_EXCEPTION(401,"G021" ,"No such user exist" ),
+    UNAUTHORIZED(401, "G022", "UNAUTHORIZED");
 
     // 에러 코드의 '코드 상태'을 반환한다.
     private final int status;
 
     // 에러 코드의 '코드간 구분 값'을 반환한다.
-    private final String divisionCode;
+    private final String customStatus;
 
     // 에러 코드의 '코드 메시지'을 반환한다.
     private final String message;
 
     // 생성자 구성
-    ErrorCode(final int status, final String divisionCode, final String message) {
+    ErrorCode(final int status, final String customStatus, final String message) {
         this.status = status;
-        this.divisionCode = divisionCode;
+        this.customStatus = customStatus;
         this.message = message;
     }
 }
