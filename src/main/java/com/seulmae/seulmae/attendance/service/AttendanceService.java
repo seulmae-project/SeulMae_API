@@ -2,7 +2,7 @@ package com.seulmae.seulmae.attendance.service;
 
 import com.seulmae.seulmae.attendance.dto.AttendanceApprovalDto;
 import com.seulmae.seulmae.attendance.dto.AttendanceRejectionDto;
-import com.seulmae.seulmae.attendance.dto.GetOffWorkDto;
+import com.seulmae.seulmae.attendance.dto.AttendanceRequestDto;
 import com.seulmae.seulmae.attendance.entity.Attendance;
 import com.seulmae.seulmae.attendance.entity.AttendanceRequestHistory;
 import com.seulmae.seulmae.attendance.repository.AttendanceRepository;
@@ -50,26 +50,27 @@ public class AttendanceService {
     }
 
     @Transactional
-    public void getOffWork(User user, GetOffWorkDto getOffWorkDto) {
-        Workplace workplace = findByIdUtil.getWorkplaceById(getOffWorkDto.getWorkplaceId());
+    public void sendAttendanceRequest(User user, AttendanceRequestDto attendanceRequestDto) {
+        Workplace workplace = findByIdUtil.getWorkplaceById(attendanceRequestDto.getWorkplaceId());
 
         Attendance attendance = Attendance.builder()
                 .user(user)
                 .workplace(workplace)
-                .workDate(getOffWorkDto.getWorkDate())
+                .workDate(attendanceRequestDto.getWorkDate())
                 .confirmedWage(0)
-                .unconfirmedWage(getOffWorkDto.getUnconfirmedWage())
+                .unconfirmedWage(attendanceRequestDto.getUnconfirmedWage())
                 .build();
 
         attendanceRepository.save(attendance);
 
         AttendanceRequestHistory attendanceRequestHistory = AttendanceRequestHistory.builder()
                 .attendance(attendance)
-                .workStartTime(getOffWorkDto.getWorkStartTime())
-                .workEndTime(getOffWorkDto.getWorkEndTime())
-                .totalWorkTime(getOffWorkDto.getTotalWorkTime())
+                .workStartTime(attendanceRequestDto.getWorkStartTime())
+                .workEndTime(attendanceRequestDto.getWorkEndTime())
+                .totalWorkTime(attendanceRequestDto.getTotalWorkTime())
                 .isRequestApprove(false)
                 .isManagerCheck(false)
+                .deliveryMessage(attendanceRequestDto.getDeliveryMessage())
                 .build();
 
         attendanceRequestHistoryRepository.save(attendanceRequestHistory);

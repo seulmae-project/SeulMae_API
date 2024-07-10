@@ -2,14 +2,12 @@ package com.seulmae.seulmae.attendance.controller;
 
 import com.seulmae.seulmae.attendance.dto.AttendanceApprovalDto;
 import com.seulmae.seulmae.attendance.dto.AttendanceRejectionDto;
-import com.seulmae.seulmae.attendance.dto.GetOffWorkDto;
+import com.seulmae.seulmae.attendance.dto.AttendanceRequestDto;
 import com.seulmae.seulmae.attendance.service.AttendanceService;
 import com.seulmae.seulmae.global.util.ResponseUtil;
 import com.seulmae.seulmae.global.util.enums.SuccessCode;
-import com.seulmae.seulmae.global.util.enums.SuccessResponse;
 import com.seulmae.seulmae.user.entity.User;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -38,12 +36,12 @@ public class AttendanceController {
 
     /**
      * 근무자 퇴근
-     * @param getOffWorkDto
+     * @param attendanceRequestDto
      */
     @PostMapping("finish")
-    public ResponseEntity<?> getOffWork(@AuthenticationPrincipal User user, @RequestBody GetOffWorkDto getOffWorkDto) {
+    public ResponseEntity<?> sendAttendanceRequest(@AuthenticationPrincipal User user, @RequestBody AttendanceRequestDto attendanceRequestDto) {
         try {
-            attendanceService.getOffWork(user, getOffWorkDto);
+            attendanceService.sendAttendanceRequest(user, attendanceRequestDto);
 
             return ResponseUtil.createSuccessResponse(SuccessCode.INSERT_SUCCESS);
         } catch (Exception e) {
