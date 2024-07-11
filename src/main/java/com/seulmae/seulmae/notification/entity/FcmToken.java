@@ -25,7 +25,7 @@ public class FcmToken {
     @Column(name = "fcm_token", updatable = false)
     private String fcmToken;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id_user")
     private User user;
 

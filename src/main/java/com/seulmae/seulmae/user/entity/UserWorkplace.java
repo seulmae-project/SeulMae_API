@@ -33,6 +33,9 @@ public class UserWorkplace {
     @Column(name = "is_manager", nullable = false)
     private Boolean isManager;
 
+    @Column(name = "memo")
+    private String memo;
+
     @CreatedDate
     @Column(name = "reg_date_user_workplace")
     private LocalDateTime regDateUserWorkplace;
