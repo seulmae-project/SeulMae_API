@@ -1,26 +1,28 @@
-package com.seulmae.seulmae.wage.entity;
 
-import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import java.time.LocalTime;
-
-@Entity
-@Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "wage_info")
-@EntityListeners(AuditingEntityListener.class)
-public class WageInfo {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_wage_info", updatable = false)
-    private Long idWageInfo;
-
-    @Column(name = "base_wage")
-    private Integer baseWage;
+//package com.seulmae.seulmae.wage.entity;
+//
+//import jakarta.persistence.*;
+//import lombok.AccessLevel;
+//import lombok.Getter;
+//import lombok.NoArgsConstructor;
+//import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+//
+//import java.time.LocalTime;
+//
+//@Entity
+//@Getter
+//@NoArgsConstructor(access = AccessLevel.PROTECTED)
+//@Table(name = "wage_info")
+//@EntityListeners(AuditingEntityListener.class)
+//public class WageInfo {
+//    @Id
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    @Column(name = "id_wage_info", updatable = false)
+//    private Long idWageInfo;
+//
+//    @Column(name = "base_wage")
+//    private Integer baseWage;
+//
 
 //    @Column(name = "work_start_time")
 //    private LocalTime workStartTime;
@@ -39,6 +41,7 @@ public class WageInfo {
 //
 //    @Column(name = "overtime_start_time")
 //    private LocalTime overtimeStartTime;
+//
+//
+//}
 
-
-}

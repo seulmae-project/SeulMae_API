@@ -19,7 +19,7 @@ public class FcmMessageResponse {
     @Getter
     public static class Message {
         private Notification notification;
-        private String fcmToken;
+        private String token;
     }
 
     @Getter
@@ -31,6 +31,6 @@ public class FcmMessageResponse {
 //        private Long receiverId; // 받는 사람 ID
         private String title; // 알림 제목
         private String body; // 알림 본문
-        private String senderProfileImageURL; // 보내는 사람의 프로필 이미지 URL
+//        private String senderProfileImageURL; // 보내는 사람의 프로필 이미지 URL
     }
 }

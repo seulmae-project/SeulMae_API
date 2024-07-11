@@ -19,8 +19,8 @@ public class WorkplaceApprove {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_workplace", updatable = false)
-    private Long idWorkPlace;
+    @Column(name = "id_workplace_approve", updatable = false)
+    private Long idWorkPlaceApprove;
 
     @JoinColumn(name = "user_id")
     @ManyToOne(fetch = FetchType.LAZY)
@@ -29,6 +29,9 @@ public class WorkplaceApprove {
     @JoinColumn(name = "workplace_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private Workplace workplace;
+
+    @Column(name = "workplace_join_history_id")
+    private Long workplaceJoinHistoryId;
 
     @CreatedDate
     @Column(name = "reg_date_workplace_approve")

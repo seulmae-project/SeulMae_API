@@ -1,9 +1,12 @@
 package com.seulmae.seulmae.notification.service;
 
+import com.seulmae.seulmae.announcement.entity.Announcement;
 import com.seulmae.seulmae.notification.NotificationType;
 import com.seulmae.seulmae.notification.dto.request.FcmSendRequest;
+import com.seulmae.seulmae.notification.entity.AnnouncementNotification;
 import com.seulmae.seulmae.notification.entity.Notification;
 import com.seulmae.seulmae.notification.entity.UserNotification;
+import com.seulmae.seulmae.notification.repository.AnnouncementNotificationRepository;
 import com.seulmae.seulmae.notification.repository.FcmTokenRepository;
 import com.seulmae.seulmae.notification.repository.NotificationRepository;
 import com.seulmae.seulmae.notification.repository.UserNotificationRepository;
@@ -14,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 @Service
@@ -23,7 +27,22 @@ public class NotificationService {
     private final FcmService fcmService;
     private final NotificationRepository notificationRepository;
     private final UserNotificationRepository userNotificationRepository;
+    private final AnnouncementNotificationRepository announcementNotificationRepository;
     private final FcmTokenRepository fcmTokenRepository;
+
+    private final String TOPIC_PREFIX = "workplace_";
+    // 공지사항 - 해당 근무지 소속 전체 유저에게 발송
+    @Transactional
+    public void sendMessageToUsersAboutAnnouncement(Announcement announcement) {
+        String topic = TOPIC_PREFIX + announcement.getWorkplace().getIdWorkPlace();
+        String title = "[공지사항] '" + announcement.getTitle() + "'이 등록되었습니다.";
+        String body = announcement.getContent();
+
+        fcmService.sendTopicMessageTo(topic, title, body);
+
+        Notification notification = storeNotification(title, body, NotificationType.NOTICE);
+        storeAnnouncementNotification(announcement, notification);
+    }
 
 
     @Transactional
@@ -66,6 +85,7 @@ public class NotificationService {
         Notification notification = Notification.builder()
                 .title(title)
                 .message(message)
+                .notificationType(notificationType)
                 .build();
         return notificationRepository.save(notification);
     }
@@ -81,5 +101,12 @@ public class NotificationService {
         return userNotificationRepository.save(userNotification);
     }
 
-
+    private AnnouncementNotification storeAnnouncementNotification(Announcement announcement, Notification notification) {
+        AnnouncementNotification announcementNotification = AnnouncementNotification.builder()
+//                .toUser(user)
+                .announcement(announcement)
+                .notification(notification)
+                .build();
+        return announcementNotificationRepository.save(announcementNotification);
+    }
 }

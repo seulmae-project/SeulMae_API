@@ -9,6 +9,7 @@ import com.seulmae.seulmae.announcement.entity.Announcement;
 import com.seulmae.seulmae.announcement.repository.AnnouncementRepository;
 import com.seulmae.seulmae.global.dao.RedisBasicDao;
 import com.seulmae.seulmae.global.util.JsonPagination;
+import com.seulmae.seulmae.notification.service.NotificationService;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.user.service.UserWorkplaceService;
 import com.seulmae.seulmae.workplace.entity.Workplace;
@@ -32,6 +33,7 @@ public class AnnouncementService {
     private final RedisBasicDao redisBasicDao;
 
     private final UserWorkplaceService userWorkplaceService;
+    private final NotificationService notificationService;
 
     // 공지사항 생성
     @Transactional
@@ -44,6 +46,9 @@ public class AnnouncementService {
         // 생성한다.
         Announcement announcement = new Announcement(user, workplace, request.getTitle(), request.getContent(), request.getIsImportant());
         announcementRepository.save(announcement);
+
+        // 알림을 보낸다.
+        notificationService.sendMessageToUsersAboutAnnouncement(announcement);
     }
 
     // 공지사항 수정
