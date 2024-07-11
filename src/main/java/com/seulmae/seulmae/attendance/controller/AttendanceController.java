@@ -4,6 +4,7 @@ import com.seulmae.seulmae.attendance.dto.AttendanceApprovalDto;
 import com.seulmae.seulmae.attendance.dto.AttendanceRejectionDto;
 import com.seulmae.seulmae.attendance.dto.GetOffWorkDto;
 import com.seulmae.seulmae.attendance.service.AttendanceService;
+import com.seulmae.seulmae.global.util.ResponseUtil;
 import com.seulmae.seulmae.global.util.enums.SuccessCode;
 import com.seulmae.seulmae.global.util.enums.SuccessResponse;
 import com.seulmae.seulmae.user.entity.User;
@@ -26,10 +27,13 @@ public class AttendanceController {
      */
     @PostMapping("attendance")
     public ResponseEntity<?> goToWork(@AuthenticationPrincipal User user, @RequestParam Long workplaceId) {
-        attendanceService.goToWork(user, workplaceId);
+        try {
+            attendanceService.goToWork(user, workplaceId);
 
-        SuccessResponse successResponse = new SuccessResponse(SuccessCode.INSERT_SUCCESS);
-        return new ResponseEntity<>(successResponse, HttpStatus.OK);
+            return ResponseUtil.createSuccessResponse(SuccessCode.INSERT_SUCCESS);
+        } catch (Exception e) {
+            return ResponseUtil.handleException(e);
+        }
     }
 
     /**
@@ -38,10 +42,13 @@ public class AttendanceController {
      */
     @PostMapping("finish")
     public ResponseEntity<?> getOffWork(@AuthenticationPrincipal User user, @RequestBody GetOffWorkDto getOffWorkDto) {
-        attendanceService.getOffWork(user, getOffWorkDto);
+        try {
+            attendanceService.getOffWork(user, getOffWorkDto);
 
-        SuccessResponse successResponse = new SuccessResponse(SuccessCode.INSERT_SUCCESS);
-        return new ResponseEntity<>(successResponse, HttpStatus.OK);
+            return ResponseUtil.createSuccessResponse(SuccessCode.INSERT_SUCCESS);
+        } catch (Exception e) {
+            return ResponseUtil.handleException(e);
+        }
     }
 
     /**
@@ -50,10 +57,13 @@ public class AttendanceController {
      */
     @PostMapping("manager/approval")
     public ResponseEntity<?> sendAttendanceApproval(@RequestBody AttendanceApprovalDto attendanceApprovalDto) {
-        attendanceService.sendAttendanceApproval(attendanceApprovalDto);
+        try {
+            attendanceService.sendAttendanceApproval(attendanceApprovalDto);
 
-        SuccessResponse successResponse = new SuccessResponse(SuccessCode.INSERT_SUCCESS);
-        return new ResponseEntity<>(successResponse, HttpStatus.OK);
+            return ResponseUtil.createSuccessResponse(SuccessCode.INSERT_SUCCESS);
+        } catch (Exception e) {
+            return ResponseUtil.handleException(e);
+        }
     }
 
     /**
@@ -62,9 +72,12 @@ public class AttendanceController {
      */
     @PostMapping("manager/rejection")
     public ResponseEntity<?> sendAttendanceRejection(@RequestBody AttendanceRejectionDto attendanceRejectionDto) {
-        attendanceService.sendAttendanceRejection(attendanceRejectionDto);
+        try {
+            attendanceService.sendAttendanceRejection(attendanceRejectionDto);
 
-        SuccessResponse successResponse = new SuccessResponse(SuccessCode.INSERT_SUCCESS);
-        return new ResponseEntity<>(successResponse, HttpStatus.OK);
+            return ResponseUtil.createSuccessResponse(SuccessCode.INSERT_SUCCESS);
+        } catch (Exception e) {
+            return ResponseUtil.handleException(e);
+        }
     }
 }

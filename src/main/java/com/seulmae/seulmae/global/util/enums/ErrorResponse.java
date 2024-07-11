@@ -1,13 +1,12 @@
 package com.seulmae.seulmae.global.util.enums;
 
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Getter
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ErrorResponse {
     private int status;                 // 에러 상태 코드
@@ -27,7 +26,7 @@ public class ErrorResponse {
     protected ErrorResponse(final ErrorCode code) {
         this.message = code.getMessage();
         this.status = code.getStatus();
-        this.customStatus = code.getDivisionCode();
+        this.customStatus = code.getCustomStatus();
         this.timestamp = LocalDateTime.now();
 //        this.errors = new ArrayList<>();
     }
@@ -40,9 +39,9 @@ public class ErrorResponse {
      */
     @Builder
     public ErrorResponse(final ErrorCode code, final String errorDescription) {
-        this.message = code.getMessage();
         this.status = code.getStatus();
-        this.customStatus = code.getDivisionCode();
+        this.customStatus = code.getCustomStatus();
+        this.message = code.getMessage();
         this.errorDescription = errorDescription;
         this.timestamp = LocalDateTime.now();
     }

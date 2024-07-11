@@ -1,5 +1,6 @@
 package com.seulmae.seulmae.workplace.controller;
 
+import com.seulmae.seulmae.global.util.ResponseUtil;
 import com.seulmae.seulmae.global.util.enums.SuccessCode;
 import com.seulmae.seulmae.global.util.enums.SuccessResponse;
 import com.seulmae.seulmae.user.entity.User;
@@ -26,10 +27,13 @@ public class WorkplaceJoinController {
      */
     @PostMapping("request")
     public ResponseEntity<?> sendJoinRequest(@AuthenticationPrincipal User user, @RequestParam Long workplaceId) {
-        workplaceJoinService.sendJoinRequest(user, workplaceId);
+        try {
+            workplaceJoinService.sendJoinRequest(user, workplaceId);
 
-        SuccessResponse successResponse = new SuccessResponse(SuccessCode.INSERT_SUCCESS);
-        return new ResponseEntity<>(successResponse, HttpStatus.CREATED);
+            return ResponseUtil.createSuccessResponse(SuccessCode.INSERT_SUCCESS);
+        } catch (Exception e) {
+            return ResponseUtil.handleException(e);
+        }
     }
 
     /**
@@ -39,10 +43,13 @@ public class WorkplaceJoinController {
      */
     @PostMapping("approval")
     public ResponseEntity<?> sendJoinApproval(@RequestParam Long workplaceApproveId, @RequestParam Long workplaceJoinHistoryId) {
-        workplaceJoinService.sendJoinApproval(workplaceApproveId, workplaceJoinHistoryId);
+        try {
+            workplaceJoinService.sendJoinApproval(workplaceApproveId, workplaceJoinHistoryId);
 
-        SuccessResponse successResponse = new SuccessResponse(SuccessCode.INSERT_SUCCESS);
-        return new ResponseEntity<>(successResponse, HttpStatus.CREATED);
+            return ResponseUtil.createSuccessResponse(SuccessCode.INSERT_SUCCESS);
+        } catch (Exception e) {
+            return ResponseUtil.handleException(e);
+        }
     }
 
     /**
@@ -52,9 +59,12 @@ public class WorkplaceJoinController {
      */
     @PostMapping("rejection")
     public ResponseEntity<?> sendJoinRejection(@RequestParam Long workplaceApproveId, @RequestParam Long workplaceJoinHistoryId) {
-        workplaceJoinService.sendJoinRejection(workplaceApproveId, workplaceJoinHistoryId);
+        try {
+            workplaceJoinService.sendJoinRejection(workplaceApproveId, workplaceJoinHistoryId);
 
-        SuccessResponse successResponse = new SuccessResponse(SuccessCode.INSERT_SUCCESS);
-        return new ResponseEntity<>(successResponse, HttpStatus.CREATED);
+            return ResponseUtil.createSuccessResponse(SuccessCode.INSERT_SUCCESS);
+        } catch (Exception e) {
+            return ResponseUtil.handleException(e);
+        }
     }
 }

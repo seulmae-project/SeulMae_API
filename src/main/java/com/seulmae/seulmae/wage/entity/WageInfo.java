@@ -1,3 +1,4 @@
+
 //package com.seulmae.seulmae.wage.entity;
 //
 //import jakarta.persistence.*;
@@ -22,6 +23,7 @@
 //    @Column(name = "base_wage")
 //    private Integer baseWage;
 //
+
 //    @Column(name = "work_start_time")
 //    private LocalTime workStartTime;
 //
@@ -42,3 +44,4 @@
 //
 //
 //}
+
