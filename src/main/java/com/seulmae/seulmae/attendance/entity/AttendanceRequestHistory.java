@@ -42,6 +42,9 @@ public class AttendanceRequestHistory {
     @Column(name = "is_manager_check")
     private Boolean isManagerCheck; /** 미처리 상태 구분을 위한 확인 여부 **/
 
+    @Column(name = "delivery_message")
+    private String deliveryMessage;
+
     @LastModifiedDate
     @Column(name = "check_date")
     private LocalDateTime checkDate;

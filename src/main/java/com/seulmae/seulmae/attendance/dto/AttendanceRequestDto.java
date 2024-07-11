@@ -7,7 +7,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
-public class GetOffWorkDto {
+public class AttendanceRequestDto {
 
     private Long workplaceId;
     private LocalDate workDate;
@@ -15,4 +15,5 @@ public class GetOffWorkDto {
     private LocalDateTime workEndTime;
     private Integer unconfirmedWage;
     private BigDecimal totalWorkTime;
+    private String deliveryMessage;
 }
