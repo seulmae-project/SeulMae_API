@@ -29,9 +29,15 @@ public class Wage {
     @JoinColumn(name = "workplace_id", referencedColumnName = "id_workplace", nullable = false)
     private Workplace workplace;
 
-    @OneToOne
-    @JoinColumn(name = "wage_info_id", referencedColumnName = "id_wage_info")
-    private WageInfo wageInfo;
+//    @OneToOne
+//    @JoinColumn(name = "wage_info_id", referencedColumnName = "id_wage_info")
+//    private WageInfo wageInfo;
+
+    @Column(name = "base_wage")
+    private Integer baseWage;
+
+    @Column(name = "payday")
+    private Integer payday;
 
     @Column(name = "apply_start_date")
     private LocalDate applyStartDate;
