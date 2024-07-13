@@ -35,5 +35,10 @@ public class FcmToken {
 
     @LastModifiedDate
     @Column(name = "revision_date_fcm_token")
-    private LocalDateTime revsionDateFcmToken;
+    private LocalDateTime revisionDateFcmToken;
+
+    public FcmToken(String fcmToken, User user) {
+        this.fcmToken = fcmToken;
+        this.user = user;
+    }
 }

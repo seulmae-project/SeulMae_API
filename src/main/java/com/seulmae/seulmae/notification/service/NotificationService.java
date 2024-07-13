@@ -11,6 +11,8 @@ import com.seulmae.seulmae.notification.repository.FcmTokenRepository;
 import com.seulmae.seulmae.notification.repository.NotificationRepository;
 import com.seulmae.seulmae.notification.repository.UserNotificationRepository;
 import com.seulmae.seulmae.user.entity.User;
+import com.seulmae.seulmae.workplace.entity.Workplace;
+import com.seulmae.seulmae.workplace.repository.WorkplaceRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -29,12 +32,21 @@ public class NotificationService {
     private final UserNotificationRepository userNotificationRepository;
     private final AnnouncementNotificationRepository announcementNotificationRepository;
     private final FcmTokenRepository fcmTokenRepository;
+    private final WorkplaceRepository workplaceRepository;
 
-    private final String TOPIC_PREFIX = "workplace_";
+    private final String TOPIC_PREFIX = "workplace";
     // 공지사항 - 해당 근무지 소속 전체 유저에게 발송
     @Transactional
     public void sendMessageToUsersAboutAnnouncement(Announcement announcement) {
-        String topic = TOPIC_PREFIX + announcement.getWorkplace().getIdWorkPlace();
+        Workplace workplace = announcement.getWorkplace();
+        String topic = workplace.getWorkplaceTopic();
+
+        if (topic == null) {
+            topic = TOPIC_PREFIX + UUID.randomUUID().toString().replace("-","");
+            workplace.setWorkplaceTopic(topic);
+            workplaceRepository.save(workplace);
+        }
+
         String title = "[공지사항] '" + announcement.getTitle() + "'이 등록되었습니다.";
         String body = announcement.getContent();
 

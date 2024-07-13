@@ -67,6 +67,7 @@ public class FcmService {
         String response = null;
         try {
             response = FirebaseMessaging.getInstance().send(message);
+            System.out.println("message = " + message);
             log.info("Successfully sent message: " + response);
         } catch (FirebaseMessagingException e) {
             log.error("Fail to send firebase notification", e);

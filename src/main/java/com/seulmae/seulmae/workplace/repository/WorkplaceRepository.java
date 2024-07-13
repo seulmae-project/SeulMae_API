@@ -8,4 +8,5 @@ import java.util.Optional;
 
 @Repository
 public interface WorkplaceRepository extends JpaRepository<Workplace, Long> {
+
 }
