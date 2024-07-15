@@ -1,18 +1,44 @@
 package com.seulmae.seulmae.notification.service;
 
-import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.messaging.FirebaseMessagingException;
-import com.google.firebase.messaging.TopicManagementResponse;
+import com.google.firebase.messaging.*;
+import com.seulmae.seulmae.notification.NotificationType;
 import com.seulmae.seulmae.notification.entity.FcmToken;
 import com.seulmae.seulmae.user.entity.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.List;
 
 @Service
 @Slf4j
-public class FcmTopicService {
+public class FcmTopicServiceImpl implements FcmService {
+
+    @Override
+    public void sendMessageTo(String topic, String title, String body, NotificationType type, Long id) {
+        // 주제로 메세지 전송
+        Notification notification = FcmService.buildNotification(topic, title);
+
+        Message message = Message.builder()
+                .putData("type", type.name())
+                .putData("id", String.valueOf(id))
+                .setTopic(topic)
+                .setNotification(notification)
+                .build();
+
+        System.out.println("type = " + type.name());
+
+        String response;
+
+        try {
+            response = FirebaseMessaging.getInstance().send(message);
+            System.out.println("message = " + message);
+            log.info("Successfully sent message: " + response);
+        } catch (FirebaseMessagingException e) {
+            log.error("Fail to send firebase notification", e);
+        }
+    }
+
     // 구독 요청
     public void subscribeToTopic(User user, String topic) throws FirebaseMessagingException {
         // 등록 토큰 뽑아내기
@@ -36,6 +62,5 @@ public class FcmTopicService {
         log.info(response.getSuccessCount() + " tokens were unsubscribed successfully");
     }
 
-    // 주제로 메세지 전송
 
 }

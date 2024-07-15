@@ -2,7 +2,9 @@ package com.seulmae.seulmae.workplace.service;
 
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.seulmae.seulmae.global.util.FindByIdUtil;
-import com.seulmae.seulmae.notification.service.FcmTopicService;
+import com.seulmae.seulmae.notification.NotificationType;
+import com.seulmae.seulmae.notification.service.FcmTopicServiceImpl;
+import com.seulmae.seulmae.notification.service.NotificationService;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.user.entity.UserWorkSchedule;
 import com.seulmae.seulmae.user.entity.UserWorkplace;
@@ -24,7 +26,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -41,7 +42,8 @@ public class WorkplaceJoinService {
     private final UserWorkScheduleRepository userWorkScheduleRepository;
 
     private final WorkplaceService workplaceService;
-    private final FcmTopicService fcmTopicService;
+    private final NotificationService notificationService;
+    private final FcmTopicServiceImpl fcmTopicServiceImpl;
 
     public static final LocalDate MAX_END_DATE = LocalDate.of(2999, 12, 31);
     private final String TOPIC_PREFIX = "workplace";
@@ -67,6 +69,9 @@ public class WorkplaceJoinService {
         workplaceApproveRepository.save(workplaceApprove);
 
         /** 매니저에게 알림 **/
+        String title = "[가입요청]";
+        String body = "'" + user.getName() + "'이 가입요청 하였습니다.";
+        notificationService.sendMessageToUserWithMultiDevice(title, body, user, NotificationType.JOIN_REQUEST, workplaceApprove.getIdWorkPlaceApprove());
     }
 
     @Transactional
@@ -121,10 +126,12 @@ public class WorkplaceJoinService {
             workplaceRepository.save(workplace);
         }
 
-        fcmTopicService.subscribeToTopic(workplaceJoinHistory.getUser(), topic);
+        fcmTopicServiceImpl.subscribeToTopic(workplaceJoinHistory.getUser(), topic);
 
-        /** 알바생에세 수락 알림 **/
-
+        /** 알바생에게 수락 알림 **/
+        String title = "[가입수락]";
+        String body = "'" + workplace.getWorkplaceName() + "'에 가입되었습니다.";
+        notificationService.sendMessageToUserWithMultiDevice(title, body, workplaceJoinHistory.getUser(), NotificationType.JOIN_RESPONSE, workplaceJoinHistory.getIdWorkplaceJoinHistory());
     }
 
     @Transactional
@@ -139,6 +146,9 @@ public class WorkplaceJoinService {
         deleteWorkplaceApproveById(workplaceApproveId);
 
         /** 알바생에세 거절 알림 **/
+        String title = "[가입거절]";
+        String body = "'" + workplaceJoinHistory.getWorkplace().getWorkplaceName() + "'에 가입이 거절됐습니다. 해당 근무지의 매니저에게 문의하세요.";
+        notificationService.sendMessageToUserWithMultiDevice(title, body, workplaceJoinHistory.getUser(), NotificationType.JOIN_RESPONSE, workplaceJoinHistory.getIdWorkplaceJoinHistory());
     }
 
     @Transactional
