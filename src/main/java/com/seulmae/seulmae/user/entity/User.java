@@ -1,5 +1,6 @@
 package com.seulmae.seulmae.user.entity;
 
+import com.seulmae.seulmae.notification.entity.FcmToken;
 import com.seulmae.seulmae.user.Role;
 import com.seulmae.seulmae.user.SocialType;
 import com.seulmae.seulmae.user.exception.MatchPasswordException;
@@ -15,9 +16,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Entity
 @Getter
@@ -67,6 +66,9 @@ public class User implements UserDetails {
 
     @Column(name = "refresh_token")
     private String refreshToken;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<FcmToken> fcmTokens = new HashSet<>();
 
     @CreatedDate
     @Column(name = "reg_date_user")

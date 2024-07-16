@@ -1,8 +1,8 @@
 package com.seulmae.seulmae.attendance.service;
 
 import com.seulmae.seulmae.attendance.dto.AttendanceApprovalDto;
-import com.seulmae.seulmae.attendance.dto.AttendanceRejectionDto;
-import com.seulmae.seulmae.attendance.dto.GetOffWorkDto;
+import com.seulmae.seulmae.attendance.dto.AttendanceRequestDto;
+import com.seulmae.seulmae.attendance.dto.AttendanceRequestListDto;
 import com.seulmae.seulmae.attendance.entity.Attendance;
 import com.seulmae.seulmae.attendance.entity.AttendanceRequestHistory;
 import com.seulmae.seulmae.attendance.repository.AttendanceRepository;
@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -50,26 +51,27 @@ public class AttendanceService {
     }
 
     @Transactional
-    public void getOffWork(User user, GetOffWorkDto getOffWorkDto) {
-        Workplace workplace = findByIdUtil.getWorkplaceById(getOffWorkDto.getWorkplaceId());
+    public void sendAttendanceRequest(User user, AttendanceRequestDto attendanceRequestDto) {
+        Workplace workplace = findByIdUtil.getWorkplaceById(attendanceRequestDto.getWorkplaceId());
 
         Attendance attendance = Attendance.builder()
                 .user(user)
                 .workplace(workplace)
-                .workDate(getOffWorkDto.getWorkDate())
+                .workDate(attendanceRequestDto.getWorkDate())
                 .confirmedWage(0)
-                .unconfirmedWage(getOffWorkDto.getUnconfirmedWage())
+                .unconfirmedWage(attendanceRequestDto.getUnconfirmedWage())
                 .build();
 
         attendanceRepository.save(attendance);
 
         AttendanceRequestHistory attendanceRequestHistory = AttendanceRequestHistory.builder()
                 .attendance(attendance)
-                .workStartTime(getOffWorkDto.getWorkStartTime())
-                .workEndTime(getOffWorkDto.getWorkEndTime())
-                .totalWorkTime(getOffWorkDto.getTotalWorkTime())
+                .workStartTime(attendanceRequestDto.getWorkStartTime())
+                .workEndTime(attendanceRequestDto.getWorkEndTime())
+                .totalWorkTime(attendanceRequestDto.getTotalWorkTime())
                 .isRequestApprove(false)
                 .isManagerCheck(false)
+                .deliveryMessage(attendanceRequestDto.getDeliveryMessage())
                 .build();
 
         attendanceRequestHistoryRepository.save(attendanceRequestHistory);
@@ -97,8 +99,8 @@ public class AttendanceService {
     }
 
     @Transactional
-    public void sendAttendanceRejection(AttendanceRejectionDto attendanceRejectionDto) {
-        AttendanceRequestHistory attendanceRequestHistory = findByIdUtil.getAttendanceRequestHistoryById(attendanceRejectionDto.getAttendanceRequestHistoryId());
+    public void sendAttendanceRejection(Long attendanceRequestHistoryId) {
+        AttendanceRequestHistory attendanceRequestHistory = findByIdUtil.getAttendanceRequestHistoryById(attendanceRequestHistoryId);
         Attendance attendance = attendanceRequestHistory.getAttendance();
 
         attendance.setUnconfirmedWage(0);
@@ -111,5 +113,30 @@ public class AttendanceService {
         attendanceRequestHistoryRepository.save(attendanceRequestHistory);
 
         /** 거절 알림 **/
+    }
+
+    @Transactional
+    public List<AttendanceRequestListDto> getAttendanceRequestList(Long workplaceId) {
+        List<AttendanceRequestListDto> attendanceRequestListDtoList = attendanceRepository.findByWorkplaceId(workplaceId);
+
+        return attendanceRequestListDtoList;
+    }
+
+    /**
+     * 별도 요청 시 전송할 데이터의 시간과 일치하고 승인된 요청이 있다면 별도 요청 불가
+     * 별도 요청 시 전송할 데이터의 시간과 일치하지만 거절된 요청이 있다면 별도 요청 가능
+     **/
+
+    @Transactional
+    public void sendSeparateAttendanceRequest(User user, AttendanceRequestDto attendanceRequestDto) {
+//        if () {
+//
+//        }
+//
+//        if () {
+//
+//        }
+
+
     }
 }

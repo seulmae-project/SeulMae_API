@@ -1,6 +1,7 @@
 package com.seulmae.seulmae.notification.entity;
 
 
+import com.seulmae.seulmae.announcement.entity.Announcement;
 import com.seulmae.seulmae.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -17,18 +18,18 @@ public class AnnouncementNotification {
     @Column(name = "id_announcement_notification", updatable = false)
     private Long idAnnouncementNotification;
 
-    @ManyToOne
-    @JoinColumn(name = "to_user_id", referencedColumnName = "id_user", nullable = false)
-    private User toUser;
+//    @ManyToOne
+//    @JoinColumn(name = "to_user_id", referencedColumnName = "id_user", nullable = false)
+//    private User toUser;
 
-    // [TODO] 추후 테이블 생성시 수정 필요
-    @Column(name = "announcement_id")
-    private Long announcementId;
+    @ManyToOne
+    @JoinColumn(name = "announcement_id", referencedColumnName = "id_announcement")
+    private Announcement announcement;
 
     @OneToOne
     @JoinColumn(name = "notification_id", referencedColumnName = "id_notification")
     private Notification notification;
 
-    @Column(name = "is_read")
-    private Boolean isRead = false;
+//    @Column(name = "is_read")
+//    private Boolean isRead = false;
 }

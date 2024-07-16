@@ -4,15 +4,15 @@ import com.seulmae.seulmae.global.util.ResponseUtil;
 import com.seulmae.seulmae.global.util.enums.SuccessCode;
 import com.seulmae.seulmae.global.util.enums.SuccessResponse;
 import com.seulmae.seulmae.user.entity.User;
+import com.seulmae.seulmae.workplace.dto.WorkplaceJoinRequestDto;
 import com.seulmae.seulmae.workplace.service.WorkplaceJoinService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -39,12 +39,11 @@ public class WorkplaceJoinController {
     /**
      * 근무지 입장 수락
      * @param workplaceApproveId
-     * @param workplaceJoinHistoryId
      */
     @PostMapping("approval")
-    public ResponseEntity<?> sendJoinApproval(@RequestParam Long workplaceApproveId, @RequestParam Long workplaceJoinHistoryId) {
+    public ResponseEntity<?> sendJoinApproval(@RequestParam Long workplaceApproveId) {
         try {
-            workplaceJoinService.sendJoinApproval(workplaceApproveId, workplaceJoinHistoryId);
+            workplaceJoinService.sendJoinApproval(workplaceApproveId);
 
             return ResponseUtil.createSuccessResponse(SuccessCode.INSERT_SUCCESS);
         } catch (Exception e) {
@@ -55,14 +54,28 @@ public class WorkplaceJoinController {
     /**
      * 근무지 입장 거절
      * @param workplaceApproveId
-     * @param workplaceJoinHistoryId
      */
     @PostMapping("rejection")
-    public ResponseEntity<?> sendJoinRejection(@RequestParam Long workplaceApproveId, @RequestParam Long workplaceJoinHistoryId) {
+    public ResponseEntity<?> sendJoinRejection(@RequestParam Long workplaceApproveId) {
         try {
-            workplaceJoinService.sendJoinRejection(workplaceApproveId, workplaceJoinHistoryId);
+            workplaceJoinService.sendJoinRejection(workplaceApproveId);
 
             return ResponseUtil.createSuccessResponse(SuccessCode.INSERT_SUCCESS);
+        } catch (Exception e) {
+            return ResponseUtil.handleException(e);
+        }
+    }
+
+    /**
+     * 근무지 입장 요청 리스트
+     * @param workplaceId
+     */
+    @GetMapping("request/list")
+    public ResponseEntity<?> getWorkplaceRequestList(@RequestParam Long workplaceId) {
+        try {
+            List<WorkplaceJoinRequestDto> workplaceJoinRequestDtoList = workplaceJoinService.getWorkplaceRequestList(workplaceId);
+
+            return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, workplaceJoinRequestDtoList);
         } catch (Exception e) {
             return ResponseUtil.handleException(e);
         }
