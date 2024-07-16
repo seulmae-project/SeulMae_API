@@ -4,10 +4,10 @@ import com.google.firebase.messaging.*;
 import com.seulmae.seulmae.notification.NotificationType;
 import com.seulmae.seulmae.notification.entity.FcmToken;
 import com.seulmae.seulmae.user.entity.User;
+import com.seulmae.seulmae.workplace.entity.Workplace;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -52,7 +52,7 @@ public class FcmTopicServiceImpl implements FcmService {
 
 
     // 구독 취소
-    public void unsubscribeToTopic(User user, String topic) throws FirebaseMessagingException {
+    public void unsubscribeFromTopic(User user, String topic) throws FirebaseMessagingException {
 
         List<String> registrationTokens = user.getFcmTokens().stream()
                 .map(FcmToken::getFcmToken).toList();
@@ -62,5 +62,10 @@ public class FcmTopicServiceImpl implements FcmService {
         log.info(response.getSuccessCount() + " tokens were unsubscribed successfully");
     }
 
-
+    // 구독 전체 취소
+    public void unsubscribeAllFromTopic(List<User> users, String topic) throws FirebaseMessagingException {
+        for (User user : users) {
+            unsubscribeFromTopic(user, topic);
+        }
+    }
 }

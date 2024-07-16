@@ -8,6 +8,7 @@ import com.seulmae.seulmae.notification.service.NotificationService;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.user.entity.UserWorkSchedule;
 import com.seulmae.seulmae.user.entity.UserWorkplace;
+import com.seulmae.seulmae.user.repository.UserRepository;
 import com.seulmae.seulmae.user.repository.UserWorkScheduleRepository;
 import com.seulmae.seulmae.user.repository.UserWorkplaceRepository;
 import com.seulmae.seulmae.wage.entity.Wage;
@@ -40,20 +41,23 @@ public class WorkplaceJoinService {
     private final UserWorkplaceRepository userWorkplaceRepository;
     private final WageRepository wageRepository;
     private final UserWorkScheduleRepository userWorkScheduleRepository;
+    private final UserRepository userRepository;
 
     private final WorkplaceService workplaceService;
     private final NotificationService notificationService;
     private final FcmTopicServiceImpl fcmTopicServiceImpl;
 
     public static final LocalDate MAX_END_DATE = LocalDate.of(2999, 12, 31);
-    private final String TOPIC_PREFIX = "workplace";
+    private static final String TOPIC_PREFIX = "workplace";
 
     @Transactional
     public void sendJoinRequest(User user, Long workplaceId) {
         Workplace workplace = workplaceService.getWorkplaceById(workplaceId);
+        User persistentUser = userRepository.findById(user.getIdUser())
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         WorkplaceJoinHistory workplaceJoinHistory = WorkplaceJoinHistory.builder()
-                .user(user)
+                .user(persistentUser)
                 .workplace(workplace)
                 .isApprove(false)
                 .build();
@@ -61,7 +65,7 @@ public class WorkplaceJoinService {
         workplaceJoinHistoryRepository.save(workplaceJoinHistory);
 
         WorkplaceApprove workplaceApprove = WorkplaceApprove.builder()
-                .user(user)
+                .user(persistentUser)
                 .workplace(workplace)
                 .workplaceJoinHistoryId(workplaceJoinHistory.getIdWorkplaceJoinHistory())
                 .build();
@@ -70,8 +74,8 @@ public class WorkplaceJoinService {
 
         /** 매니저에게 알림 **/
         String title = "[가입요청]";
-        String body = "'" + user.getName() + "'이 가입요청 하였습니다.";
-        notificationService.sendMessageToUserWithMultiDevice(title, body, user, NotificationType.JOIN_REQUEST, workplaceApprove.getIdWorkPlaceApprove());
+        String body = "'" + persistentUser.getName() + "'이 가입요청 하였습니다.";
+        notificationService.sendMessageToUserWithMultiDevice(title, body, persistentUser, NotificationType.JOIN_REQUEST, workplaceApprove.getIdWorkPlaceApprove());
     }
 
     @Transactional

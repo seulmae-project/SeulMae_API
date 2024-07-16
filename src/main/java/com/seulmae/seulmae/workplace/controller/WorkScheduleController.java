@@ -1,5 +1,7 @@
 package com.seulmae.seulmae.workplace.controller;
 
+import com.seulmae.seulmae.global.util.ResponseUtil;
+import com.seulmae.seulmae.global.util.enums.ErrorCode;
 import com.seulmae.seulmae.global.util.enums.SuccessCode;
 import com.seulmae.seulmae.global.util.enums.SuccessResponse;
 import com.seulmae.seulmae.user.entity.User;
@@ -26,24 +28,46 @@ public class WorkScheduleController {
     @PostMapping("")
     public ResponseEntity<?> addWorkSchedule(@RequestBody WorkScheduleAddDto workScheduleAddDto,
                                              @AuthenticationPrincipal User user) {
-        workScheduleService.createWorkSchedule(workScheduleAddDto, user);
-        return new ResponseEntity<>(new SuccessResponse(SuccessCode.INSERT_SUCCESS), HttpStatus.CREATED);
+        try {
+            workScheduleService.createWorkSchedule(workScheduleAddDto, user);
+            return ResponseUtil.createSuccessResponse(SuccessCode.INSERT_SUCCESS);
+        } catch (IllegalArgumentException e) {
+            return ResponseUtil.createErrorResponse(ErrorCode.FORBIDDEN_ERROR, e.getMessage());
+        } catch (Exception e) {
+            return ResponseUtil.handleException(e);
+        }
+
     }
+
     // 일정 수정
     @PutMapping("")
     public ResponseEntity<?> updateWorkSchedule(@RequestParam Long workScheduleId,
                                                 @RequestBody WorkScheduleUpdateDto workScheduleUpdateDto,
                                                 @AuthenticationPrincipal User user) {
-        workScheduleService.updateWorkSchedule(workScheduleId, workScheduleUpdateDto, user);
-        return new ResponseEntity<>(new SuccessResponse(SuccessCode.UPDATE_SUCCESS), HttpStatus.CREATED);
+        try {
+            workScheduleService.updateWorkSchedule(workScheduleId, workScheduleUpdateDto, user);
+            return ResponseUtil.createSuccessResponse(SuccessCode.UPDATE_SUCCESS);
+        } catch (IllegalArgumentException e) {
+            return ResponseUtil.createErrorResponse(ErrorCode.FORBIDDEN_ERROR, e.getMessage());
+        } catch (Exception e) {
+            return ResponseUtil.handleException(e);
+        }
+
     }
 
     // 일정 삭제
     @DeleteMapping("")
     public ResponseEntity<?> deleteWorkSchedule(@RequestParam Long workScheduleId,
                                                 @AuthenticationPrincipal User user) {
-        workScheduleService.deleteWorkSchedule(workScheduleId, user);
-        return new ResponseEntity<>(new SuccessResponse(SuccessCode.DELETE_SUCCESS), HttpStatus.OK);
+
+        try {
+            workScheduleService.deleteWorkSchedule(workScheduleId, user);
+            return ResponseUtil.createSuccessResponse(SuccessCode.DELETE_SUCCESS);
+        } catch (IllegalArgumentException e) {
+            return ResponseUtil.createErrorResponse(ErrorCode.FORBIDDEN_ERROR, e.getMessage());
+        } catch (Exception e) {
+            return ResponseUtil.handleException(e);
+        }
 
     }
 
@@ -52,16 +76,28 @@ public class WorkScheduleController {
     @GetMapping("")
     public ResponseEntity<?> getWorkSchedule(@RequestParam Long workScheduleId,
                                              @AuthenticationPrincipal User user) {
-     WorkScheduleInfoDto result = workScheduleService.getWorkSchedule(workScheduleId, user);
-        return new ResponseEntity<>(new SuccessResponse(SuccessCode.SELECT_SUCCESS, result), HttpStatus.OK);
+        try {
+            WorkScheduleInfoDto result = workScheduleService.getWorkSchedule(workScheduleId, user);
+            return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, result);
+        } catch (IllegalArgumentException e) {
+            return ResponseUtil.createErrorResponse(ErrorCode.FORBIDDEN_ERROR, e.getMessage());
+        } catch (Exception e) {
+            return ResponseUtil.handleException(e);
+        }
     }
 
     // 일정 리스트 조회
     @GetMapping("/list")
     public ResponseEntity<?> getWorkSchedules(@RequestParam Long workplaceId,
                                               @AuthenticationPrincipal User user) {
-        List<WorkScheduleInfoDto> results = workScheduleService.getWorkSchedules(workplaceId, user);
-        return new ResponseEntity<>(new SuccessResponse(SuccessCode.SELECT_SUCCESS, results), HttpStatus.OK);
 
+        try {
+            List<WorkScheduleInfoDto> results = workScheduleService.getWorkSchedules(workplaceId, user);
+            return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, results);
+        } catch (IllegalArgumentException e) {
+            return ResponseUtil.createErrorResponse(ErrorCode.FORBIDDEN_ERROR, e.getMessage());
+        } catch (Exception e) {
+            return ResponseUtil.handleException(e);
+        }
     }
 }

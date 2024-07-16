@@ -4,6 +4,8 @@ import com.seulmae.seulmae.attendance.entity.Attendance;
 import com.seulmae.seulmae.attendance.entity.AttendanceRequestHistory;
 import com.seulmae.seulmae.attendance.repository.AttendanceRepository;
 import com.seulmae.seulmae.attendance.repository.AttendanceRequestHistoryRepository;
+import com.seulmae.seulmae.user.entity.UserWorkplace;
+import com.seulmae.seulmae.user.repository.UserWorkplaceRepository;
 import com.seulmae.seulmae.workplace.entity.WorkSchedule;
 import com.seulmae.seulmae.workplace.entity.Workplace;
 import com.seulmae.seulmae.workplace.entity.WorkplaceApprove;
@@ -27,6 +29,7 @@ public class FindByIdUtil {
     private final WorkScheduleRepository workScheduleRepository;
     private final AttendanceRepository attendanceRepository;
     private final AttendanceRequestHistoryRepository attendanceRequestHistoryRepository;
+    private final UserWorkplaceRepository userWorkplaceRepository;
 
     public Workplace getWorkplaceById(Long workplaceId) {
         return workplaceRepository.findById(workplaceId)
@@ -56,5 +59,10 @@ public class FindByIdUtil {
     public WorkSchedule getWorkScheduleById(Long workScheduleId) {
         return workScheduleRepository.findById(workScheduleId)
                 .orElseThrow(() -> new NoSuchElementException("해당 근무일정 ID가 존재하지 않습니다."));
+    }
+
+    public UserWorkplace getUserWorkplaceById(Long userWorkplaceId) {
+        return userWorkplaceRepository.findById(userWorkplaceId)
+                .orElseThrow(() -> new NoSuchElementException("This UserWorkplaceId doesn't exist"));
     }
 }
