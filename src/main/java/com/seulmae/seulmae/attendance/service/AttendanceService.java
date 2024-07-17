@@ -7,6 +7,7 @@ import com.seulmae.seulmae.attendance.entity.Attendance;
 import com.seulmae.seulmae.attendance.entity.AttendanceRequestHistory;
 import com.seulmae.seulmae.attendance.repository.AttendanceRepository;
 import com.seulmae.seulmae.attendance.repository.AttendanceRequestHistoryRepository;
+import com.seulmae.seulmae.global.exception.AttendanceRequestConflictException;
 import com.seulmae.seulmae.global.util.FindByIdUtil;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.workplace.entity.Workplace;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -122,21 +124,20 @@ public class AttendanceService {
         return attendanceRequestListDtoList;
     }
 
-    /**
-     * 별도 요청 시 전송할 데이터의 시간과 일치하고 승인된 요청이 있다면 별도 요청 불가
-     * 별도 요청 시 전송할 데이터의 시간과 일치하지만 거절된 요청이 있다면 별도 요청 가능
-     **/
-
     @Transactional
     public void sendSeparateAttendanceRequest(User user, AttendanceRequestDto attendanceRequestDto) {
-//        if () {
-//
-//        }
-//
-//        if () {
-//
-//        }
+        Boolean existByUserAndWorkDate = attendanceRequestHistoryRepository.existByUserAndWorkDate(
+                user,
+                attendanceRequestDto.getWorkDate(),
+                attendanceRequestDto.getWorkStartTime(),
+                attendanceRequestDto.getWorkEndTime()
+        );
 
+        if (existByUserAndWorkDate) {
+            throw new AttendanceRequestConflictException("등록하려는 시간과 동일한 승인된 근무 또는 처리되지 않은 근무 요청이 존재합니다. 다시 입력해주세요.");
+        }
 
+        sendAttendanceRequest(user, attendanceRequestDto);
     }
+
 }
