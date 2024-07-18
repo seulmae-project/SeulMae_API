@@ -13,6 +13,10 @@ import java.util.Optional;
 
 @Repository
 public interface UserWorkplaceRepository extends JpaRepository<UserWorkplace, Long> {
+
+    @Query("SELECT uw.user FROM UserWorkplace uw " +
+            "WHERE uw.workplace = :workplace " +
+            "AND uw.isManager = :isManager")
     Optional<User> findUserByWorkplaceAndIsManager(Workplace workplace, boolean isManager);
 
     @Query("SELECT uw.workplace FROM UserWorkplace uw " +

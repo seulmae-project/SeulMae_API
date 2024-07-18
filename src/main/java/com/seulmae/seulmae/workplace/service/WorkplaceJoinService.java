@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @Service
@@ -41,7 +42,6 @@ public class WorkplaceJoinService {
     private final UserWorkplaceRepository userWorkplaceRepository;
     private final WageRepository wageRepository;
     private final UserWorkScheduleRepository userWorkScheduleRepository;
-    private final UserRepository userRepository;
 
     private final WorkplaceService workplaceService;
     private final NotificationService notificationService;
@@ -53,11 +53,12 @@ public class WorkplaceJoinService {
     @Transactional
     public void sendJoinRequest(User user, Long workplaceId) {
         Workplace workplace = workplaceService.getWorkplaceById(workplaceId);
-        User persistentUser = userRepository.findById(user.getIdUser())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User manager = userWorkplaceRepository.findUserByWorkplaceAndIsManager(workplace, true)
+                .orElseThrow(() -> new NoSuchElementException("해당 근무지의 매니저가 존재하지 않습니다."));
+
 
         WorkplaceJoinHistory workplaceJoinHistory = WorkplaceJoinHistory.builder()
-                .user(persistentUser)
+                .user(user)
                 .workplace(workplace)
                 .isApprove(false)
                 .build();
@@ -65,7 +66,7 @@ public class WorkplaceJoinService {
         workplaceJoinHistoryRepository.save(workplaceJoinHistory);
 
         WorkplaceApprove workplaceApprove = WorkplaceApprove.builder()
-                .user(persistentUser)
+                .user(user)
                 .workplace(workplace)
                 .workplaceJoinHistoryId(workplaceJoinHistory.getIdWorkplaceJoinHistory())
                 .build();
@@ -74,8 +75,8 @@ public class WorkplaceJoinService {
 
         /** 매니저에게 알림 **/
         String title = "[가입요청]";
-        String body = "'" + persistentUser.getName() + "'이 가입요청 하였습니다.";
-        notificationService.sendMessageToUserWithMultiDevice(title, body, persistentUser, NotificationType.JOIN_REQUEST, workplaceApprove.getIdWorkPlaceApprove());
+        String body = "'" + user.getName() + "'이 가입요청 하였습니다.";
+        notificationService.sendMessageToUserWithMultiDevice(title, body, manager, NotificationType.JOIN_REQUEST, workplaceApprove.getIdWorkPlaceApprove());
     }
 
     @Transactional
