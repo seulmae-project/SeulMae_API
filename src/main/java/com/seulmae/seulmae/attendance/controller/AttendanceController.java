@@ -103,6 +103,7 @@ public class AttendanceController {
      * @param user
      * @param attendanceRequestDto
      */
+    @PostMapping("separate")
     public ResponseEntity<?> sendSeparateAttendanceRequest(@AuthenticationPrincipal User user, @RequestBody AttendanceRequestDto attendanceRequestDto) {
         try {
             attendanceService.sendSeparateAttendanceRequest(user, attendanceRequestDto);
