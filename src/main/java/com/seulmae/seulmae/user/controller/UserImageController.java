@@ -1,5 +1,6 @@
 package com.seulmae.seulmae.user.controller;
 
+import com.seulmae.seulmae.global.util.ResponseUtil;
 import com.seulmae.seulmae.user.service.UserImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,10 @@ public class UserImageController {
 
     @GetMapping("/file")
     public ResponseEntity<?> getUserImage(@RequestParam Long userImageId) throws IOException {
-        return userImageService.getUserImage(userImageId);
+        try {
+            return userImageService.getUserImage(userImageId);
+        } catch (Exception e) {
+            return ResponseUtil.handleException(e);
+        }
     }
 }

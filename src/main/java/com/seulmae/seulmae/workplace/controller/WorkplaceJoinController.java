@@ -4,6 +4,7 @@ import com.seulmae.seulmae.global.util.ResponseUtil;
 import com.seulmae.seulmae.global.util.enums.SuccessCode;
 import com.seulmae.seulmae.global.util.enums.SuccessResponse;
 import com.seulmae.seulmae.user.entity.User;
+import com.seulmae.seulmae.workplace.dto.JoinApprovalDto;
 import com.seulmae.seulmae.workplace.dto.WorkplaceJoinRequestDto;
 import com.seulmae.seulmae.workplace.service.WorkplaceJoinService;
 import lombok.RequiredArgsConstructor;
@@ -41,9 +42,9 @@ public class WorkplaceJoinController {
      * @param workplaceApproveId
      */
     @PostMapping("approval")
-    public ResponseEntity<?> sendJoinApproval(@RequestParam Long workplaceApproveId) {
+    public ResponseEntity<?> sendJoinApproval(@RequestParam Long workplaceApproveId, @RequestBody JoinApprovalDto joinApprovalDto) {
         try {
-            workplaceJoinService.sendJoinApproval(workplaceApproveId);
+            workplaceJoinService.sendJoinApproval(workplaceApproveId, joinApprovalDto);
 
             return ResponseUtil.createSuccessResponse(SuccessCode.INSERT_SUCCESS);
         } catch (Exception e) {

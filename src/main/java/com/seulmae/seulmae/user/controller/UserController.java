@@ -1,5 +1,6 @@
 package com.seulmae.seulmae.user.controller;
 
+import com.seulmae.seulmae.global.util.ResponseUtil;
 import com.seulmae.seulmae.global.util.enums.ErrorCode;
 import com.seulmae.seulmae.global.util.enums.ErrorResponse;
 import com.seulmae.seulmae.global.util.enums.SuccessCode;
@@ -9,8 +10,6 @@ import com.seulmae.seulmae.user.dto.response.AccountDuplicatedResponse;
 import com.seulmae.seulmae.user.dto.response.FindAuthResponse;
 import com.seulmae.seulmae.user.dto.response.UserProfileResponse;
 import com.seulmae.seulmae.user.entity.User;
-import com.seulmae.seulmae.user.exception.InvalidPasswordException;
-import com.seulmae.seulmae.user.exception.MatchPasswordException;
 import com.seulmae.seulmae.user.service.SmsService;
 import com.seulmae.seulmae.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,18 +31,18 @@ public class UserController {
 
     /**
      * 회원가입
+     *
      * @param userSignUpDto
      * @param file
      * @return
      */
     @PostMapping("")
-    public ResponseEntity<?> signUp(@RequestPart UserSignUpDto userSignUpDto,  @RequestPart(required = false, name = "file") MultipartFile file) {
+    public ResponseEntity<?> signUp(@RequestPart UserSignUpDto userSignUpDto, @RequestPart(required = false, name = "file") MultipartFile file) {
         try {
             userService.createUser(userSignUpDto, file);
-            SuccessResponse<?> successResponse = new SuccessResponse<>(SuccessCode.SIGNUP_SUCCESS);
-            return ResponseEntity.status(successResponse.getStatus()).body(successResponse);
+            return ResponseUtil.createSuccessResponse(SuccessCode.SIGNUP_SUCCESS);
         } catch (Exception e) {
-            return new ResponseEntity<>(new ErrorResponse(ErrorCode.BAD_REQUEST_ERROR, e.getMessage()), HttpStatus.BAD_REQUEST);
+            return ResponseUtil.handleException(e);
         }
     }
 
@@ -52,6 +51,7 @@ public class UserController {
 
     /**
      * 프로필 수정
+     *
      * @param id
      * @param updateUserRequest
      * @param file
@@ -59,41 +59,43 @@ public class UserController {
      * @return
      */
     @PutMapping("")
-    public ResponseEntity<?>updateProfile(@RequestParam Long id,
-                                          @RequestPart UpdateUserRequest updateUserRequest,
-                                          @RequestPart(required = false, name ="file") MultipartFile file,
-                                          @AuthenticationPrincipal User user) {
+    public ResponseEntity<?> updateProfile(@RequestParam Long id,
+                                           @RequestPart UpdateUserRequest updateUserRequest,
+                                           @RequestPart(required = false, name = "file") MultipartFile file,
+                                           @AuthenticationPrincipal User user) {
 
         try {
             userService.updateUser(id, user, updateUserRequest, file);
-            return new ResponseEntity<>(new SuccessResponse(SuccessCode.UPDATE_SUCCESS), HttpStatus.CREATED);
+            return ResponseUtil.createSuccessResponse(SuccessCode.UPDATE_SUCCESS);
         } catch (AccessDeniedException e) {
-            return new ResponseEntity<>(new ErrorResponse(ErrorCode.FORBIDDEN_ERROR, e.getMessage()), HttpStatus.FORBIDDEN);
+            return ResponseUtil.createErrorResponse(ErrorCode.FORBIDDEN_ERROR, e.getMessage());
         } catch (Exception e) {
-            return new ResponseEntity<>(new ErrorResponse(ErrorCode.BAD_REQUEST_ERROR, e.getMessage()), HttpStatus.BAD_REQUEST);
+            return ResponseUtil.createErrorResponse(ErrorCode.BAD_REQUEST_ERROR, e.getMessage());
         }
     }
 
     /**
      * 유저 프로필 단일 조회
+     *
      * @param id
      * @param request
      * @return
      */
     @GetMapping("")
-    public ResponseEntity<?>getUserProfile(@RequestParam Long id,
-                                           HttpServletRequest request) {
+    public ResponseEntity<?> getUserProfile(@RequestParam Long id,
+                                            HttpServletRequest request) {
         try {
             UserProfileResponse result = userService.getUserProfile(id, request);
-            return new ResponseEntity<>(new SuccessResponse(SuccessCode.SELECT_SUCCESS, result), HttpStatus.OK);
+            return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, result);
         } catch (Exception e) {
-            return new ResponseEntity<>(new ErrorResponse(ErrorCode.BAD_REQUEST_ERROR, e.getMessage()), HttpStatus.BAD_REQUEST);
+            return ResponseUtil.handleException(e);
         }
     }
 
 
     /**
      * 휴대폰 인증번호 신청
+     *
      * @param request
      * @return
      */
@@ -102,14 +104,15 @@ public class UserController {
         try {
             smsService.sendSMS(request.setPhoneNumber(request.getPhoneNumber()));
             FindAuthResponse result = userService.getAccountId(request.getPhoneNumber());
-            return new ResponseEntity<>(new SuccessResponse(SuccessCode.SEND_SMS_SUCCESS, result), HttpStatus.OK);
+            return ResponseUtil.createSuccessResponse(SuccessCode.SEND_SMS_SUCCESS, result);
         } catch (Exception e) {
-            return new ResponseEntity<>(new ErrorResponse(ErrorCode.BAD_REQUEST_ERROR, e.getMessage()), HttpStatus.BAD_REQUEST);
+            return ResponseUtil.handleException(e);
         }
     }
 
     /**
      * 휴대폰 인증번호 확인
+     *
      * @param request
      * @return
      */
@@ -117,14 +120,15 @@ public class UserController {
     public ResponseEntity<?> verifySMS(@RequestBody SmsCertificationRequest request) {
         try {
             smsService.verifySMS(request);
-            return new ResponseEntity<>(new SuccessResponse(SuccessCode.VERIFY_SMS_SUCCESS), HttpStatus.OK);
+            return ResponseUtil.createSuccessResponse(SuccessCode.VERIFY_SMS_SUCCESS);
         } catch (Exception e) {
-            return new ResponseEntity<>(new ErrorResponse(ErrorCode.BAD_REQUEST_ERROR, e.getMessage()), HttpStatus.BAD_REQUEST);
+            return ResponseUtil.handleException(e);
         }
     }
 
     /**
      * 소셜로그인 추가 정보 업데이트
+     *
      * @param oAuth2AdditionalDataRequest
      * @param file
      * @param user
@@ -136,41 +140,48 @@ public class UserController {
                                                          @AuthenticationPrincipal User user) {
         try {
             userService.updateAdditionalProfile(user.getSocialId(), user.getSocialType(), oAuth2AdditionalDataRequest, file);
-            return new ResponseEntity<>(new SuccessResponse(SuccessCode.UPDATE_SUCCESS), HttpStatus.CREATED);
+            return ResponseUtil.createSuccessResponse(SuccessCode.UPDATE_SUCCESS);
         } catch (Exception e) {
-            return new ResponseEntity<>(new ErrorResponse(ErrorCode.BAD_REQUEST_ERROR, e.getMessage()), HttpStatus.BAD_REQUEST);
+            return ResponseUtil.handleException(e);
         }
     }
 
     /**
      * 아이디 중복 확인
+     *
      * @param request
      * @return
      */
     @PostMapping("/id/duplication")
     public ResponseEntity<?> checkAccountId(@RequestBody CheckAccountIdRequest request) {
-       AccountDuplicatedResponse result = new AccountDuplicatedResponse(userService.isDuplicatedAccountId(request.getAccountId()));
-       return new ResponseEntity<>(new SuccessResponse(SuccessCode.SELECT_SUCCESS, result), HttpStatus.OK);
+        try {
+            AccountDuplicatedResponse result = new AccountDuplicatedResponse(userService.isDuplicatedAccountId(request.getAccountId()));
+            return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, result);
+        } catch (Exception e) {
+            return ResponseUtil.handleException(e);
+        }
     }
 
     /**
      * 비밀번호 변경
+     *
      * @param request
      * @return
      */
     @PutMapping("/pw")
-    public ResponseEntity<?>changePassword(@RequestBody ChangePasswordRequest request) {
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequest request) {
         try {
             userService.changePassword(request);
-            return new ResponseEntity<>(new SuccessResponse(SuccessCode.UPDATE_SUCCESS), HttpStatus.OK);
+            return ResponseUtil.createSuccessResponse(SuccessCode.UPDATE_SUCCESS);
         } catch (Exception e) {
-            return new ResponseEntity<>(new ErrorResponse(ErrorCode.BAD_REQUEST_ERROR, e.getMessage()), HttpStatus.BAD_REQUEST);
+            return ResponseUtil.handleException(e);
         }
 
     }
 
     /**
      * 회원탈퇴
+     *
      * @param id
      * @param user
      * @return
@@ -180,32 +191,33 @@ public class UserController {
                                         @AuthenticationPrincipal User user) {
         try {
             userService.deleteUser(id, user);
-            return new ResponseEntity<>(new SuccessResponse(SuccessCode.DELETE_SUCCESS, "탈퇴가 완료됐습니다."), HttpStatus.OK);
+            return ResponseUtil.createSuccessResponse(SuccessCode.DELETE_SUCCESS);
         } catch (AccessDeniedException e) {
-            return new ResponseEntity<>(new ErrorResponse(ErrorCode.UNAUTHORIZED, e.getMessage()), HttpStatus.UNAUTHORIZED);
+            return ResponseUtil.createErrorResponse(ErrorCode.UNAUTHORIZED, e.getMessage());
         } catch (Exception e) {
-            return new ResponseEntity<>(new ErrorResponse(ErrorCode.BAD_REQUEST_ERROR, e.getMessage()), HttpStatus.BAD_REQUEST);
+            return ResponseUtil.handleException(e);
         }
     }
 
     /**
      * 휴대폰 번호 변경
+     *
      * @param id
      * @param request
      * @param user
      * @return
      */
     @PutMapping("/phone")
-    public ResponseEntity<?>changePhoneNumber(@RequestParam Long id,
-                                              @RequestBody ChangePhoneNumberRequest request,
-                                              @AuthenticationPrincipal User user) {
+    public ResponseEntity<?> changePhoneNumber(@RequestParam Long id,
+                                               @RequestBody ChangePhoneNumberRequest request,
+                                               @AuthenticationPrincipal User user) {
         try {
             userService.changePhoneNumber(id, request, user);
-            return new ResponseEntity<>(new SuccessResponse(SuccessCode.UPDATE_SUCCESS), HttpStatus.OK);
+            return ResponseUtil.createSuccessResponse(SuccessCode.UPDATE_SUCCESS);
         } catch (AccessDeniedException e) {
-            return new ResponseEntity<>(new ErrorResponse(ErrorCode.UNAUTHORIZED, e.getMessage()), HttpStatus.UNAUTHORIZED);
+            return ResponseUtil.createErrorResponse(ErrorCode.UNAUTHORIZED, e.getMessage());
         } catch (Exception e) {
-            return new ResponseEntity<>(new ErrorResponse(ErrorCode.BAD_REQUEST_ERROR, e.getMessage()), HttpStatus.BAD_REQUEST);
+            return ResponseUtil.handleException(e);
         }
     }
 

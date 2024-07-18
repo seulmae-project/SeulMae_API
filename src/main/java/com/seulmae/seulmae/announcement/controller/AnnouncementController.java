@@ -5,6 +5,7 @@ import com.seulmae.seulmae.announcement.dto.request.UpdateAnnouncementRequest;
 import com.seulmae.seulmae.announcement.dto.response.AnnouncementDetailResponse;
 import com.seulmae.seulmae.announcement.dto.response.AnnouncementMainListResponse;
 import com.seulmae.seulmae.announcement.service.AnnouncementService;
+import com.seulmae.seulmae.global.util.ResponseUtil;
 import com.seulmae.seulmae.global.util.enums.ErrorCode;
 import com.seulmae.seulmae.global.util.enums.ErrorResponse;
 import com.seulmae.seulmae.global.util.enums.SuccessCode;
@@ -29,11 +30,11 @@ public class AnnouncementController {
     public ResponseEntity<?> createAnnouncement(@RequestBody AddAnnouncementRequest request, @AuthenticationPrincipal User user) {
         try {
             announcementService.createAnnouncement(request, user);
-            return new ResponseEntity<>(new SuccessResponse(SuccessCode.INSERT_SUCCESS), HttpStatus.CREATED);
+            return ResponseUtil.createSuccessResponse(SuccessCode.INSERT_SUCCESS);
         } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(new ErrorResponse(ErrorCode.FORBIDDEN_ERROR, e.getMessage()), HttpStatus.FORBIDDEN);
+            return ResponseUtil.createErrorResponse(ErrorCode.FORBIDDEN_ERROR, e.getMessage());
         } catch (Exception e) {
-            return new ResponseEntity<>(new ErrorResponse(ErrorCode.BAD_REQUEST_ERROR, e.getMessage()), HttpStatus.BAD_REQUEST);
+            return ResponseUtil.createErrorResponse(ErrorCode.BAD_REQUEST_ERROR, e.getMessage());
         }
     }
 
@@ -44,11 +45,11 @@ public class AnnouncementController {
                                                 @AuthenticationPrincipal User user) {
         try {
             announcementService.updateAnnouncement(announcementId, request, user);
-            return new ResponseEntity<>(new SuccessResponse(SuccessCode.UPDATE_SUCCESS), HttpStatus.CREATED);
+            return ResponseUtil.createSuccessResponse(SuccessCode.UPDATE_SUCCESS);
         } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(new ErrorResponse(ErrorCode.FORBIDDEN_ERROR, e.getMessage()), HttpStatus.FORBIDDEN);
+            return ResponseUtil.createErrorResponse(ErrorCode.FORBIDDEN_ERROR, e.getMessage());
         } catch (Exception e) {
-            return new ResponseEntity<>(new ErrorResponse(ErrorCode.BAD_REQUEST_ERROR, e.getMessage()), HttpStatus.BAD_REQUEST);
+            return ResponseUtil.createErrorResponse(ErrorCode.BAD_REQUEST_ERROR, e.getMessage());
         }
     }
 
@@ -58,11 +59,11 @@ public class AnnouncementController {
                                              @AuthenticationPrincipal User user) {
         try {
             AnnouncementDetailResponse result = announcementService.getAnnouncement(announcementId, user);
-            return new ResponseEntity<>(new SuccessResponse(SuccessCode.SELECT_SUCCESS, result), HttpStatus.OK);
+            return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, result);
         } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(new ErrorResponse(ErrorCode.FORBIDDEN_ERROR, e.getMessage()), HttpStatus.FORBIDDEN);
+            return ResponseUtil.createErrorResponse(ErrorCode.FORBIDDEN_ERROR, e.getMessage());
         } catch (Exception e) {
-            return new ResponseEntity<>(new ErrorResponse(ErrorCode.BAD_REQUEST_ERROR, e.getMessage()), HttpStatus.BAD_REQUEST);
+            return ResponseUtil.createErrorResponse(ErrorCode.BAD_REQUEST_ERROR, e.getMessage());
         }
     }
 
@@ -74,11 +75,11 @@ public class AnnouncementController {
                                               @AuthenticationPrincipal User user) {
         try {
             Object results = announcementService.getAnnouncements(workplaceId, user, page, size);
-            return new ResponseEntity<>(new SuccessResponse(SuccessCode.SELECT_SUCCESS, results), HttpStatus.OK);
+            return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, results);
         } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(new ErrorResponse(ErrorCode.FORBIDDEN_ERROR, e.getMessage()), HttpStatus.FORBIDDEN);
+            return ResponseUtil.createErrorResponse(ErrorCode.FORBIDDEN_ERROR, e.getMessage());
         } catch (Exception e) {
-            return new ResponseEntity<>(new ErrorResponse(ErrorCode.BAD_REQUEST_ERROR, e.getMessage()), HttpStatus.BAD_REQUEST);
+            return ResponseUtil.createErrorResponse(ErrorCode.BAD_REQUEST_ERROR, e.getMessage());
         }
     }
 
@@ -87,11 +88,11 @@ public class AnnouncementController {
                                                        @AuthenticationPrincipal User user) {
         try {
             List<AnnouncementMainListResponse> results = announcementService.getImportantAnnouncements(workplaceId, user);
-            return new ResponseEntity<>(new SuccessResponse(SuccessCode.SELECT_SUCCESS, results), HttpStatus.OK);
+            return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, results);
         } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(new ErrorResponse(ErrorCode.FORBIDDEN_ERROR, e.getMessage()), HttpStatus.FORBIDDEN);
+            return ResponseUtil.createErrorResponse(ErrorCode.FORBIDDEN_ERROR, e.getMessage());
         } catch (Exception e) {
-            return new ResponseEntity<>(new ErrorResponse(ErrorCode.BAD_REQUEST_ERROR, e.getMessage()), HttpStatus.BAD_REQUEST);
+            return ResponseUtil.createErrorResponse(ErrorCode.BAD_REQUEST_ERROR, e.getMessage());
         }
     }
 
@@ -100,11 +101,11 @@ public class AnnouncementController {
                                                   @AuthenticationPrincipal User user) {
         try {
             List<AnnouncementMainListResponse> results = announcementService.getMainAnnouncements(workplaceId, user);
-            return new ResponseEntity<>(new SuccessResponse(SuccessCode.SELECT_SUCCESS, results), HttpStatus.OK);
+            return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, results);
         } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(new ErrorResponse(ErrorCode.FORBIDDEN_ERROR, e.getMessage()), HttpStatus.FORBIDDEN);
+            return ResponseUtil.createErrorResponse(ErrorCode.FORBIDDEN_ERROR, e.getMessage());
         } catch (Exception e) {
-            return new ResponseEntity<>(new ErrorResponse(ErrorCode.BAD_REQUEST_ERROR, e.getMessage()), HttpStatus.BAD_REQUEST);
+            return ResponseUtil.createErrorResponse(ErrorCode.BAD_REQUEST_ERROR, e.getMessage());
         }
     }
 
@@ -115,11 +116,11 @@ public class AnnouncementController {
                                                 @AuthenticationPrincipal User user) {
         try {
             announcementService.deleteAnnouncement(announcementId, user);
-            return new ResponseEntity<>(new SuccessResponse(SuccessCode.DELETE_SUCCESS), HttpStatus.NO_CONTENT);
+            return ResponseUtil.createSuccessResponse(SuccessCode.DELETE_SUCCESS);
         } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(new ErrorResponse(ErrorCode.FORBIDDEN_ERROR, e.getMessage()), HttpStatus.FORBIDDEN);
+            return ResponseUtil.createErrorResponse(ErrorCode.FORBIDDEN_ERROR, e.getMessage());
         } catch (Exception e) {
-            return new ResponseEntity<>(new ErrorResponse(ErrorCode.BAD_REQUEST_ERROR, e.getMessage()), HttpStatus.BAD_REQUEST);
+            return ResponseUtil.createErrorResponse(ErrorCode.BAD_REQUEST_ERROR, e.getMessage());
         }
     }
 }

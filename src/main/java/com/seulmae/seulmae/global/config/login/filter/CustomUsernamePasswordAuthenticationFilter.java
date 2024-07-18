@@ -14,6 +14,7 @@ import org.springframework.util.StreamUtils;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Map;
 
 
@@ -25,6 +26,8 @@ public class CustomUsernamePasswordAuthenticationFilter extends AbstractAuthenti
     private static final String USERNAME_KEY = "accountId";
     private static final String PASSWORD_KEY = "password";
 
+    private static final String FCM_TOKEN_KEY = "fcmToken";
+
     private final ObjectMapper objectMapper;
 
     public CustomUsernamePasswordAuthenticationFilter(ObjectMapper objectMapper) {
@@ -33,19 +36,26 @@ public class CustomUsernamePasswordAuthenticationFilter extends AbstractAuthenti
     }
 
     /**
-     * 인층 처리 메소드
+     * 인증 처리 메소드
      */
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, IOException, ServletException {
         if (request.getContentType() == null || !request.getContentType().equals(CONTENT_TYPE)) {
             throw new AuthenticationServiceException("Authentication Content-Type not supported: " + request.getContentType());
         }
-        System.out.println("3. 인증 시도");
+
         String messageBody = StreamUtils.copyToString(request.getInputStream(), StandardCharsets.UTF_8);
         Map<String, String> usernamePasswordMap = objectMapper.readValue(messageBody, Map.class);
         String accountId = usernamePasswordMap.get(USERNAME_KEY);
         String password = usernamePasswordMap.get(PASSWORD_KEY);
+        String fcmToken = usernamePasswordMap.get(FCM_TOKEN_KEY);
+
+
         UsernamePasswordAuthenticationToken authRequest = new UsernamePasswordAuthenticationToken(accountId, password);
+
+        Map<String, Object> additionalDetails = new HashMap<>();
+        additionalDetails.put(FCM_TOKEN_KEY, fcmToken);
+        authRequest.setDetails(additionalDetails);
 
         return this.getAuthenticationManager().authenticate(authRequest);
     }

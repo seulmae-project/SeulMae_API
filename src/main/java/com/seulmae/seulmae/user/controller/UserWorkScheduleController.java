@@ -1,5 +1,6 @@
 package com.seulmae.seulmae.user.controller;
 
+import com.seulmae.seulmae.global.util.ResponseUtil;
 import com.seulmae.seulmae.global.util.enums.ErrorCode;
 import com.seulmae.seulmae.global.util.enums.ErrorResponse;
 import com.seulmae.seulmae.global.util.enums.SuccessCode;
@@ -30,11 +31,9 @@ public class UserWorkScheduleController {
                                                     HttpServletRequest request) {
         try {
             List<UserWorkScheduleListResponse> results = userWorkScheduleService.getUsersByWorkSchedule(workScheduleId, user, request);
-            SuccessResponse successResponse = new SuccessResponse<>(SuccessCode.SELECT_SUCCESS, results);
-            return ResponseEntity.status(successResponse.getStatus()).body(successResponse);
+            return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, results);
         } catch (Exception e) {
-            ErrorResponse errorResponse = new ErrorResponse(ErrorCode.BAD_REQUEST_ERROR, e.getMessage());
-            return ResponseEntity.status(errorResponse.getStatus()).body(errorResponse);
+            return ResponseUtil.handleException(e);
         }
 
 
@@ -46,11 +45,9 @@ public class UserWorkScheduleController {
                                                  @AuthenticationPrincipal User user) {
         try {
             userWorkScheduleService.addUserWorkSchedule(userWorkScheduleAddRequest, user);
-            SuccessResponse successResponse = new SuccessResponse<>(SuccessCode.INSERT_SUCCESS);
-            return ResponseEntity.status(successResponse.getStatus()).body(successResponse);
+            return ResponseUtil.createSuccessResponse(SuccessCode.INSERT_SUCCESS);
         } catch (Exception e) {
-            ErrorResponse errorResponse = new ErrorResponse(ErrorCode.BAD_REQUEST_ERROR, e.getMessage());
-            return ResponseEntity.status(errorResponse.getStatus()).body(errorResponse);
+            return ResponseUtil.handleException(e);
         }
     }
 
@@ -62,11 +59,9 @@ public class UserWorkScheduleController {
                                                     @AuthenticationPrincipal User user) {
         try {
             userWorkScheduleService.modifyUserWorkSchedule(userWorkScheduleId, userWorkScheduleUpdateRequest, user);
-            SuccessResponse successResponse = new SuccessResponse(SuccessCode.UPDATE_SUCCESS);
-            return ResponseEntity.status(successResponse.getStatus()).body(successResponse);
+            return ResponseUtil.createSuccessResponse(SuccessCode.UPDATE_SUCCESS);
         } catch (Exception e) {
-            ErrorResponse errorResponse = new ErrorResponse(ErrorCode.BAD_REQUEST_ERROR, e.getMessage());
-            return ResponseEntity.status(errorResponse.getStatus()).body(errorResponse);
+            return ResponseUtil.handleException(e);
         }
     }
 
@@ -76,12 +71,9 @@ public class UserWorkScheduleController {
                                                     @AuthenticationPrincipal User user) {
         try {
             userWorkScheduleService.deleteUserWorkSchedule(userWorkScheduleId, user);
-            SuccessResponse successResponse = new SuccessResponse<>(SuccessCode.DELETE_SUCCESS);
-            return ResponseEntity.status(successResponse.getStatus()).body(successResponse);
+            return ResponseUtil.createSuccessResponse(SuccessCode.DELETE_SUCCESS);
         } catch (Exception e) {
-            ErrorResponse errorResponse = new ErrorResponse(ErrorCode.BAD_REQUEST_ERROR, e.getMessage());
-            return ResponseEntity.status(errorResponse.getStatus()).body(errorResponse);
+            return ResponseUtil.handleException(e);
         }
-
     }
 }

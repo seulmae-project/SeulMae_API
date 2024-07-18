@@ -15,11 +15,13 @@ import com.seulmae.seulmae.user.service.UserWorkplaceService;
 import com.seulmae.seulmae.workplace.entity.Workplace;
 import com.seulmae.seulmae.workplace.repository.WorkplaceRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -37,7 +39,7 @@ public class AnnouncementService {
 
     // 공지사항 생성
     @Transactional
-    public void createAnnouncement(AddAnnouncementRequest request, User user) {
+    public void createAnnouncement(AddAnnouncementRequest request, User user) throws IOException {
         // 매니저 권한이 있는 유저여야 한다.
         Workplace workplace = workplaceRepository.findById(request.getWorkplaceId())
                 .orElseThrow(() -> new NoSuchElementException("해당 근무지 ID가 존재하지 않습니다."));
