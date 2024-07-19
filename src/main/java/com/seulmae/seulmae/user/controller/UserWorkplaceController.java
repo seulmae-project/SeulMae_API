@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/user-workplace/v1")
+@RequestMapping("/api/workplace/user/v1")
 public class UserWorkplaceController {
     private final UserWorkplaceService userWorkplaceService;
 
