@@ -19,9 +19,7 @@ public class UserInfoWithWorkplaceResponse {
     private String imageURL;
     private String joinDate;
 
-    private Long workScheduleId;
-    private String workScheduleTitle;
-    private List<Integer> days;
+    private WorkScheduleDto workScheduleDto;
 
     private Integer payDay;
     private Integer baseWage;
@@ -32,17 +30,12 @@ public class UserInfoWithWorkplaceResponse {
         this.phoneNumber = userWorkplace.getUser().getPhoneNumber();
         this.imageURL = imageURL;
         this.joinDate = workplaceJoinHistory.getDecisionDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        this.workScheduleId = userWorkSchedule.getWorkSchedule().getIdWorkSchedule();
-        this.workScheduleTitle = userWorkSchedule.getWorkSchedule().getWorkScheduleTitle();
-        this.days = makeIntegerFromWorkScheduleDay(userWorkSchedule.getWorkSchedule().getWorkScheduleDays());
+
+        this.workScheduleDto = new WorkScheduleDto(userWorkSchedule);
+
         this.payDay = wage.getPayday();
         this.baseWage = wage.getBaseWage();
         this.memo = userWorkplace.getMemo();
     }
 
-    private List<Integer> makeIntegerFromWorkScheduleDay(List<WorkScheduleDay> workScheduleDays) {
-        return workScheduleDays.stream()
-                .map(workScheduleDay -> Day.fromDay(workScheduleDay.getDay()))
-                .toList();
-    }
 }
