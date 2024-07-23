@@ -1,0 +1,40 @@
+spring:
+  config:
+    activate:
+      on-profile: dev
+#    defer-datasource-initialization: true
+  datasource:
+#    url: jdbc:mysql://mysql:3306/seulmaetest?useSSL=false&useUnicode=true&characterEncoding=utf8&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://seulmae-mysql:3306/seulmaetest
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  redis:
+    host: redis
+    port: 6379
+    repository:
+      enabled: false
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  logging:
+    level:
+      org.springframework: INFO
+      com.seulmae: DEBUG
+  servlet:
+    multipart:
+      enabled: true # 파일 업로드 가능여부 설정
+      max-file-size: 10MB # 파일 하나 당 최대 크기
+      max-request-size: 10MB # 한번에 최대 업로드 가능한 용량
+      location: # 업로드 파일 경로
+
+  file:
+    storage:
+      path:
+        workplace: C:\workplace\
+        user: C:\user\
+
+    endPoint:
+      workplace: /api/workplace/v1/file

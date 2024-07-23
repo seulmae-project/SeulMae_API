@@ -76,7 +76,7 @@ public class WorkplaceJoinService {
         /** 매니저에게 알림 **/
         String title = "[가입요청]";
         String body = "'" + user.getName() + "'이 가입요청 하였습니다.";
-        notificationService.sendMessageToUserWithMultiDevice(title, body, manager, NotificationType.JOIN_REQUEST, workplaceApprove.getIdWorkPlaceApprove());
+        notificationService.sendMessageToUserWithMultiDevice(title, body, manager, NotificationType.JOIN_REQUEST, workplaceApprove.getIdWorkPlaceApprove(), workplaceId);
     }
 
     @Transactional
@@ -136,7 +136,7 @@ public class WorkplaceJoinService {
         /** 알바생에게 수락 알림 **/
         String title = "[가입수락]";
         String body = "'" + workplace.getWorkplaceName() + "'에 가입되었습니다.";
-        notificationService.sendMessageToUserWithMultiDevice(title, body, workplaceJoinHistory.getUser(), NotificationType.JOIN_RESPONSE, workplaceJoinHistory.getIdWorkplaceJoinHistory());
+        notificationService.sendMessageToUserWithMultiDevice(title, body, workplaceJoinHistory.getUser(), NotificationType.JOIN_RESPONSE, workplaceJoinHistory.getIdWorkplaceJoinHistory(), workplaceJoinHistory.getWorkplace().getIdWorkPlace());
     }
 
     @Transactional
@@ -153,7 +153,7 @@ public class WorkplaceJoinService {
         /** 알바생에세 거절 알림 **/
         String title = "[가입거절]";
         String body = "'" + workplaceJoinHistory.getWorkplace().getWorkplaceName() + "'에 가입이 거절됐습니다. 해당 근무지의 매니저에게 문의하세요.";
-        notificationService.sendMessageToUserWithMultiDevice(title, body, workplaceJoinHistory.getUser(), NotificationType.JOIN_RESPONSE, workplaceJoinHistory.getIdWorkplaceJoinHistory());
+        notificationService.sendMessageToUserWithMultiDevice(title, body, workplaceJoinHistory.getUser(), NotificationType.JOIN_RESPONSE, workplaceJoinHistory.getIdWorkplaceJoinHistory(), workplaceJoinHistory.getWorkplace().getIdWorkPlace());
     }
 
     @Transactional

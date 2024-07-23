@@ -12,20 +12,24 @@ import java.time.format.DateTimeFormatter;
 @AllArgsConstructor
 @Getter
 public class AnnouncementDetailResponse {
+    private Long announcementId;
     private Long workplaceId;
     private String title;
     private String content;
     private String regDate;
     private String revisionDate;
     private Integer views;
+    private Boolean isImportant;
 
     public AnnouncementDetailResponse(Announcement a) {
+        this.announcementId = a.getIdAnnouncement();
         this.workplaceId = a.getWorkplace().getIdWorkPlace();
         this.title = a.getTitle();
         this.content = a.getContent();
         this.regDate = a.getRegDateAnnouncement().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         this.revisionDate = a.getRevisionDateAnnouncement().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         this.views = a.getViews();
+        this.isImportant = a.getIsImportant();
     }
 
 }
