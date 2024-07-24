@@ -15,9 +15,20 @@ spring:
   config:
     activate:
       on-profile: local
-  redis:
-    host: localhost
-    port: 6379
-    repository:
-      enabled: false
 
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      repositories:
+        enabled: false
+
+file:
+  storage:
+    path:
+      workplace: C:\workplace\
+#      user: C:\userSeulmae\
+      user: C:\\Users\\hany\\uploads\\users\\
+
+  endPoint:
+    workplace: /api/workplace/v1/file
