@@ -1,6 +1,7 @@
 package com.seulmae.seulmae.attendance.service;
 
 import com.seulmae.seulmae.attendance.dto.AttendanceApprovalDto;
+import com.seulmae.seulmae.attendance.dto.AttendanceManagerMainListDto;
 import com.seulmae.seulmae.attendance.dto.AttendanceRequestDto;
 import com.seulmae.seulmae.attendance.dto.AttendanceRequestListDto;
 import com.seulmae.seulmae.attendance.entity.Attendance;
@@ -140,4 +141,10 @@ public class AttendanceService {
         sendAttendanceRequest(user, attendanceRequestDto);
     }
 
+    @Transactional
+    public List<AttendanceManagerMainListDto> getDailyEmployeeAttendanceList(Workplace workplace, LocalDate localDate) {
+        List<AttendanceManagerMainListDto> attendanceManagerMainListDtoList = attendanceRequestHistoryRepository.findByWorkplaceAndDate(workplace, localDate);
+
+        return attendanceManagerMainListDtoList;
+    }
 }
