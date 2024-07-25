@@ -27,7 +27,6 @@ public class UserImageService {
     public void createUserImage(MultipartFile profileImage, User user) {
         try {
             String fileName = profileImage.getOriginalFilename();
-//            String filePath = "C:\\Users\\hany\\uploads\\users\\" + user.getIdUser();
             String filePath = userFilePath + user.getIdUser();
             UserImage userImage = new UserImage(user, fileName, filePath, FileUtil.getFileExtension(profileImage));
             user.updateUserImage(userImage);
@@ -42,7 +41,6 @@ public class UserImageService {
     public void updateUserImage(MultipartFile profileImage, User user) {
         try {
             String fileName = profileImage.getOriginalFilename();
-//            String filePath = "C:\\Users\\hany\\uploads\\users\\" + user.getIdUser();
             String filePath = userFilePath + user.getIdUser();
             userImageRepository.findByUser(user)
                     .ifPresentOrElse(userImage -> userImage.update(fileName, filePath, FileUtil.getFileExtension(profileImage)),

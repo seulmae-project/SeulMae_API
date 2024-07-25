@@ -5,7 +5,7 @@ spring:
 #    defer-datasource-initialization: true
   datasource:
 #    url: jdbc:mysql://mysql:3306/seulmaetest?useSSL=false&useUnicode=true&characterEncoding=utf8&allowPublicKeyRetrieval=true
-    url: jdbc:mysql://seulmae-mysql:3306/seulmaetest?useSSL=false&useUnicode=true&characterEncoding=utf8
+    url: jdbc:mysql://seulmae-mysql:3306/seulmaetest
     driver-class-name: com.mysql.cj.jdbc.Driver
   data:
     redis:
@@ -31,11 +31,11 @@ spring:
       max-request-size: 10MB # 한번에 최대 업로드 가능한 용량
       location: # 업로드 파일 경로
 
-  file:
-    storage:
-      path:
-        workplace: upload/workplace/
-        user: upload/user/
+file:
+  storage:
+    path:
+      workplace: upload/workplace/
+      user: upload/user/
 
-    endPoint:
-      workplace: /api/workplace/v1/file
+  endPoint:
+    workplace: /api/workplace/v1/file

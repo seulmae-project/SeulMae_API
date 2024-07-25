@@ -180,7 +180,7 @@ class WorkScheduleControllerTest {
                 .content(request)
                 .param("workScheduleId", String.valueOf(workSchedule.getIdWorkSchedule())));
 
-        result.andExpect(status().isCreated());
+        result.andExpect(status().isOk());
 
         List<Day> daysEnum = days.stream().map(Day::fromInt).collect(Collectors.toList());
         WorkSchedule updatedWorkSchedule = workScheduleRepository.findById(workSchedule.getIdWorkSchedule()).get();
