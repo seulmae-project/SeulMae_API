@@ -8,7 +8,9 @@ import com.seulmae.seulmae.global.util.enums.SuccessResponse;
 import com.seulmae.seulmae.user.Role;
 import com.seulmae.seulmae.user.dto.response.LoginSuccessResponse;
 import com.seulmae.seulmae.user.dto.response.TokenResponse;
+import com.seulmae.seulmae.user.dto.response.WorkplaceResponse;
 import com.seulmae.seulmae.user.entity.CustomOAuth2User;
+import com.seulmae.seulmae.user.entity.UserWorkplace;
 import com.seulmae.seulmae.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -20,8 +22,10 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -94,13 +98,15 @@ public class JwtService {
     /**
      * AccessToken & RefreshToken 바디(헤더는 임시 주석처리)에 송출
      */
-    public void sendAccessTokenAndRefreshToken(HttpServletResponse response, String accessToken, String refreshToken) throws IOException {
+    public void sendAccessTokenAndRefreshToken(HttpServletResponse response, String accessToken, String refreshToken, List<UserWorkplace> userWorkplaces) throws IOException {
         response.setStatus(HttpServletResponse.SC_OK);
         response.setContentType(CONTENT_TYPE);
         TokenResponse tokenResponse = new TokenResponse(accessToken, refreshToken, BEARER);
+        List<WorkplaceResponse> workplaceResponses = userWorkplaces.stream()
+                        .map(userWorkplace -> new WorkplaceResponse(userWorkplace)).collect(Collectors.toList());
         response.getWriter()
                 .write(objectMapper.writeValueAsString(
-                        new SuccessResponse(SuccessCode.LOGIN_SUCCESS, new LoginSuccessResponse(tokenResponse, null))
+                        new SuccessResponse(SuccessCode.LOGIN_SUCCESS, new LoginSuccessResponse(tokenResponse, null, workplaceResponses))
                         )
                 );
 //        response.setHeader(accessHeader, accessToken);
@@ -119,7 +125,7 @@ public class JwtService {
         TokenResponse tokenResponse = new TokenResponse(accessToken, refreshToken, BEARER);
         response.getWriter()
                 .write(objectMapper.writeValueAsString(
-                                new SuccessResponse(SuccessCode.LOGIN_SUCCESS, new LoginSuccessResponse(tokenResponse, role))
+                                new SuccessResponse(SuccessCode.LOGIN_SUCCESS, new LoginSuccessResponse(tokenResponse, role, null))
                         )
                 );
 //        response.setHeader(accessHeader, accessToken);

@@ -10,6 +10,7 @@ import com.seulmae.seulmae.user.entity.UserImage;
 import com.seulmae.seulmae.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -28,6 +29,9 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
     private final UserRepository userRepository;
 
     private final UserImageService userImageService;
+
+    @Value("${file.storage.path.user}")
+    private String userFilePath;
 
     private static final String KAKAO = "kakao";
 
@@ -89,7 +93,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
     private void saveUserImage(User user, OAuth2UserInfo oAuth2UserInfo) {
         String imageURL = oAuth2UserInfo.getImageURL();
         String imageUrlName = FileUtil.extractUrlName(imageURL);
-        String imageUrlPath = "C:\\Users\\hany\\uploads\\users\\" + user.getIdUser();
+        String imageUrlPath = userFilePath + user.getIdUser();
 
         UserImage userImage = new UserImage(user, imageUrlName, imageUrlPath, FileUtil.getFileExtension(imageURL));
         user.updateUserImage(userImage);

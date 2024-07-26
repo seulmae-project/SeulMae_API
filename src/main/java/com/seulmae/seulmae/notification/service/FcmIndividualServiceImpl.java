@@ -54,12 +54,13 @@ public class FcmIndividualServiceImpl implements FcmService {
         }
     }
 
-    public void sendMultiMessageTo(List<String> fcmTokens, String title, String body, NotificationType type, Long id) throws FirebaseMessagingException {
+    public void sendMultiMessageTo(List<String> fcmTokens, String title, String body, NotificationType type, Long id, Long workplaceId) throws FirebaseMessagingException {
         Notification notification = FcmService.buildNotification(title, body);
 
         MulticastMessage message = MulticastMessage.builder()
                 .putData("type", type.name())
                 .putData("id", String.valueOf(id))
+                .putData("workplaceId", String.valueOf(workplaceId))
                 .setNotification(notification)
                 .addAllTokens(fcmTokens)
                 .build();

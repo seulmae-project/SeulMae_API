@@ -2,12 +2,15 @@ package com.seulmae.seulmae.notification.service;
 
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.seulmae.seulmae.announcement.entity.Announcement;
+import com.seulmae.seulmae.global.util.FindByIdUtil;
 import com.seulmae.seulmae.notification.NotificationType;
+import com.seulmae.seulmae.notification.dto.response.NotificationResponse;
 import com.seulmae.seulmae.notification.entity.FcmToken;
 import com.seulmae.seulmae.notification.entity.Notification;
 import com.seulmae.seulmae.notification.repository.FcmTokenRepository;
 import com.seulmae.seulmae.notification.repository.NotificationRepository;
 import com.seulmae.seulmae.user.entity.User;
+import com.seulmae.seulmae.user.entity.UserWorkplace;
 import com.seulmae.seulmae.user.repository.UserWorkplaceRepository;
 import com.seulmae.seulmae.workplace.entity.Workplace;
 import com.seulmae.seulmae.workplace.repository.WorkplaceRepository;
@@ -16,9 +19,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +35,7 @@ public class NotificationService {
 
     private final FcmIndividualServiceImpl fcmIndividualServiceImpl;
     private final FcmTopicServiceImpl fcmTopicServiceImpl;
+    private final FindByIdUtil findByIdUtil;
 
     private static final String TOPIC_PREFIX = "workplace";
 
@@ -57,7 +62,9 @@ public class NotificationService {
         fcmTopicServiceImpl.sendMessageTo(topic, title, body, NotificationType.NOTICE, announcement.getIdAnnouncement());
 
         for (User user : users) {
-            storeNotification(title, body, user, NotificationType.NOTICE);
+            UserWorkplace userWorkplace = userWorkplaceRepository.findByUserAndWorkplace(user, workplace)
+                            .orElseThrow(() -> new NoSuchElementException("해당 User 및 Workplace와 관련된 UserWorkplace가 존재하지 않습니다."));
+            storeNotification(title, body, userWorkplace, NotificationType.NOTICE);
         }
     }
 
@@ -66,16 +73,18 @@ public class NotificationService {
      * 일대일(여러 기기) 메세지 전송
      */
     @Transactional
-    public void sendMessageToUserWithMultiDevice(String title, String body, User receiver, NotificationType type, Long id) {
+    public void sendMessageToUserWithMultiDevice(String title, String body, User receiver, NotificationType type, Long id, Long workplaceId) {
         try {
-
-            System.out.println("receiver = " + receiver.getFcmTokens());
             List<String> fcmTokens = receiver.getFcmTokens().stream()
                     .map(FcmToken::getFcmToken)
                     .toList();
+            Workplace workplace = findByIdUtil.getWorkplaceById(workplaceId);
+            UserWorkplace userWorkplace = userWorkplaceRepository.findByUserAndWorkplace(receiver, workplace)
+                    .orElseThrow(() -> new NoSuchElementException("해당 User 및 Workplace와 관련된 UserWorkplace가 존재하지 않습니다."));
 
-            fcmIndividualServiceImpl.sendMultiMessageTo(fcmTokens, title, body, type, id);
-            storeNotification(title, body, receiver, type);
+            fcmIndividualServiceImpl.sendMultiMessageTo(fcmTokens, title, body, type, id, workplaceId);
+
+            storeNotification(title, body, userWorkplace, type);
 
         } catch (FirebaseMessagingException e) {
             log.error("Failed to send FCM message to user {} with title '{}'", receiver.getUsername(), title, e);
@@ -89,14 +98,20 @@ public class NotificationService {
 
 
 
-    public Notification storeNotification(String title, String message, User user, NotificationType notificationType) {
+    public Notification storeNotification(String title, String message, UserWorkplace userWorkplace, NotificationType notificationType) {
         Notification notification = Notification.builder()
                 .title(title)
                 .message(message)
-                .toUser(user)
+                .userWorkplace(userWorkplace)
                 .notificationType(notificationType)
                 .build();
         return notificationRepository.save(notification);
     }
 
+    public List<NotificationResponse> getNotifications(Long userWorkplaceId) {
+        UserWorkplace userWorkplace = findByIdUtil.getUserWorkplaceById(userWorkplaceId);
+        return notificationRepository.findAllByUserWorkplace(userWorkplace).stream()
+                .map(NotificationResponse::new)
+                .collect(Collectors.toList());
+    }
 }

@@ -3,7 +3,9 @@ package com.seulmae.seulmae.global.config.jwt;
 import com.seulmae.seulmae.global.util.PasswordUtil;
 import com.seulmae.seulmae.user.Role;
 import com.seulmae.seulmae.user.entity.User;
+import com.seulmae.seulmae.user.entity.UserWorkplace;
 import com.seulmae.seulmae.user.repository.UserRepository;
+import com.seulmae.seulmae.user.repository.UserWorkplaceRepository;
 import com.seulmae.seulmae.user.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -21,6 +23,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -36,6 +39,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final UserRepository userRepository;
+    private final UserWorkplaceRepository userWorkplaceRepository;
 
     private GrantedAuthoritiesMapper authoritiesMapper = new NullAuthoritiesMapper();
 
@@ -55,7 +59,8 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
             checkRefreshToken(refreshToken)
                     .ifPresent(user -> {
                         try {
-                            jwtService.sendAccessTokenAndRefreshToken(response, jwtService.createAccessToken(user.getAccountId()), reIssueRefreshToken(user));
+                            List<UserWorkplace> userWorkplaces = userWorkplaceRepository.findAllByUser(user);
+                            jwtService.sendAccessTokenAndRefreshToken(response, jwtService.createAccessToken(user.getAccountId()), reIssueRefreshToken(user), userWorkplaces);
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }

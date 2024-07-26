@@ -10,6 +10,8 @@ import com.seulmae.seulmae.user.repository.UserWorkplaceRepository;
 import com.seulmae.seulmae.wage.entity.Wage;
 import com.seulmae.seulmae.wage.repository.WageRepository;
 import com.seulmae.seulmae.workplace.entity.Workplace;
+import com.seulmae.seulmae.workplace.entity.WorkplaceJoinHistory;
+import com.seulmae.seulmae.workplace.repository.WorkplaceJoinHistoryRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,6 +24,7 @@ public class UserWorkplaceService {
     private final UserWorkplaceRepository userWorkplaceRepository;
     private final WageRepository wageRepository;
     private final UserWorkScheduleRepository userWorkScheduleRepository;
+    private final WorkplaceJoinHistoryRepository workplaceJoinHistoryRepository;
 
     private final FindByIdUtil findByIdUtil;
 
@@ -33,10 +36,13 @@ public class UserWorkplaceService {
                 .orElseThrow(() -> new NoSuchElementException("해당 유저 ID와 근무지 ID와 관련된 Wage가 존재하지 않습니다."));
         UserWorkSchedule userWorkSchedule = userWorkScheduleRepository.findByUserAndWorkplace(userWorkplace.getUser(), userWorkplace.getWorkplace())
                 .orElseThrow(() -> new NoSuchElementException("해당 유저 ID와 근무지 ID와 관련된 UserWorkSchedule이 존재하지 않습니다."));
+        WorkplaceJoinHistory workplaceJoinHistory = workplaceJoinHistoryRepository.findByUserAndWorkplace(userWorkplace.getUser(), userWorkplace.getWorkplace())
+                .orElseThrow(() -> new NoSuchElementException("해당 유저 ID와 근무지 ID와 관련된 WorkplaceJoinHistory가 존재하지 않습니다."));
+
 
         String userImageURL = userService.getUserImageURL(userWorkplace.getUser(), request);
 
-        return new UserInfoWithWorkplaceResponse(userWorkplace, userWorkSchedule, wage, userImageURL);
+        return new UserInfoWithWorkplaceResponse(userWorkplace, userWorkSchedule, wage, workplaceJoinHistory,userImageURL);
     }
 
     public void checkMangerAuthority(Workplace workplace, User user) {
