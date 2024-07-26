@@ -2,6 +2,7 @@ package com.seulmae.seulmae.notification.entity;
 
 import com.seulmae.seulmae.notification.NotificationType;
 import com.seulmae.seulmae.user.entity.User;
+import com.seulmae.seulmae.user.entity.UserWorkplace;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -21,8 +22,8 @@ public class Notification {
     private Long idNotification;
 
     @ManyToOne
-    @JoinColumn(name = "to_user_id", referencedColumnName = "id_user", nullable = false)
-    private User toUser;
+    @JoinColumn(name = "use_workplace_id", referencedColumnName = "id_user_workplace", nullable = false)
+    private UserWorkplace userWorkplace;
 
     @Column(name = "title")
     private String title;
@@ -39,10 +40,10 @@ public class Notification {
     private LocalDateTime regDateNotification;
 
     @Builder
-    public Notification(String title, String message, NotificationType notificationType, User toUser) {
+    public Notification(String title, String message, NotificationType notificationType, UserWorkplace userWorkplace) {
         this.title = title;
         this.message = message;
         this.notificationType = notificationType;
-        this.toUser = toUser;
+        this.userWorkplace = userWorkplace;
     }
 }

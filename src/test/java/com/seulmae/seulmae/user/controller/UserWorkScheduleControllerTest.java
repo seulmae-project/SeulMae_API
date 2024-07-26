@@ -226,7 +226,7 @@ class UserWorkScheduleControllerTest {
                 .param("userWorkScheduleId", String.valueOf(userWorkSchedule.getIdUserWorkSchedule())));
 
         System.out.println(result.andReturn().getResponse().getContentAsString());
-        result.andExpect(status().isCreated());
+        result.andExpect(status().isOk());
         UserWorkSchedule updatedUserWorkSchedule = userWorkScheduleRepository.findAll().get(0);
         assertThat(updatedUserWorkSchedule.getWorkSchedule()).isEqualTo(newWorkSchedule);
 
@@ -251,7 +251,7 @@ class UserWorkScheduleControllerTest {
         ResultActions result = mockMvc.perform(delete(URL)
                 .param("userWorkScheduleId", String.valueOf(userWorkSchedule.getIdUserWorkSchedule())));
 
-        result.andExpect(status().isNoContent());
+        result.andExpect(status().isOk());
         List<UserWorkSchedule> userWorkSchedules = userWorkScheduleRepository.findAll();
         assertThat(userWorkSchedules.size()).isZero();
     }

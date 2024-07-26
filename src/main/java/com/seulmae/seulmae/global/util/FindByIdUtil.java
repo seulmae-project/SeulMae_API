@@ -1,10 +1,12 @@
 package com.seulmae.seulmae.global.util;
 
 import com.seulmae.seulmae.attendance.entity.Attendance;
-import com.seulmae.seulmae.attendance.entity.AttendanceRequestHistory;
 import com.seulmae.seulmae.attendance.repository.AttendanceRepository;
-import com.seulmae.seulmae.attendance.repository.AttendanceRequestHistoryRepository;
+import com.seulmae.seulmae.attendanceRequestHistory.entity.AttendanceRequestHistory;
+import com.seulmae.seulmae.attendanceRequestHistory.repository.AttendanceRequestHistoryRepository;
+import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.user.entity.UserWorkplace;
+import com.seulmae.seulmae.user.repository.UserRepository;
 import com.seulmae.seulmae.user.repository.UserWorkplaceRepository;
 import com.seulmae.seulmae.workplace.entity.WorkSchedule;
 import com.seulmae.seulmae.workplace.entity.Workplace;
@@ -23,6 +25,7 @@ import java.util.NoSuchElementException;
 @RequiredArgsConstructor
 public class FindByIdUtil {
 
+    private final UserRepository userRepository;
     private final WorkplaceRepository workplaceRepository;
     private final WorkplaceApproveRepository workplaceApproveRepository;
     private final WorkplaceJoinHistoryRepository workplaceJoinHistoryRepository;
@@ -30,6 +33,11 @@ public class FindByIdUtil {
     private final AttendanceRepository attendanceRepository;
     private final AttendanceRequestHistoryRepository attendanceRequestHistoryRepository;
     private final UserWorkplaceRepository userWorkplaceRepository;
+
+    public User getUserById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new NullPointerException("This userId doesn't exist."));
+    }
 
     public Workplace getWorkplaceById(Long workplaceId) {
         return workplaceRepository.findById(workplaceId)
