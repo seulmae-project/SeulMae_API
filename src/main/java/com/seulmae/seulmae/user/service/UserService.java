@@ -1,6 +1,7 @@
 package com.seulmae.seulmae.user.service;
 
 import com.seulmae.seulmae.global.util.FileUtil;
+import com.seulmae.seulmae.global.util.FindByIdUtil;
 import com.seulmae.seulmae.global.util.PasswordUtil;
 import com.seulmae.seulmae.global.util.UrlUtil;
 import com.seulmae.seulmae.user.Role;
@@ -38,6 +39,9 @@ public class UserService {
     private final UserWorkplaceRepository userWorkplaceRepository;
 
     private final PasswordEncoder passwordEncoder;
+    private final FindByIdUtil findByIdUtil;
+
+    private final UserImageService userImageService;
 
     private final String FILE_ENDPOINT = "/api/users/file";
 
@@ -63,16 +67,7 @@ public class UserService {
         userRepository.save(user);
 
         if (file != null && !file.isEmpty()) {
-            try {
-                String fileName = file.getOriginalFilename();
-                String filePath = "C:\\Users\\hany\\uploads\\users\\" + user.getIdUser();
-                UserImage userImage = new UserImage(user, fileName, filePath, FileUtil.getFileExtension(file));
-                user.updateUserImage(userImage);
-                FileUtil.uploadFile(filePath, fileName, file);
-                userRepository.save(user);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            userImageService.createUserImage(file, user);
         }
     }
 
@@ -82,35 +77,16 @@ public class UserService {
             throw new AccessDeniedException("프로필을 수정할 권한이 없습니다.");
         }
 
-//        User targetUser = userRepository.findById(loginId)
-//                .orElseThrow(() -> new NoSuchElementException("대상 유저를 찾을 수 없습니다."));
-
-        user.updateName(updateUserRequest.getName());
+        User targetUser = findByIdUtil.getUserById(user.getIdUser());
+        targetUser.updateName(updateUserRequest.getName());
 
         if (file != null && !file.isEmpty()) {
-            try {
-                String fileName = file.getOriginalFilename();
-                String filePath = "C:\\Users\\hany\\uploads\\users\\" + user.getIdUser();
-                userImageRepository.findByUser(user)
-                        .ifPresentOrElse(userImage -> userImage.update(fileName, filePath, FileUtil.getFileExtension(file)),
-                                () -> {
-                                    UserImage newUserImage = new UserImage(user, fileName, filePath, FileUtil.getFileExtension(file));
-                                    user.updateUserImage(newUserImage);
-//                                    userRepository.save(targetUser);
-                                });
-
-                // TODO: 서버에 저장된 기존 사진은 어떻게 할 것인가? 지우기 VS 남겨두기
-                FileUtil.uploadFile(filePath, fileName, file);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            userImageService.updateUserImage(file, targetUser);
         }
-        userRepository.save(user);
+
+        userRepository.save(targetUser);
     }
 
-//    public void logout(HttpServletRequest request, HttpServletResponse response) {
-//        new SecurityContextLogoutHandler().logout(request, response, SecurityContextHolder.getContext().getAuthentication());
-//    }
 
     /**
      * ROLE UPDATE: GUEST -> USER
@@ -121,28 +97,12 @@ public class UserService {
                 .orElseThrow(() -> new IllegalArgumentException("해당하는 유저가 없습니다."));
         user.updateAdditionalInfo(request.getName(), request.getIsMale(), request.getBirthday());
         user.authorizeUser();
-//        userRepository.save(user);
 
         if (file != null && !file.isEmpty()) {
-            try {
-                String fileName = file.getOriginalFilename();
-                String filePath = "C:\\Users\\hany\\uploads\\users\\" + user.getIdUser();
-
-                userImageRepository.findByUser(user)
-                        .ifPresentOrElse(_userImage ->
-                                        _userImage.update(fileName, filePath, FileUtil.getFileExtension(file)),
-                                () -> {
-                                    UserImage newUserImage = new UserImage(user, fileName, filePath, FileUtil.getFileExtension(file));
-                                    user.updateUserImage(newUserImage);
-                                    userRepository.save(user);
-                                });
-                // TODO: 서버에 저장된 기존 사진은 어떻게 할 것인가? 지우기 VS 남겨두기
-                FileUtil.uploadFile(filePath, fileName, file);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            userImageService.updateUserImage(file, user);
         }
 
+        userRepository.save(user);
     }
 
     public FindAuthResponse getAccountId(String phoneNumber) {
@@ -197,17 +157,17 @@ public class UserService {
     }
 
     public boolean isCorrectAccountId(String accountId) {
-            // 길이 체크
-            if (accountId.length() < 5) {
-                return false;
-            }
+        // 길이 체크
+        if (accountId.length() < 5) {
+            return false;
+        }
 
-            // 영어와 숫자로만 이루어져 있는지 체크 (^[a-zA-Z0-9]*$)
-            if (!accountId.matches("^[a-zA-Z0-9]*$")) {
-                return false;
-            }
+        // 영어와 숫자로만 이루어져 있는지 체크 (^[a-zA-Z0-9]*$)
+        if (!accountId.matches("^[a-zA-Z0-9]*$")) {
+            return false;
+        }
 
-            return true;
+        return true;
     }
 
     @Transactional
@@ -257,7 +217,7 @@ public class UserService {
             userWorkplaceInfoResponses.add(new UserWorkplaceInfoResponse(workplace.getWorkplaceName(), workplace.getAddressVo()));
         }
 
-        return new UserProfileResponse(user.getName(),getUserImageURL(user, request), user.getPhoneNumber(), userWorkplaceInfoResponses);
+        return new UserProfileResponse(user.getName(), getUserImageURL(user, request), user.getPhoneNumber(), userWorkplaceInfoResponses);
     }
 
 }

@@ -3,9 +3,7 @@ package com.seulmae.seulmae.wage.entity;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.workplace.entity.Workplace;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
@@ -14,6 +12,8 @@ import java.time.LocalDate;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "wage")
+@AllArgsConstructor
+@Builder(toBuilder = true)
 @EntityListeners(AuditingEntityListener.class)
 public class Wage {
     @Id

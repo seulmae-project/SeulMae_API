@@ -3,7 +3,10 @@ package com.seulmae.seulmae.global.config.oauth2.handler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.seulmae.seulmae.user.Role;
 import com.seulmae.seulmae.user.entity.CustomOAuth2User;
+import com.seulmae.seulmae.user.entity.User;
+import com.seulmae.seulmae.user.entity.UserWorkplace;
 import com.seulmae.seulmae.user.repository.UserRepository;
+import com.seulmae.seulmae.user.repository.UserWorkplaceRepository;
 import com.seulmae.seulmae.user.service.JwtService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,6 +18,8 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 @Slf4j
 @Component
@@ -22,6 +27,7 @@ import java.io.IOException;
 public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     private final JwtService jwtService;
     private final UserRepository userRepository;
+    private final UserWorkplaceRepository userWorkplaceRepository;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -47,7 +53,11 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         String refreshToken = jwtService.createRefreshToken();
 //        response.addHeader(jwtService.getAccessHeader(), "Bearer " + accessToken);
 //        response.addHeader(jwtService.getRefreshHeader(), "Bearer " + refreshToken);
-        jwtService.sendAccessTokenAndRefreshToken(response, accessToken, refreshToken);
+        User user = userRepository.findByAccountId(oAuth2User.getAccountId())
+                .orElseThrow(() -> new NoSuchElementException());
+        List<UserWorkplace> userWorkplaces = userWorkplaceRepository.findAllByUser(user);
+
+        jwtService.sendAccessTokenAndRefreshToken(response, accessToken, refreshToken, userWorkplaces);
         jwtService.updateRefreshToken(oAuth2User.getAccountId(), refreshToken);
     }
 }

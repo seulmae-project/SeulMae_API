@@ -166,6 +166,10 @@ public class User implements UserDetails {
         this.birthday = birthday;
     }
 
+    public void addFcmToken(FcmToken fcmToken) {
+        this.fcmTokens.add(fcmToken);
+    }
+
     /** 회원 탈퇴 **/
     public void deleteUser() {
         this.isDelUser = true;

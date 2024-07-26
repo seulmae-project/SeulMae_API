@@ -1,17 +1,20 @@
 package com.seulmae.seulmae.attendance.controller;
 
 import com.seulmae.seulmae.attendance.dto.AttendanceApprovalDto;
+import com.seulmae.seulmae.attendance.dto.AttendanceManagerMainListDto;
 import com.seulmae.seulmae.attendance.dto.AttendanceRequestDto;
 import com.seulmae.seulmae.attendance.dto.AttendanceRequestListDto;
 import com.seulmae.seulmae.attendance.service.AttendanceService;
 import com.seulmae.seulmae.global.util.ResponseUtil;
 import com.seulmae.seulmae.global.util.enums.SuccessCode;
 import com.seulmae.seulmae.user.entity.User;
+import com.seulmae.seulmae.workplace.entity.Workplace;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -103,11 +106,27 @@ public class AttendanceController {
      * @param user
      * @param attendanceRequestDto
      */
+    @PostMapping("separate")
     public ResponseEntity<?> sendSeparateAttendanceRequest(@AuthenticationPrincipal User user, @RequestBody AttendanceRequestDto attendanceRequestDto) {
         try {
             attendanceService.sendSeparateAttendanceRequest(user, attendanceRequestDto);
 
             return ResponseUtil.createSuccessResponse(SuccessCode.INSERT_SUCCESS);
+        } catch (Exception e) {
+            return ResponseUtil.handleException(e);
+        }
+    }
+
+
+    /**
+     * 매니저 월별 메인 화면
+     **/
+    @GetMapping("main/manager")
+    public ResponseEntity<?> getDailyEmployeeAttendanceList(@RequestParam Workplace workplace, @RequestParam LocalDate localDate) {
+        try {
+            List<AttendanceManagerMainListDto> attendanceManagerMainListDtoList = attendanceService.getDailyEmployeeAttendanceList(workplace, localDate);
+
+            return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, attendanceManagerMainListDtoList);
         } catch (Exception e) {
             return ResponseUtil.handleException(e);
         }

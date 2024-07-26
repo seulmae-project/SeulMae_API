@@ -54,8 +54,8 @@ public class AttendanceRequestHistory {
     private LocalDateTime checkDate;
 
     @CreatedDate
-    @Column(name = "reg_date_attendance")
-    private LocalDateTime regDateAttendance;
+    @Column(name = "reg_date_attendance_request_history")
+    private LocalDateTime regDateAttendanceRequestHistory;
 
     public void setAttendance(Attendance attendance) {
         this.attendance = attendance;

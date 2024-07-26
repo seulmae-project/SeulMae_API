@@ -8,6 +8,7 @@ import com.seulmae.seulmae.global.config.login.handler.LoginSuccessHandler;
 import com.seulmae.seulmae.global.config.oauth2.handler.OAuth2LoginFailureHandler;
 import com.seulmae.seulmae.global.config.oauth2.handler.OAuth2LoginSuccessHandler;
 import com.seulmae.seulmae.user.repository.UserRepository;
+import com.seulmae.seulmae.user.repository.UserWorkplaceRepository;
 import com.seulmae.seulmae.user.service.CustomOAuth2UserService;
 import com.seulmae.seulmae.user.service.JwtService;
 import com.seulmae.seulmae.user.service.LoginService;
@@ -38,6 +39,7 @@ public class SecurityConfig {
     private final LoginService loginService;
     private final JwtService jwtService;
     private final UserRepository userRepository;
+    private final UserWorkplaceRepository userWorkplaceRepository;
     private final ObjectMapper objectMapper;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
     private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
@@ -46,7 +48,7 @@ public class SecurityConfig {
     @Bean
     public WebSecurityCustomizer configure() { //스프링 시큐리티 기능 비활성화하는 곳
         return (web) -> web.ignoring()
-                .requestMatchers(toH2Console())
+                .requestMatchers("/h2-console/**")
                 .requestMatchers(
                         new AntPathRequestMatcher("/img/**"),
                         new AntPathRequestMatcher("/css/**"),
@@ -114,7 +116,7 @@ public class SecurityConfig {
      */
     @Bean
     public LoginSuccessHandler loginSuccessHandler() {
-        return new LoginSuccessHandler(jwtService, userRepository);
+        return new LoginSuccessHandler(jwtService, userRepository, userWorkplaceRepository);
     }
 
     @Bean
@@ -140,6 +142,6 @@ public class SecurityConfig {
 
     @Bean
     public JwtAuthenticationProcessingFilter jwtAuthenticationProcessingFilter() {
-        return new JwtAuthenticationProcessingFilter(jwtService, userRepository);
+        return new JwtAuthenticationProcessingFilter(jwtService, userRepository, userWorkplaceRepository);
     }
 }

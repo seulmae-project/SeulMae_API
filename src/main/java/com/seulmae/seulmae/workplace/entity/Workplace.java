@@ -26,6 +26,9 @@ public class Workplace {
     @Column(name = "workplace_code", updatable = false, unique = true)
     private String workplaceCode;
 
+    @Column(name = "workplace_topic", unique = true)
+    private String workplaceTopic;
+
     @Column(name = "workplace_name")
     private String workplaceName;
 
@@ -50,6 +53,10 @@ public class Workplace {
 
     public void setWorkplaceImages(List<WorkplaceImage> workplaceImages) {
         this.workplaceImages = workplaceImages;
+    }
+
+    public void setWorkplaceTopic(String workplaceTopic) {
+        this.workplaceTopic = workplaceTopic;
     }
 
     public void deleteWorkplace() {

@@ -1,8 +1,10 @@
 package com.seulmae.seulmae.workplace.service;
 
+import com.google.firebase.messaging.FirebaseMessagingException;
 import com.seulmae.seulmae.global.util.FileUtil;
 import com.seulmae.seulmae.global.util.UUIDUtil;
 import com.seulmae.seulmae.global.util.UrlUtil;
+import com.seulmae.seulmae.notification.service.FcmTopicServiceImpl;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.user.entity.UserWorkplace;
 import com.seulmae.seulmae.user.repository.UserWorkplaceRepository;
@@ -35,6 +37,8 @@ public class WorkplaceService {
     private final WorkplaceRepository workplaceRepository;
     private final WorkplaceFileService workplaceFileService;
     private final UserWorkplaceRepository userWorkplaceRepository;
+
+    private final FcmTopicServiceImpl fcmTopicServiceImpl;
 
     @Value("${file.endPoint.workplace}")
     private String fileEndPoint;
@@ -121,12 +125,18 @@ public class WorkplaceService {
     }
 
     @Transactional
-    public void deleteWorkplace(Long workplaceId) {
+    public void deleteWorkplace(Long workplaceId) throws FirebaseMessagingException {
         Workplace workplace = getWorkplaceById(workplaceId);
 
         workplace.deleteWorkplace();
 
         workplaceRepository.save(workplace);
+
+        /**
+         * 구독 전체 취소
+         */
+        List<User> users = userWorkplaceRepository.findUsersByWorkplace(workplace);
+        fcmTopicServiceImpl.unsubscribeAllFromTopic(users, workplace.getWorkplaceTopic());
     }
 
     public Workplace getWorkplaceById(Long workplaceId) {

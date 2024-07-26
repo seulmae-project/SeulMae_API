@@ -5,6 +5,7 @@ import com.seulmae.seulmae.announcement.dto.request.AddAnnouncementRequest;
 import com.seulmae.seulmae.announcement.dto.request.UpdateAnnouncementRequest;
 import com.seulmae.seulmae.announcement.entity.Announcement;
 import com.seulmae.seulmae.announcement.repository.AnnouncementRepository;
+import com.seulmae.seulmae.notification.repository.NotificationRepository;
 import com.seulmae.seulmae.user.Role;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.user.repository.UserRepository;
@@ -62,6 +63,9 @@ class AnnouncementControllerTest {
 
     @Autowired
     private UserWorkplaceRepository userWorkplaceRepository;
+
+    @Autowired
+    private NotificationRepository notificationRepository;
 
     @Autowired
     private AuthenticationHelper authenticationHelper;
@@ -122,6 +126,7 @@ class AnnouncementControllerTest {
     @AfterEach
     public void cleanUp() {
         announcementRepository.deleteAll();
+        notificationRepository.deleteAll();
         userWorkplaceRepository.deleteAll();
         workplaceRepository.deleteAll();
         userRepository.deleteAll();
@@ -175,7 +180,7 @@ class AnnouncementControllerTest {
                 .param("announcementId", String.valueOf(announcement.getIdAnnouncement())));
 
 
-        result.andExpect(status().isCreated());
+        result.andExpect(status().isOk());
 
         Announcement updatedAnnouncement = announcementRepository.findById(announcement.getIdAnnouncement())
                 .orElseThrow(() -> new NoSuchElementException("공지사항 없음"));
@@ -248,7 +253,7 @@ class AnnouncementControllerTest {
         ResultActions resultActions = mockMvc.perform(delete(url)
                 .param("announcementId", String.valueOf(announcement.getIdAnnouncement())));
 
-        resultActions.andExpect(status().isNoContent());
+        resultActions.andExpect(status().isOk());
 
         Announcement deletedAnnouncement = announcementRepository.findById(announcement.getIdAnnouncement()).get();
         assertThat(deletedAnnouncement.getIsDelAnnouncement()).isTrue();

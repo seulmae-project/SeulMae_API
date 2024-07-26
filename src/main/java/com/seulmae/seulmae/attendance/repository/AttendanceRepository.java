@@ -16,13 +16,13 @@ import java.util.Optional;
 @Repository
 public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
 
-    @Query("SELECT new com.seulmae.seulmae.attendance.dto.AttendanceRequestListDto(arh.idAttendanceRequestHistory, a.user.name, arh.regDateAttendance) " +
+    @Query("SELECT new com.seulmae.seulmae.attendance.dto.AttendanceRequestListDto(arh.idAttendanceRequestHistory, a.user.name, arh.regDateAttendanceRequestHistory) " +
             "FROM Attendance a " +
             "JOIN AttendanceRequestHistory arh on a.idAttendance = arh.attendance.idAttendance " +
             "WHERE a.workplace.idWorkPlace = :workplaceId " +
             "AND arh.isManagerCheck = false " +
             "AND arh.isRequestApprove = false " +
-            "ORDER BY arh.regDateAttendance")
+            "ORDER BY arh.regDateAttendanceRequestHistory")
     List<AttendanceRequestListDto> findByWorkplaceId(Long workplaceId);
 
     Optional<Attendance> findByUserAndWorkplaceAndWorkDate(User user, Workplace workplace, LocalDateTime workDate);
