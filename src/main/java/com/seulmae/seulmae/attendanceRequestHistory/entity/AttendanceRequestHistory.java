@@ -1,5 +1,6 @@
-package com.seulmae.seulmae.attendance.entity;
+package com.seulmae.seulmae.attendanceRequestHistory.entity;
 
+import com.seulmae.seulmae.attendance.entity.Attendance;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -25,7 +26,7 @@ public class AttendanceRequestHistory {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "attendance_id")
-    private Attendance attendance;
+    private com.seulmae.seulmae.attendance.entity.Attendance attendance;
 
     @Column(name = "work_start_time")
     private LocalDateTime workStartTime;
