@@ -1,9 +1,9 @@
 package com.seulmae.seulmae.global.util;
 
 import com.seulmae.seulmae.attendance.entity.Attendance;
-import com.seulmae.seulmae.attendance.entity.AttendanceRequestHistory;
 import com.seulmae.seulmae.attendance.repository.AttendanceRepository;
-import com.seulmae.seulmae.attendance.repository.AttendanceRequestHistoryRepository;
+import com.seulmae.seulmae.attendanceRequestHistory.entity.AttendanceRequestHistory;
+import com.seulmae.seulmae.attendanceRequestHistory.repository.AttendanceRequestHistoryRepository;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.user.entity.UserWorkplace;
 import com.seulmae.seulmae.user.repository.UserRepository;

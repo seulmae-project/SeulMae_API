@@ -5,15 +5,14 @@ import com.seulmae.seulmae.attendance.dto.AttendanceManagerMainListDto;
 import com.seulmae.seulmae.attendance.dto.AttendanceRequestDto;
 import com.seulmae.seulmae.attendance.dto.AttendanceRequestListDto;
 import com.seulmae.seulmae.attendance.entity.Attendance;
-import com.seulmae.seulmae.attendance.entity.AttendanceRequestHistory;
 import com.seulmae.seulmae.attendance.repository.AttendanceRepository;
-import com.seulmae.seulmae.attendance.repository.AttendanceRequestHistoryRepository;
+import com.seulmae.seulmae.attendanceRequestHistory.entity.AttendanceRequestHistory;
+import com.seulmae.seulmae.attendanceRequestHistory.repository.AttendanceRequestHistoryRepository;
 import com.seulmae.seulmae.global.exception.AttendanceRequestConflictException;
 import com.seulmae.seulmae.global.util.FindByIdUtil;
 import com.seulmae.seulmae.notification.NotificationType;
 import com.seulmae.seulmae.notification.service.NotificationService;
 import com.seulmae.seulmae.user.entity.User;
-import com.seulmae.seulmae.user.repository.UserRepository;
 import com.seulmae.seulmae.user.repository.UserWorkplaceRepository;
 import com.seulmae.seulmae.workplace.entity.Workplace;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +23,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor

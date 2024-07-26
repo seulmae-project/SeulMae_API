@@ -2,11 +2,16 @@ package com.seulmae.seulmae.attendance.repository;
 
 import com.seulmae.seulmae.attendance.dto.AttendanceRequestListDto;
 import com.seulmae.seulmae.attendance.entity.Attendance;
+import com.seulmae.seulmae.user.entity.User;
+import com.seulmae.seulmae.workplace.entity.Workplace;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+
+import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Repository
 public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
@@ -19,4 +24,6 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
             "AND arh.isRequestApprove = false " +
             "ORDER BY arh.regDateAttendanceRequestHistory")
     List<AttendanceRequestListDto> findByWorkplaceId(Long workplaceId);
+
+    Optional<Attendance> findByUserAndWorkplaceAndWorkDate(User user, Workplace workplace, LocalDateTime workDate);
 }

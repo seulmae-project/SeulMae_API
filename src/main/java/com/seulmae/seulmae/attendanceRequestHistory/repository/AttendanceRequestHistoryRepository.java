@@ -1,9 +1,9 @@
-package com.seulmae.seulmae.attendance.repository;
+package com.seulmae.seulmae.attendanceRequestHistory.repository;
 
 import com.seulmae.seulmae.attendance.dto.AttendanceManagerMainListDto;
-import com.seulmae.seulmae.attendance.entity.AttendanceRequestHistory;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.workplace.entity.Workplace;
+import com.seulmae.seulmae.attendanceRequestHistory.entity.AttendanceRequestHistory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
