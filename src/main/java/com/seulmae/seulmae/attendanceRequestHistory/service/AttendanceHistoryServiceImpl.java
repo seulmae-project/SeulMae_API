@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
 
 @Service
@@ -59,7 +58,7 @@ public class AttendanceHistoryServiceImpl implements AttendanceHistoryService {
 
         // 근무 현황 데이터 조회 및 가공
         long workedDays = attendanceRequestHistoryRepository.countByWorkplaceId(workplaceId);
-        LocalDateTime firstWorkDate = attendanceRepository.findFirstWorkDateByUserIdAndWorkplaceId(user.getIdUser(), workplaceId);
+        LocalDate firstWorkDate = attendanceRepository.findFirstWorkDateByUserIdAndWorkplaceId(user.getIdUser(), workplaceId);
         Integer payday = wage.getPayday();
 
         // WorkStatusDto 객체 생성 및 반환

@@ -17,10 +17,10 @@ public class FindByUserAndWorkPlaceUtil {
     private final UserRepository userRepository;
     private final WorkplaceRepository workplaceRepository;
 
-    private WageRepository wageRepository;
+    private final WageRepository wageRepository;
 
     public Wage getWageByUserAndWorkPlace(User user, Workplace workplace) {
         return wageRepository.findByUserAndWorkplace(user, workplace)
-                .orElseThrow(() -> new NoSuchElementException("해당 월급정보가 존재하지 않습니다."));
+                .orElseThrow(() -> new NoSuchElementException("해당 사용자 및 근무지에 대한 월급정보가 존재하지 않습니다."));
     }
 }

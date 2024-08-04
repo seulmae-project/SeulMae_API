@@ -1,5 +1,8 @@
 package com.seulmae.seulmae.attendanceRequestHistory.dto;
 
+import lombok.Getter;
+
+@Getter
 public class AttendanceRequestHistoryDetailDto {
     // 시급
     private final Integer baseWage;

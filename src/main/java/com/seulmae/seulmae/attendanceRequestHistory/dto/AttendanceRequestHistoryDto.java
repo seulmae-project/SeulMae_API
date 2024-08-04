@@ -1,9 +1,12 @@
 package com.seulmae.seulmae.attendanceRequestHistory.dto;
 
+import lombok.Getter;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+@Getter
 public class AttendanceRequestHistoryDto {
     // 날짜
     private final LocalDate workDate;

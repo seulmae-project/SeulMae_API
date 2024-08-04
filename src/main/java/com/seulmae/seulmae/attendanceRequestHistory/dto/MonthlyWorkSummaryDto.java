@@ -1,8 +1,11 @@
 package com.seulmae.seulmae.attendanceRequestHistory.dto;
 
+import lombok.Getter;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+@Getter
 public class MonthlyWorkSummaryDto {
     // 승인 된 월 지급 합계
     private final Integer monthlyWage;

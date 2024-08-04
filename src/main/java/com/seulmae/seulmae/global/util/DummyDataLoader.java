@@ -68,7 +68,7 @@ public class DummyDataLoader implements CommandLineRunner {
         Map<String, String> body = new HashMap<>();
         body.put("accountId", accountId);
         body.put("password", password);
-        body.put("fcmToken", "fVkUc4d3XEaqtM7hvPb6-h:APA91bFPzgbzyMlYrQd_PANAit-5RwUozz7n5HgjL6rCuh7lmAxWkxLcbZqprh4aAgFx8-vUaPOBzFfP6Ujv9MJS2krUWre6vSIldBtMNClJuTF7TpHmKRtHWDdMEo8PgXYtbIQYYS9D");
+        body.put("fcmToken", "asdfasdfasdfasdf");
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
