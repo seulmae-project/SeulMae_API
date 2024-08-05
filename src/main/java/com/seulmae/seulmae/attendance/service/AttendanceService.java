@@ -10,12 +10,17 @@ import com.seulmae.seulmae.attendanceRequestHistory.entity.AttendanceRequestHist
 import com.seulmae.seulmae.attendanceRequestHistory.repository.AttendanceRequestHistoryRepository;
 import com.seulmae.seulmae.global.exception.AttendanceRequestConflictException;
 import com.seulmae.seulmae.global.util.FindByIdUtil;
+import com.seulmae.seulmae.global.util.UrlUtil;
 import com.seulmae.seulmae.notification.NotificationType;
 import com.seulmae.seulmae.notification.service.NotificationService;
 import com.seulmae.seulmae.user.entity.User;
+import com.seulmae.seulmae.user.entity.UserImage;
+import com.seulmae.seulmae.user.repository.UserImageRepository;
 import com.seulmae.seulmae.user.repository.UserWorkplaceRepository;
 import com.seulmae.seulmae.workplace.entity.Workplace;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +28,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -31,9 +37,14 @@ public class AttendanceService {
     private final AttendanceRepository attendanceRepository;
     private final AttendanceRequestHistoryRepository attendanceRequestHistoryRepository;
     private final UserWorkplaceRepository userWorkplaceRepository;
+    private final UserImageRepository userImageRepository;
 
     private final FindByIdUtil findByIdUtil;
     private final NotificationService notificationService;
+
+    @Value("${file.endPoint.user}")
+    private String userImageEndPoint;
+
 
     @Transactional
     public void goToWork(User user, Long workplaceId) {
@@ -159,8 +170,19 @@ public class AttendanceService {
     }
 
     @Transactional
-    public List<AttendanceManagerMainListDto> getDailyEmployeeAttendanceList(Workplace workplace, LocalDate localDate) {
+    public List<AttendanceManagerMainListDto> getDailyEmployeeAttendanceList(Workplace workplace, LocalDate localDate, HttpServletRequest httpServletRequest) {
         List<AttendanceManagerMainListDto> attendanceManagerMainListDtoList = attendanceRequestHistoryRepository.findByWorkplaceAndDate(workplace, localDate);
+
+        attendanceManagerMainListDtoList = attendanceManagerMainListDtoList.stream()
+                .map(attendanceManagerMainListDto -> {
+                    UserImage userImage = userImageRepository.findByUserId(attendanceManagerMainListDto.getUserId());
+                    String userImageUrl = userImage != null ? UrlUtil.getBaseUrl(httpServletRequest) + userImageEndPoint + "?userImageId=" + userImage.getIdUserImage() : null;
+
+                    attendanceManagerMainListDto.setUserImageUrl(userImageUrl);
+                    return attendanceManagerMainListDto;
+                })
+                .collect(Collectors.toList());
+
 
         return attendanceManagerMainListDtoList;
     }

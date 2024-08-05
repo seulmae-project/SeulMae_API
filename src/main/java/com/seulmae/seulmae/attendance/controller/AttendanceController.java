@@ -9,6 +9,7 @@ import com.seulmae.seulmae.global.util.ResponseUtil;
 import com.seulmae.seulmae.global.util.enums.SuccessCode;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.workplace.entity.Workplace;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -117,14 +118,13 @@ public class AttendanceController {
         }
     }
 
-
     /**
-     * 매니저 월별 메인 화면
+     * 매니저 일별 근무자 요청 리스트
      **/
     @GetMapping("main/manager")
-    public ResponseEntity<?> getDailyEmployeeAttendanceList(@RequestParam Workplace workplace, @RequestParam LocalDate localDate) {
+    public ResponseEntity<?> getDailyEmployeeAttendanceList(@RequestParam Workplace workplace, @RequestParam LocalDate localDate, HttpServletRequest request) {
         try {
-            List<AttendanceManagerMainListDto> attendanceManagerMainListDtoList = attendanceService.getDailyEmployeeAttendanceList(workplace, localDate);
+            List<AttendanceManagerMainListDto> attendanceManagerMainListDtoList = attendanceService.getDailyEmployeeAttendanceList(workplace, localDate, request);
 
             return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, attendanceManagerMainListDtoList);
         } catch (Exception e) {

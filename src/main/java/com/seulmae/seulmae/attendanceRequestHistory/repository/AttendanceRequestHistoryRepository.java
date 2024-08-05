@@ -24,7 +24,7 @@ public interface AttendanceRequestHistoryRepository extends JpaRepository<Attend
             "AND (arh.isRequestApprove = true OR (arh.isRequestApprove = false AND arh.isManagerCheck = false))")
     Boolean existByUserAndWorkDate(User user, LocalDate workDate, LocalDateTime dtoWorkStartTime, LocalDateTime dtoWorkEndTime);
 
-    @Query(value = "SELECT new com.seulmae.seulmae.attendance.dto.AttendanceManagerMainListDto(a.user.name, arh.workStartTime, arh.workEndTime, arh.totalWorkTime, arh.isRequestApprove, arh.isManagerCheck) " +
+    @Query(value = "SELECT new com.seulmae.seulmae.attendance.dto.AttendanceManagerMainListDto(arh.idAttendanceRequestHistory, a.user.name, a.user.idUser, arh.workStartTime, arh.workEndTime, arh.totalWorkTime, arh.isRequestApprove, arh.isManagerCheck) " +
             "FROM AttendanceRequestHistory arh " +
             "JOIN Attendance a on a = arh.attendance " +
             "WHERE a.workplace = :workplace " +
