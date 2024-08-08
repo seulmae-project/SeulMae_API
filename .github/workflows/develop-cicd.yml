@@ -22,24 +22,19 @@ jobs:
       - name: Set executable permissions for gradlew
         run: chmod +x ./gradlew
 
-      - name: Copy Secret
-        env:
-          SECRET_FILE: ${{ secrets.SECRET_FILE }}
-          SECRET_DIR: src/main/resources/yml
-          SECRET_NAME: application-secret.yml
-          FIREBASE_FILE: ${{ secrets.FIREBASE_FILE }}
-          FILEBASE_DIR: src/main/resources/firebase
-          FIREBASE_NAME: ${{ secrets.FIREBASE_NAME }}
+      - name: Make application-secret.yml
         run: |
-          mkdir -p ./$SECRET_DIR
-          cd ./$SECRET_DIR
-          touch ./$SECRET_NAME
-          echo $SECRET_FILE > ./$SECRET_NAME
-          cd ..
-          mkdir -p ./firebase
-          cd ./firebase
-          touch ./FIREBASE_NAME
-          echo $FIREBASE_FILE > ./$FIREBASE_NAME
+          mkdir -p ./src/main/resources/yml
+          cd ./src/main/resources/yml
+          touch ./application-secret.yml
+          echo "${{ secrets.SECRET_FILE }}"> ./application-secret.yml
+
+      - name: Make firebase.json
+        run: |
+          mkdir -p ./src/main/resources/firebase
+          cd ./src/main/resources/firebase
+          touch ./"${{ secrets.FIREBASE_NAME }}"
+          echo "${{ secrets.FIREBASE_FILE }} > ./"${{ secrets.FIREBASE_NAME }}"
           
       - name: Run tests
         run: ./gradlew test
