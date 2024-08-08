@@ -148,6 +148,8 @@ class AnnouncementControllerTest {
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(request));
 
+        System.out.println(result.andReturn().getResponse().getContentAsString());
+
         result.andExpect(status().isCreated());
         Announcement announcement = announcementRepository.findAll().get(0);
         assertThat(announcement.getContent()).isEqualTo(content);
@@ -202,6 +204,8 @@ class AnnouncementControllerTest {
 
         ResultActions result = mockMvc.perform(get(url)
                 .param("announcementId", String.valueOf(announcement.getIdAnnouncement())));
+
+        System.out.println(result.andReturn().getResponse().getContentAsString());
 
         result
                 .andExpect(status().isOk())
