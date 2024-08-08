@@ -33,11 +33,11 @@ jobs:
         run: |
           mkdir -p ./$SECRET_DIR
           cd ./$SECRET_DIR
-          mkdir -p ./firebase
-          cd ./yml
           touch ./$SECRET_NAME
           echo $SECRET_FILE > ./$SECRET_NAME
-          cd ../firebase
+          cd ..
+          mkdir -p ./firebase
+          cd ./firebase
           touch ./FIREBASE_NAME
           echo $FIREBASE_FILE > ./$FIREBASE_NAME
           
