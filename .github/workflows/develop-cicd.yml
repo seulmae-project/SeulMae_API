@@ -1,0 +1,61 @@
+name: CI/CD Pipeline For Develop
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.1.7
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4.2.2
+        with:
+          java-version: '21'
+          distribution: 'corretto'
+
+      - name: Set executable permissions for gradlew
+        run: chmod +x ./gradlew
+        
+      - name: Run tests
+        run: ./gradlew test
+
+      - name: Build JAR
+        run: ./gradlew bootJar
+
+      - name: Build Docker image
+        run: docker build -t hanui/seulmae-api:latest .
+        env:
+          DOCKER_BUILDKIT: 1
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3.3.0
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+
+      - name: Push Docker image
+        run: docker push hanui/seulmae-api:latest
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: SSH to Server and Deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            whoami
+            ls -al
+            cd ~/seulmae
+            docker pull hanui/seulmae-api:latest
+            docker compose up -d --build
