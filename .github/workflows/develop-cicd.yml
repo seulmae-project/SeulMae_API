@@ -21,9 +21,30 @@ jobs:
 
       - name: Set executable permissions for gradlew
         run: chmod +x ./gradlew
-        
+
+      - name: Make application-secret.yml
+        run: |
+          mkdir -p ./src/main/resources/yml
+          cd ./src/main/resources/yml
+          touch ./application-secret.yml
+          echo "${{ secrets.SECRET_FILE }}"> ./application-secret.yml
+
+      - name: Make firebase.json
+        run: |
+          mkdir -p ./src/main/resources/firebase
+          cd ./src/main/resources/firebase
+          touch "${{ secrets.FIREBASE_NAME }}"
+          echo "${{ secrets.FIREBASE_FILE }}" > "${{ secrets.FIREBASE_NAME }}"
+          
       - name: Run tests
         run: ./gradlew test
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: build/reports/tests/test/
 
       - name: Build JAR
         run: ./gradlew bootJar
