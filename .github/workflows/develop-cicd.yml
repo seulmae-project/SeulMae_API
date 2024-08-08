@@ -33,8 +33,8 @@ jobs:
         run: |
           mkdir -p ./src/main/resources/firebase
           cd ./src/main/resources/firebase
-          touch ./"${{ secrets.FIREBASE_NAME }}"
-          echo "${{ secrets.FIREBASE_FILE }} > ./"${{ secrets.FIREBASE_NAME }}"
+          touch "${{ secrets.FIREBASE_NAME }}"
+          echo "${{ secrets.FIREBASE_FILE }}" > "${{ secrets.FIREBASE_NAME }}"
           
       - name: Run tests
         run: ./gradlew test
