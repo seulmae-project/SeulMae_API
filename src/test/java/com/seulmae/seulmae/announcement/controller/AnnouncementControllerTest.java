@@ -33,6 +33,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.nio.charset.StandardCharsets;
 import java.util.NoSuchElementException;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -109,7 +110,7 @@ class AnnouncementControllerTest {
 
         WorkplaceAddDto workplaceAddDto = new WorkplaceAddDto(workplaceName, mainAddress, subAddress, workplaceTel);
         String request = objectMapper.writeValueAsString(workplaceAddDto);
-        MockMultipartFile multipartFile = new MockMultipartFile("workplaceAddDto", "workplaceAddDto", "application/json", request.getBytes());
+        MockMultipartFile multipartFile = new MockMultipartFile("workplaceAddDto", "workplaceAddDto", "application/json; charset=UTF-8", request.getBytes(StandardCharsets.UTF_8));
 
         ResultActions result = mockMvc.perform(multipart(url)
                 .file(multipartFile)
