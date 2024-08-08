@@ -31,7 +31,7 @@ jobs:
           FILEBASE_DIR: src/main/resources/firebase
           FIREBASE_NAME: ${{ secrets.FIREBASE_NAME }}
         run: |
-          mkdir -p $SECRET_DIR
+          mkdir -p ./$SECRET_DIR
           cd ./$SECRET_DIR
           mkdir -p ./firebase
           cd ./yml
