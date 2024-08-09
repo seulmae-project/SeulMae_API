@@ -2,16 +2,12 @@ package com.seulmae.seulmae.attendance.repository;
 
 import com.seulmae.seulmae.attendance.dto.AttendanceRequestListDto;
 import com.seulmae.seulmae.attendance.entity.Attendance;
-import com.seulmae.seulmae.user.entity.User;
-import com.seulmae.seulmae.workplace.entity.Workplace;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
-
-import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Repository
 public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
@@ -25,5 +21,16 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
             "ORDER BY arh.regDateAttendanceRequestHistory")
     List<AttendanceRequestListDto> findByWorkplaceId(Long workplaceId);
 
-    Optional<Attendance> findByUserAndWorkplaceAndWorkDate(User user, Workplace workplace, LocalDateTime workDate);
+    @Query("SELECT MIN(a.workDate) FROM Attendance a " +
+            "WHERE a.user.idUser = :userId " +
+            "AND a.workplace.idWorkPlace = :workplaceId")
+    LocalDate findFirstWorkDateByUserIdAndWorkplaceId(Long userId, Long workplaceId);
+
+    @Query("SELECT SUM(a.confirmedWage) " +
+            "FROM Attendance a " +
+            "WHERE a.user.idUser = :idUser " +
+            "AND a.workplace.idWorkPlace = :workplaceId " +
+            "AND YEAR(a.workDate) = :year " +
+            "AND MONTH(a.workDate) = :month")
+    Integer sumConfirmedWage(Long idUser, Long workplaceId, Integer year, Integer month);
 }
