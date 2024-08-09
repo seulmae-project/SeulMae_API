@@ -48,7 +48,7 @@ jobs:
           ls -al
           cd firebase
           ls -al
-          echo "${{ secrets.FIREBASE_NAME }}"
+          cat "${{ secrets.FIREBASE_NAME }}"
 
       - name: Wait for Redis to be ready
         run: sleep 10
