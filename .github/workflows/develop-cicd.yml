@@ -40,7 +40,7 @@ jobs:
           mkdir -p ./src/main/resources/firebase
           cd ./src/main/resources/firebase
           touch "${{ secrets.FIREBASE_NAME }}"
-          echo "${{ secrets.FIREBASE_FILE }}"> "${{ secrets.FIREBASE_NAME }}"
+          echo "${{ secrets.FIREBASE_FILE }}" | base64 --decode > "${{ secrets.FIREBASE_NAME }}"
 
       - name: Check firebase
         run: |
