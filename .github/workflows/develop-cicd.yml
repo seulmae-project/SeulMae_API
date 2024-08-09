@@ -8,6 +8,12 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    
+    services:
+      redis:
+        image: redis:7.0
+        ports:
+          - 6379:6379
 
     steps:
       - name: Checkout code
@@ -34,8 +40,11 @@ jobs:
           mkdir -p ./src/main/resources/firebase
           cd ./src/main/resources/firebase
           touch "${{ secrets.FIREBASE_NAME }}"
-          echo "${{ secrets.FIREBASE_FILE }}" > "${{ secrets.FIREBASE_NAME }}"
-          
+          echo "${{ secrets.FIREBASE_FILE }}"> "${{ secrets.FIREBASE_NAME }}"
+
+      - name: Wait for Redis to be ready
+        run: sleep 10
+        
       - name: Run tests
         run: ./gradlew test
 
