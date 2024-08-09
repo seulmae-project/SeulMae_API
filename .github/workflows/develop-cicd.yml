@@ -42,6 +42,14 @@ jobs:
           touch "${{ secrets.FIREBASE_NAME }}"
           echo "${{ secrets.FIREBASE_FILE }}"> "${{ secrets.FIREBASE_NAME }}"
 
+      - name: Check firebase
+        run: |
+          cd ./src/main/resources
+          ls -al
+          cd firebase
+          ls -al
+          echo "${{ secrets.FIREBASE_NAME }}"
+
       - name: Wait for Redis to be ready
         run: sleep 10
         
