@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/attendance/request-history")
@@ -30,8 +32,8 @@ public class AttendanceHistoryController {
                                          @RequestParam Integer year,
                                          @RequestParam Integer month) {
         try {
-            AttendanceCalendarDto attendanceCalendarDto = historyService.getCalender(user, workplaceId, year, month);
-            return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, attendanceCalendarDto);
+            List<AttendanceCalendarDto> attendanceCalendarDtoList = historyService.getCalender(user, workplaceId, year, month);
+            return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, attendanceCalendarDtoList);
         } catch (Exception e) {
             return ResponseUtil.handleException(e);
         }

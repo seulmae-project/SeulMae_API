@@ -38,7 +38,7 @@ public class DummyDataLoader implements CommandLineRunner {
             UserSignUpDto userSignUpDto = new UserSignUpDto(
                     "test" + i + i + i + i,
                     "password" + i + i + i + i + "!",
-                    "010" + String.format("%04d", random.nextInt(10000)) + String.format("%04d", random.nextInt(10000)),
+                    "010" + i + i + i + i + i + i + i + i,
                     "testUser" + i,
                     random.nextBoolean(),
                     String.format("%08d", 19900101 + random.nextInt(300000))

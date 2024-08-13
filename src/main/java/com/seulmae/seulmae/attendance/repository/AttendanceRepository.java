@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
@@ -24,7 +25,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
     @Query("SELECT MIN(a.workDate) FROM Attendance a " +
             "WHERE a.user.idUser = :userId " +
             "AND a.workplace.idWorkPlace = :workplaceId")
-    LocalDate findFirstWorkDateByUserIdAndWorkplaceId(Long userId, Long workplaceId);
+    Optional<LocalDate> findFirstWorkDateByUserIdAndWorkplaceId(Long userId, Long workplaceId);
 
     @Query("SELECT SUM(a.confirmedWage) " +
             "FROM Attendance a " +
