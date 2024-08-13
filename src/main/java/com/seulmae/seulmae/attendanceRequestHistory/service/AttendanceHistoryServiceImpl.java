@@ -80,9 +80,11 @@ public class AttendanceHistoryServiceImpl implements AttendanceHistoryService {
         LocalDate applyStartDate = LocalDate.of(year, month, 1);
         LocalDate applyEndDate = applyStartDate.withDayOfMonth(applyStartDate.lengthOfMonth());
         Integer baseWage = wage.getBaseWage();
-        BigDecimal monthlyWorkTime = attendanceRequestHistoryRepository.sumMonthlyWorkTime(user.getIdUser(), workplaceId, year, month);
+        BigDecimal monthlyWorkTime = attendanceRequestHistoryRepository.sumMonthlyWorkTime(user.getIdUser(), workplaceId, year, month)
+                .orElse(BigDecimal.ZERO);
 
-        Integer monthlyWage = attendanceRepository.sumConfirmedWage(user.getIdUser(), workplaceId, year, month);
+        Integer monthlyWage = attendanceRepository.sumConfirmedWage(user.getIdUser(), workplaceId, year, month)
+                .orElse(0);
 
         // MonthlyWorkSummaryDto 객체 생성 및 반환
         return new MonthlyWorkSummaryDto(monthlyWage, applyStartDate, applyEndDate, baseWage, monthlyWorkTime);
@@ -95,6 +97,11 @@ public class AttendanceHistoryServiceImpl implements AttendanceHistoryService {
     @Override
     public Page<AttendanceRequestHistoryDto> getHistoryList(User user, Long workplaceId, Integer year, Integer month, Integer page, Integer size) {
         Workplace workplace = findByIdUtil.getWorkplaceById(workplaceId);
+
+        // page, size 기본 값 설정
+        page = (page < 0) ? 0 : page;
+        size = (size <= 0) ? 10 : size;
+
 
         // 페이지 및 사이즈 정보를 사용하여 이력 리스트 조회
         Pageable pageable = PageRequest.of(page, size);

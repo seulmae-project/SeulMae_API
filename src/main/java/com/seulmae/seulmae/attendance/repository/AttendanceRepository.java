@@ -33,5 +33,5 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
             "AND a.workplace.idWorkPlace = :workplaceId " +
             "AND YEAR(a.workDate) = :year " +
             "AND MONTH(a.workDate) = :month")
-    Integer sumConfirmedWage(Long idUser, Long workplaceId, Integer year, Integer month);
+    Optional<Integer> sumConfirmedWage(Long idUser, Long workplaceId, Integer year, Integer month);
 }
