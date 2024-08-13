@@ -35,6 +35,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -112,7 +113,7 @@ class WorkScheduleControllerTest {
 
         WorkplaceAddDto workplaceAddDto = new WorkplaceAddDto(workplaceName, mainAddress, subAddress, workplaceTel);
         String request = objectMapper.writeValueAsString(workplaceAddDto);
-        MockMultipartFile multipartFile = new MockMultipartFile("workplaceAddDto", "workplaceAddDto", "application/json", request.getBytes());
+        MockMultipartFile multipartFile = new MockMultipartFile("workplaceAddDto", "workplaceAddDto", "application/json; charset=UTF-8", request.getBytes(StandardCharsets.UTF_8));
 
         ResultActions result = mockMvc.perform(multipart(url)
                 .file(multipartFile)

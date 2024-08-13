@@ -22,6 +22,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -78,7 +79,7 @@ class UserControllerTest {
 
         final String requestBody = objectMapper.writeValueAsString(userSignUpDto);
 
-        MockMultipartFile userSignUpDtoPart = new MockMultipartFile("userSignUpDto", "userSignUpDto", "application/json", requestBody.getBytes());
+        MockMultipartFile userSignUpDtoPart = new MockMultipartFile("userSignUpDto", "userSignUpDto", "application/json; charset=UTF-8", requestBody.getBytes(StandardCharsets.UTF_8));
 
 
         // when
@@ -91,6 +92,8 @@ class UserControllerTest {
         result.andExpect(status().isCreated());
 
         List<User> users = userRepository.findAll();
+
+        System.out.println(result.andReturn().getResponse().getContentAsString());
 
         assertThat(users.size()).isEqualTo(1);
         assertThat(users.getFirst().getAccountId()).isEqualTo(accountId);
@@ -126,7 +129,7 @@ class UserControllerTest {
 
         final String requestBody = objectMapper.writeValueAsString(userSignUpDto);
 
-        MockMultipartFile userSignUpDtoPart = new MockMultipartFile("userSignUpDto", "userSignUpDto", "application/json", requestBody.getBytes());
+        MockMultipartFile userSignUpDtoPart = new MockMultipartFile("userSignUpDto", "userSignUpDto", "application/json; charset=UTF-8", requestBody.getBytes(StandardCharsets.UTF_8));
 
 
         // when

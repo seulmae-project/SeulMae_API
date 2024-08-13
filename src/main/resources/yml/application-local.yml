@@ -32,3 +32,4 @@ file:
 
   endPoint:
     workplace: /api/workplace/v1/file
+    user: /api/users/file
