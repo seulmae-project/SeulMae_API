@@ -27,7 +27,7 @@ public class WorkplaceJoinController {
      * @param workplaceId
      */
     @PostMapping("request")
-    public ResponseEntity<?> sendJoinRequest(@AuthenticationPrincipal User user, @RequestParam Long workplaceId) {
+    public ResponseEntity<?> sendJoinRequest(@AuthenticationPrincipal User user, @RequestBody Long workplaceId) {
         try {
             workplaceJoinService.sendJoinRequest(user, workplaceId);
 
