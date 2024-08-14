@@ -5,13 +5,12 @@ import com.seulmae.seulmae.global.config.jwt.JwtAuthenticationProcessingFilter;
 import com.seulmae.seulmae.global.config.login.filter.CustomUsernamePasswordAuthenticationFilter;
 import com.seulmae.seulmae.global.config.login.handler.LoginFailureHandler;
 import com.seulmae.seulmae.global.config.login.handler.LoginSuccessHandler;
+import com.seulmae.seulmae.global.config.oauth2.filter.SocialLoginAuthenticationFilter;
 import com.seulmae.seulmae.global.config.oauth2.handler.OAuth2LoginFailureHandler;
 import com.seulmae.seulmae.global.config.oauth2.handler.OAuth2LoginSuccessHandler;
 import com.seulmae.seulmae.user.repository.UserRepository;
 import com.seulmae.seulmae.user.repository.UserWorkplaceRepository;
-import com.seulmae.seulmae.user.service.CustomOAuth2UserService;
-import com.seulmae.seulmae.user.service.JwtService;
-import com.seulmae.seulmae.user.service.LoginService;
+import com.seulmae.seulmae.user.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -44,6 +43,8 @@ public class SecurityConfig {
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
     private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
     private final CustomOAuth2UserService customOAuth2UserService;
+    private final KakaoService kakaoService;
+    private final AppleService appleService;
 
     @Bean
     public WebSecurityCustomizer configure() { //스프링 시큐리티 기능 비활성화하는 곳
@@ -76,17 +77,18 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/users/pw").permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/api/**")).authenticated()
                         .anyRequest().permitAll()) //여기 부분 다시 고민해보자
-                .oauth2Login(oauth2 -> oauth2
-                        .successHandler(oAuth2LoginSuccessHandler)
-                        .failureHandler(oAuth2LoginFailureHandler)
-                        .userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint.userService(customOAuth2UserService))
-                )
+//                .oauth2Login(oauth2 -> oauth2
+//                        .successHandler(oAuth2LoginSuccessHandler)
+//                        .failureHandler(oAuth2LoginFailureHandler)
+//                        .userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint.userService(customOAuth2UserService))
+//                )
 
                 // 원래 스프링 시큐리티 필터 순서가 LogoutFilter 이후에 로그인 필터 동작
                 // 따라서, LogoutFilter 이후에 우리가 만든 필터 동작하도록 설정
                 // 순서 : LogoutFilter -> JwtAuthenticationProcessingFilter -> CustomJsonUsernamePasswordAuthenticationFilter
-                .addFilterAfter(customUsernamePasswordAuthenticationFilter(), LogoutFilter.class)
-                .addFilterBefore(jwtAuthenticationProcessingFilter(), CustomUsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(jwtAuthenticationProcessingFilter(), LogoutFilter.class)
+                .addFilterAfter(socialLoginAuthenticationFilter(), JwtAuthenticationProcessingFilter.class)
+                .addFilterAfter(customUsernamePasswordAuthenticationFilter(), SocialLoginAuthenticationFilter.class)
                 .build();
     }
 
@@ -143,5 +145,15 @@ public class SecurityConfig {
     @Bean
     public JwtAuthenticationProcessingFilter jwtAuthenticationProcessingFilter() {
         return new JwtAuthenticationProcessingFilter(jwtService, userRepository, userWorkplaceRepository);
+    }
+
+    @Bean
+    public SocialLoginAuthenticationFilter socialLoginAuthenticationFilter() {
+        SocialLoginAuthenticationFilter socialLoginAuthenticationFilter = new SocialLoginAuthenticationFilter(objectMapper, kakaoService, appleService);
+        socialLoginAuthenticationFilter.setAuthenticationManager(authenticationManager());
+        socialLoginAuthenticationFilter.setAuthenticationSuccessHandler(loginSuccessHandler());
+        socialLoginAuthenticationFilter.setAuthenticationFailureHandler(loginFailureHandler());
+
+        return socialLoginAuthenticationFilter;
     }
 }

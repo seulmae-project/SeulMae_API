@@ -23,6 +23,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,7 +36,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Slf4j
 public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
-    public static final String NO_CHECK_URL = "/api/users/login";
+    public static final List<String> NO_CHECK_URLS = Arrays.asList("/api/users/login", "/api/users/login/social");
 
     private final JwtService jwtService;
     private final UserRepository userRepository;
@@ -45,7 +46,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        if (request.getRequestURI().equals(NO_CHECK_URL)) {
+        if (NO_CHECK_URLS.contains(request.getRequestURI())) {
             filterChain.doFilter(request, response); // 로그인 url api 요청들어오면, 다음 필터 호출
             return;
         }
