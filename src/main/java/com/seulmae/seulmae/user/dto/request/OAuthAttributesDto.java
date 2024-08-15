@@ -1,5 +1,6 @@
 package com.seulmae.seulmae.user.dto.request;
 
+import com.seulmae.seulmae.global.config.oauth2.userInfo.AppleOAuth2UserInfo;
 import com.seulmae.seulmae.global.config.oauth2.userInfo.KakaoOAuth2UserInfo;
 import com.seulmae.seulmae.global.config.oauth2.userInfo.OAuth2UserInfo;
 import com.seulmae.seulmae.user.Role;
@@ -36,6 +37,8 @@ public class OAuthAttributesDto {
     public static OAuthAttributesDto of(SocialType socialType, String usernameAttributeName, Map<String, Object> attributes) {
         if (socialType == SocialType.KAKAO) {
             return ofKakao(usernameAttributeName, attributes);
+        } else if (socialType == SocialType.APPLE) {
+            return ofApple(usernameAttributeName, attributes);
         }
         return null; // 추후 소셜로그인 추가된다면 추가
     }
@@ -44,6 +47,13 @@ public class OAuthAttributesDto {
         return OAuthAttributesDto.builder()
                 .nameAttributeKey(usernameAttributeName)
                 .oAuth2UserInfo(new KakaoOAuth2UserInfo(attributes))
+                .build();
+    }
+
+    private static OAuthAttributesDto ofApple(String usernameAttributeName, Map<String, Object> attributes) {
+        return OAuthAttributesDto.builder()
+                .nameAttributeKey(usernameAttributeName)
+                .oAuth2UserInfo(new AppleOAuth2UserInfo(attributes))
                 .build();
     }
 

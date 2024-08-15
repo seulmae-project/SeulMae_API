@@ -3,6 +3,7 @@ package com.seulmae.seulmae.global.config.oauth2.filter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.seulmae.seulmae.user.service.AppleService;
 import com.seulmae.seulmae.user.service.KakaoService;
+import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -73,9 +74,9 @@ public class SocialLoginAuthenticationFilter extends AbstractAuthenticationProce
          */
         String accountId;
         if (provider.equals(KAKAO)) {
-            accountId = kakaoService.getUserInfo(token).getAccountId();
+            accountId = kakaoService.getUserInfo(token, provider).getAccountId();
         } else if (provider.equals(APPLE)) {
-            accountId = appleService.getUserInfo(token).getAccountId();
+            accountId = appleService.getUserInfo(token, provider).getAccountId();
         } else {
             throw new NoSuchElementException("해당 소셜 로그인 종류는 존재하지 않습니다.");
         }

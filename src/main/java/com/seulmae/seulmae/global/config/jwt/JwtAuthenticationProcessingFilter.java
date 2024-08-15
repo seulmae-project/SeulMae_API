@@ -52,10 +52,18 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
         }
 
         // 리프레시 추출(없으면 null, 있다면 accessToken이 만료된 것)
+        /**
+         * 추출해서, 토큰이 타당한지 확인하고, 없으면 null.
+         */
         String refreshToken = jwtService.extractRefreshToken(request)
                 .filter(jwtService::isValidToken)
                 .orElse(null);
-        
+
+
+        /**
+         * 만약 리프레시 토큰이 있다면, 유저db에 존재하는 토큰인지 확인하고, 존재한다면, 리프레시 토큰 재발급 후 로그인
+         *
+         */
         if (refreshToken != null) {
             checkRefreshToken(refreshToken)
                     .ifPresent(user -> {
@@ -69,6 +77,10 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
             return;
         }
 
+        /**
+         * 없다면, accessToken이 유효한지 확인하고, 유효하면 인증처리 / 아니라면, 403 처리
+         */
+
         // 리프레쉬 토큰이 없다거나 유효하지 않다면, accessToken을 검사하고 인증을 처리한다.
         // accessToken이 없거나 유효하지 않다면, 인증 객체가 담기지 않은 상태로 다음 필터로 넘어가기 때문에 403 에러 발생
         // 유효하다면, 인증 객체에 담긴 상태로 다음 필터로 넘어가기 때문에 인증성공
@@ -81,6 +93,9 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
         return userRepository.findByRefreshToken(refreshToken);
     }
 
+    /**
+     * 리프레시 토큰 재발급
+     */
     private String reIssueRefreshToken(User user) {
         String reIssuedRefreshToken = jwtService.createRefreshToken();
         user.updateRefreshToken(reIssuedRefreshToken);
