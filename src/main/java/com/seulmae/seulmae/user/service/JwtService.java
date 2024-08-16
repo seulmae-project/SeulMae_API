@@ -10,6 +10,7 @@ import com.seulmae.seulmae.user.dto.response.LoginSuccessResponse;
 import com.seulmae.seulmae.user.dto.response.TokenResponse;
 import com.seulmae.seulmae.user.dto.response.WorkplaceResponse;
 import com.seulmae.seulmae.user.entity.CustomOAuth2User;
+import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.user.entity.UserWorkplace;
 import com.seulmae.seulmae.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -118,10 +119,10 @@ public class JwtService {
     /**
      * 소셜로그인용 첫 로그인시 사용하는 메서드(GUEST 추가 정보 얻기 위함)
      */
-    public void sendAccessTokenAndRefreshToken(HttpServletResponse response, String accessToken, String refreshToken, CustomOAuth2User oAuth2User) throws IOException {
+    public void sendAccessTokenAndRefreshToken(HttpServletResponse response, String accessToken, String refreshToken, User user) throws IOException {
         response.setStatus(HttpServletResponse.SC_OK);
         response.setContentType(CONTENT_TYPE);
-        Role role = oAuth2User.getRole();
+        Role role = user.getAuthorityRole();
         TokenResponse tokenResponse = new TokenResponse(accessToken, refreshToken, BEARER);
         response.getWriter()
                 .write(objectMapper.writeValueAsString(

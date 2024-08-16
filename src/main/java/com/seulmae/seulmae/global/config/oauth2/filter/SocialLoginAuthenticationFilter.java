@@ -1,12 +1,13 @@
 package com.seulmae.seulmae.global.config.oauth2.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.seulmae.seulmae.global.util.PasswordUtil;
 import com.seulmae.seulmae.user.service.AppleService;
 import com.seulmae.seulmae.user.service.KakaoService;
-import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -21,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+@Slf4j
 public class SocialLoginAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
 
     /**
@@ -36,7 +38,7 @@ public class SocialLoginAuthenticationFilter extends AbstractAuthenticationProce
      * - 이하는 카카오와 동일하다.
      */
 
-    private static final String DEFAULT_LOGIN_REQUEST_URL = "/api/users/login/social";
+    private static final String DEFAULT_LOGIN_REQUEST_URL = "/api/users/social-login";
     private static final String HTTP_METHOD = "POST";
     private static final String CONTENT_TYPE = "application/json";
     private static final String TOKEN_KEY = "token";
@@ -81,8 +83,13 @@ public class SocialLoginAuthenticationFilter extends AbstractAuthenticationProce
             throw new NoSuchElementException("해당 소셜 로그인 종류는 존재하지 않습니다.");
         }
 
+        log.info("ACCOUNT_ID: {}", accountId);
 
-        UsernamePasswordAuthenticationToken authRequest = new UsernamePasswordAuthenticationToken(accountId, null);
+        String password = PasswordUtil.generateRandomPassword();
+
+        log.info("PASSWORD: {}", password);
+
+        UsernamePasswordAuthenticationToken authRequest = new UsernamePasswordAuthenticationToken(accountId, password);
 
         Map<String, Object> additionalDetails = new HashMap<>();
         additionalDetails.put(FCM_TOKEN_KEY, fcmToken);

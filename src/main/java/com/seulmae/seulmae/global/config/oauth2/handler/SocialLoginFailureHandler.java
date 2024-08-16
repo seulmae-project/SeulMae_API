@@ -1,9 +1,8 @@
-package com.seulmae.seulmae.global.config.login.handler;
+package com.seulmae.seulmae.global.config.oauth2.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.seulmae.seulmae.global.util.ResponseUtil;
 import com.seulmae.seulmae.global.util.enums.ErrorCode;
-import com.seulmae.seulmae.global.util.enums.ErrorResponse;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -16,7 +15,7 @@ import java.io.IOException;
 
 @Slf4j
 @RequiredArgsConstructor
-public class LoginFailureHandler extends SimpleUrlAuthenticationFailureHandler {
+public class SocialLoginFailureHandler extends SimpleUrlAuthenticationFailureHandler {
     private final ObjectMapper objectMapper;
 
     @Override
@@ -28,7 +27,6 @@ public class LoginFailureHandler extends SimpleUrlAuthenticationFailureHandler {
                 .write(
                         objectMapper.writeValueAsString(ResponseUtil.createErrorResponse(ErrorCode.UNAUTHORIZED, exception.getMessage()))
                 );
-        log.info("로그인 실패: " + exception.getMessage());
+        log.info("소셜 로그인 실패: " + exception.getMessage());
     }
-
 }

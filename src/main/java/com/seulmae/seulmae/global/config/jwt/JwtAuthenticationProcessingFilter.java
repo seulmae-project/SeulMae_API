@@ -36,7 +36,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Slf4j
 public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
-    public static final List<String> NO_CHECK_URLS = Arrays.asList("/api/users/login", "/api/users/login/social");
+    public static final List<String> NO_CHECK_URLS = Arrays.asList("/api/users/login", "/api/users/social-login");
 
     private final JwtService jwtService;
     private final UserRepository userRepository;

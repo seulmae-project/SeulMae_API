@@ -6,8 +6,10 @@ import com.seulmae.seulmae.global.config.login.filter.CustomUsernamePasswordAuth
 import com.seulmae.seulmae.global.config.login.handler.LoginFailureHandler;
 import com.seulmae.seulmae.global.config.login.handler.LoginSuccessHandler;
 import com.seulmae.seulmae.global.config.oauth2.filter.SocialLoginAuthenticationFilter;
-import com.seulmae.seulmae.global.config.oauth2.handler.OAuth2LoginFailureHandler;
-import com.seulmae.seulmae.global.config.oauth2.handler.OAuth2LoginSuccessHandler;
+//import com.seulmae.seulmae.global.config.oauth2.handler.OAuth2LoginFailureHandler;
+//import com.seulmae.seulmae.global.config.oauth2.handler.OAuth2LoginSuccessHandler;
+import com.seulmae.seulmae.global.config.oauth2.handler.SocialLoginFailureHandler;
+import com.seulmae.seulmae.global.config.oauth2.handler.SocialLoginSuccessHandler;
 import com.seulmae.seulmae.user.repository.UserRepository;
 import com.seulmae.seulmae.user.repository.UserWorkplaceRepository;
 import com.seulmae.seulmae.user.service.*;
@@ -16,6 +18,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -36,13 +39,12 @@ import static org.springframework.boot.autoconfigure.security.servlet.PathReques
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final LoginService loginService;
+    private final SocialLoginService socialLoginService;
     private final JwtService jwtService;
     private final UserRepository userRepository;
     private final UserWorkplaceRepository userWorkplaceRepository;
     private final ObjectMapper objectMapper;
-    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
-    private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
-    private final CustomOAuth2UserService customOAuth2UserService;
+//    private final CustomOAuth2UserService customOAuth2UserService;
     private final KakaoService kakaoService;
     private final AppleService appleService;
 
@@ -107,11 +109,24 @@ public class SecurityConfig {
      */
     @Bean
     public AuthenticationManager authenticationManager() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setPasswordEncoder(passwordEncoder());
-        provider.setUserDetailsService(loginService);
-        return new ProviderManager(provider);
+        DaoAuthenticationProvider loginProvider = new DaoAuthenticationProvider();
+        loginProvider.setPasswordEncoder(passwordEncoder());
+        loginProvider.setUserDetailsService(loginService);
+
+        DaoAuthenticationProvider socialLoginProvider = new DaoAuthenticationProvider();
+        socialLoginProvider.setPasswordEncoder(passwordEncoder());
+        socialLoginProvider.setUserDetailsService(socialLoginService);
+
+        return new ProviderManager(loginProvider, socialLoginProvider);
     }
+
+//    @Bean
+//    public AuthenticationManager socialAuthenticationManager() {
+//        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+//        provider.setPasswordEncoder(passwordEncoder());
+//        provider.setUserDetailsService(socialLoginService);
+//        return new ProviderManager(provider);
+//    }
 
     /**
      * 핸들러 빈 등록
@@ -124,6 +139,16 @@ public class SecurityConfig {
     @Bean
     public LoginFailureHandler loginFailureHandler() {
         return new LoginFailureHandler(objectMapper);
+    }
+
+    @Bean
+    public SocialLoginSuccessHandler socialLoginSuccessHandler() {
+        return new SocialLoginSuccessHandler(jwtService, userRepository, userWorkplaceRepository);
+    }
+
+    @Bean
+    public SocialLoginFailureHandler socialLoginFailureHandler() {
+        return new SocialLoginFailureHandler(objectMapper);
     }
 
     /**
@@ -151,8 +176,8 @@ public class SecurityConfig {
     public SocialLoginAuthenticationFilter socialLoginAuthenticationFilter() {
         SocialLoginAuthenticationFilter socialLoginAuthenticationFilter = new SocialLoginAuthenticationFilter(objectMapper, kakaoService, appleService);
         socialLoginAuthenticationFilter.setAuthenticationManager(authenticationManager());
-        socialLoginAuthenticationFilter.setAuthenticationSuccessHandler(loginSuccessHandler());
-        socialLoginAuthenticationFilter.setAuthenticationFailureHandler(loginFailureHandler());
+        socialLoginAuthenticationFilter.setAuthenticationSuccessHandler(socialLoginSuccessHandler());
+        socialLoginAuthenticationFilter.setAuthenticationFailureHandler(socialLoginFailureHandler());
 
         return socialLoginAuthenticationFilter;
     }

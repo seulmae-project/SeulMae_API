@@ -10,11 +10,14 @@ import com.seulmae.seulmae.user.repository.UserImageRepository;
 import com.seulmae.seulmae.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class SocialLoginService {
+public class SocialLoginService implements UserDetailsService {
 
     private final UserRepository userRepository;
 
@@ -23,6 +26,18 @@ public class SocialLoginService {
 
     private static final String KAKAO = "kakao";
     private static final String APPLE = "apple";
+
+    @Override
+    public UserDetails loadUserByUsername(String accountId) throws UsernameNotFoundException {
+        User user = userRepository.findByAccountId(accountId)
+                .orElseThrow(() -> new UsernameNotFoundException("해당 아이디가 존재하지 않습니다."));
+
+        return org.springframework.security.core.userdetails.User.builder()
+                .username(user.getAccountId())
+//                .password(user.getPassword())
+                .roles(user.getAuthorityRole().name())
+                .build();
+    }
 
     public User getOrCreateUser(OAuthAttributesDto attributes, SocialType socialType) {
         User findUser = userRepository.findBySocialTypeAndSocialId(socialType, attributes.getOAuth2UserInfo().getId()).orElse(null);
@@ -62,4 +77,6 @@ public class SocialLoginService {
             userRepository.save(user);
         }
     }
+
+
 }
