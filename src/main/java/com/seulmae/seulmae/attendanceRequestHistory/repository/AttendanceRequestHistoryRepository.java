@@ -2,6 +2,8 @@ package com.seulmae.seulmae.attendanceRequestHistory.repository;
 
 import com.seulmae.seulmae.attendance.dto.AttendanceManagerMainListDto;
 import com.seulmae.seulmae.attendanceRequestHistory.dto.AttendanceCalendarDto;
+import com.seulmae.seulmae.attendanceRequestHistory.dto.AttendanceRequestHistoryDetailDto;
+import com.seulmae.seulmae.attendanceRequestHistory.dto.AttendanceRequestHistoryDetailProjection;
 import com.seulmae.seulmae.attendanceRequestHistory.entity.AttendanceRequestHistory;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.workplace.entity.Workplace;
@@ -65,4 +67,12 @@ public interface AttendanceRequestHistoryRepository extends JpaRepository<Attend
             "AND arh.attendance.workDate >= :startDate " +
             "AND arh.attendance.workDate <= :endDate ")
     List<AttendanceCalendarDto> findByUserAndWorkplaceAndDateBetween(Long userId, Long workplaceId, LocalDate startDate, LocalDate endDate);
+
+    @Query("SELECT new com.seulmae.seulmae.attendanceRequestHistory.dto.AttendanceRequestHistoryDetailDto(" +
+            "arh.deliveryMessage, arh.attendanceRequestMemo) " +
+            "FROM AttendanceRequestHistory arh " +
+            "WHERE arh.idAttendanceRequestHistory = :idAttendanceRequestHistory ")
+    AttendanceRequestHistoryDetailDto findMessageAndMemoById(Long idAttendanceRequestHistory);
+
+    AttendanceRequestHistoryDetailProjection findDeliveryMessageAndAttendanceRequestMemoByIdAttendanceRequestHistory(Long idAttendanceRequestHistory);
 }

@@ -128,11 +128,12 @@ public class AttendanceHistoryServiceImpl implements AttendanceHistoryService {
         AttendanceRequestHistory history = attendanceRequestHistoryRepository.findById(idAttendanceRequestHistory)
                 .orElseThrow(() -> new NoSuchElementException("해당 근무 이력 ID가 존재하지 않습니다."));
 
+        AttendanceRequestHistoryDetailProjection detailProjection = attendanceRequestHistoryRepository.findDeliveryMessageAndAttendanceRequestMemoByIdAttendanceRequestHistory(idAttendanceRequestHistory);
+
         // AttendanceRequestHistoryDetailDto 객체 생성 및 반환
         return new AttendanceRequestHistoryDetailDto(
-                history.getAttendance().getConfirmedWage(),
-                history.getDeliveryMessage(),
-                history.getAttendanceRequestMemo()
+                detailProjection.getDeliveryMessage(),
+                detailProjection.getAttendanceRequestMemo()
         );
     }
 }

@@ -95,7 +95,7 @@ public class AttendanceHistoryController {
         }
     }
 
-//    @PostMapping("detail-employee")
+//    @PostMapping("detail")
 //    public ResponseEntity<?> updateDetailUser(@RequestBody User user) {
 //        try {
 //            historyService.updateDetailEmployee(user);
@@ -104,15 +104,6 @@ public class AttendanceHistoryController {
 //            return ResponseUtil.handleException(e);
 //        }
 //    }
-//
-//    @PostMapping("detail-manager")
-//    public ResponseEntity<?> updateDetailManager(@RequestBody User user) {
-//        try {
-//            historyService.updateDetailManager(user);
-//            return ResponseUtil.createSuccessResponse(SuccessCode.UPDATE_SUCCESS);
-//        } catch (Exception e) {
-//            return ResponseUtil.handleException(e);
-//        }
-//    }
+
 
 }
