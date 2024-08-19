@@ -18,7 +18,7 @@ public class KakaoService {
 
     private final RestTemplate restTemplate;
 
-    @Value("${spring.security.oauth2.client.provider.kakao.user-info-uri}")
+    @Value("${social-login.provider.kakao.user-info-uri}")
     private String USER_INFO_URI;
 
 

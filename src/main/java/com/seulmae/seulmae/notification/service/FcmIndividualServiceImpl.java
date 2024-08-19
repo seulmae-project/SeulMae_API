@@ -24,10 +24,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class FcmIndividualServiceImpl implements FcmService {
-    private final FcmTokenRepository fcmTokenRepository;
-
-    @Value("${spring.firebase.privateKeyContentRoot}")
-    private String PRIVATE_KEY;
 
     // 메세지를 구성하고 토큰을 받아서 FCM으로 메세지 처리를 수행하는 비즈니스 로직
     // 특정 기기에 메세지 전송
