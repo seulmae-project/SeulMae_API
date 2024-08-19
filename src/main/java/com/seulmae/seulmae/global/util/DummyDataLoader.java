@@ -15,6 +15,9 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -26,9 +29,21 @@ public class DummyDataLoader implements CommandLineRunner {
     private final ObjectMapper objectMapper;
     private final Random random = new Random();
 
-    @Override
     public void run(String... args) throws Exception {
-        createUsers(10);
+        if (isServerRunning("localhost", 8080)) {
+            createUsers(10);
+        } else {
+            System.out.println("서버가 실행 중이지 않아 DummyDataLoader를 실행하지 않았습니다.");
+        }
+    }
+
+    private boolean isServerRunning(String host, int port) {
+        try (Socket socket = new Socket()) {
+            socket.connect(new InetSocketAddress(host, port), 1000);
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
     }
 
     private void createUsers(int count) {
