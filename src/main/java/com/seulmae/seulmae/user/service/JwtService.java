@@ -53,7 +53,7 @@ public class JwtService {
     private static final String REFRESH_TOKEN_SUBJECT = "RefreshToken";
     private static final String ACCOUNT_CLAIM = "accountId";
     private static final String BEARER = "Bearer ";
-    private static final String CONTENT_TYPE = "application/json";
+    private static final String CONTENT_TYPE = "application/json; charset=UTF-8";
 
     private final UserRepository userRepository;
     private final UserWorkplaceRepository userWorkplaceRepository;
