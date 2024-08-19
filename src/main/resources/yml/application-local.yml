@@ -31,5 +31,5 @@ file:
       user: C:\\Users\\hany\\uploads\\users\\
 
   endPoint:
-    workplace: /api/workplace/v1/file
+    workplace: /api/workplace/file
     user: /api/users/file

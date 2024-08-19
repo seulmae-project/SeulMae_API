@@ -38,5 +38,5 @@ file:
       user: //home/rocky/seulmae/upload/user/
 
   endPoint:
-    workplace: /api/workplace/v1/file
+    workplace: /api/workplace/file
     user: /api/users/file
