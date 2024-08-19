@@ -23,6 +23,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,7 +36,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Slf4j
 public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
-    public static final String NO_CHECK_URL = "/api/users/login";
+    public static final List<String> NO_CHECK_URLS = Arrays.asList("/api/users/login", "/api/users/social-login");
 
     private final JwtService jwtService;
     private final UserRepository userRepository;
@@ -45,28 +46,40 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        if (request.getRequestURI().equals(NO_CHECK_URL)) {
+        if (NO_CHECK_URLS.contains(request.getRequestURI())) {
             filterChain.doFilter(request, response); // 로그인 url api 요청들어오면, 다음 필터 호출
             return;
         }
 
         // 리프레시 추출(없으면 null, 있다면 accessToken이 만료된 것)
+        /**
+         * 추출해서, 토큰이 타당한지 확인하고, 없으면 null.
+         */
         String refreshToken = jwtService.extractRefreshToken(request)
                 .filter(jwtService::isValidToken)
                 .orElse(null);
-        
+
+
+        /**
+         * 만약 리프레시 토큰이 있다면, 유저db에 존재하는 토큰인지 확인하고, 존재한다면, 리프레시 토큰 재발급 후 로그인
+         *
+         */
         if (refreshToken != null) {
             checkRefreshToken(refreshToken)
                     .ifPresent(user -> {
                         try {
-                            List<UserWorkplace> userWorkplaces = userWorkplaceRepository.findAllByUser(user);
-                            jwtService.sendAccessTokenAndRefreshToken(response, jwtService.createAccessToken(user.getAccountId()), reIssueRefreshToken(user), userWorkplaces);
+//                            List<UserWorkplace> userWorkplaces = userWorkplaceRepository.findAllByUser(user);
+                            jwtService.sendAccessTokenAndRefreshToken(response, jwtService.createAccessToken(user.getAccountId()), reIssueRefreshToken(user), user);
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
                     });
             return;
         }
+
+        /**
+         * 없다면, accessToken이 유효한지 확인하고, 유효하면 인증처리 / 아니라면, 403 처리
+         */
 
         // 리프레쉬 토큰이 없다거나 유효하지 않다면, accessToken을 검사하고 인증을 처리한다.
         // accessToken이 없거나 유효하지 않다면, 인증 객체가 담기지 않은 상태로 다음 필터로 넘어가기 때문에 403 에러 발생
@@ -80,6 +93,9 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
         return userRepository.findByRefreshToken(refreshToken);
     }
 
+    /**
+     * 리프레시 토큰 재발급
+     */
     private String reIssueRefreshToken(User user) {
         String reIssuedRefreshToken = jwtService.createRefreshToken();
         user.updateRefreshToken(reIssuedRefreshToken);

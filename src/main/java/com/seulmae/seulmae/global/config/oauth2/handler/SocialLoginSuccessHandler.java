@@ -1,7 +1,7 @@
-package com.seulmae.seulmae.global.config.login.handler;
+package com.seulmae.seulmae.global.config.oauth2.handler;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.seulmae.seulmae.notification.entity.FcmToken;
+import com.seulmae.seulmae.user.Role;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.user.entity.UserWorkplace;
 import com.seulmae.seulmae.user.repository.UserRepository;
@@ -17,17 +17,14 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StreamUtils;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
 @Slf4j
 @RequiredArgsConstructor
-public class LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
-
+public class SocialLoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
     private final JwtService jwtService;
     private final UserRepository userRepository;
     private final UserWorkplaceRepository userWorkplaceRepository;
@@ -38,26 +35,33 @@ public class LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
     @Override
     @Transactional
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+        log.info("OAuth2 로그인 성공!");
+
         String accountId = extractUsername(authentication);
         String accessToken = jwtService.createAccessToken(accountId);
         String refreshToken = jwtService.createRefreshToken();
 
         User accountUser  = userRepository.findByAccountId(accountId)
-                .map(user -> {
-                    user.updateRefreshToken(refreshToken);
-                    user.addFcmToken(new FcmToken(extractFcmToken(authentication), user));
-
-                    return userRepository.saveAndFlush(user);
-                })
                 .orElse(null);
 
-//        List<UserWorkplace> userWorkplaces = userWorkplaceRepository.findAllByUser(accountUser);
-        jwtService.sendAccessTokenAndRefreshToken(response, accessToken, refreshToken, accountUser);
+        if (accountUser != null) {
+            // guest인 경우,
+            if (accountUser.getAuthorityRole().equals(Role.GUEST)) {
+                jwtService.sendAccessTokenAndRefreshToken(response, accessToken, null, accountUser);
+            // guest가 아닌 경우,
+            } else if (accountUser.getAuthorityRole().equals(Role.USER)) {
+                accountUser.updateRefreshToken(refreshToken);
+                accountUser.addFcmToken(new FcmToken(extractFcmToken(authentication), accountUser));
+                userRepository.saveAndFlush(accountUser);
 
-        log.info("로그인에 성공하였습니다. 아이디: " + accountId);
-        log.info("로그인에 성공하였습니다. AccessToken: " + accessToken);
-        log.info("발급된 AccessToken 만료 기간: : " + accessTokenExpiration);
+//                List<UserWorkplace> userWorkplaces = userWorkplaceRepository.findAllByUser(accountUser);
+                jwtService.sendAccessTokenAndRefreshToken(response, accessToken, refreshToken, accountUser);
 
+                log.info("소셜 로그인에 성공하였습니다. 아이디: " + accountId);
+                log.info("소셜 로그인에 성공하였습니다. AccessToken: " + accessToken);
+                log.info("발급된 AccessToken 만료 기간: : " + accessTokenExpiration);
+            }
+        }
     }
 
     private String extractUsername(Authentication authentication) {

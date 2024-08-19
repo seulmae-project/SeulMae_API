@@ -211,10 +211,13 @@ public class UserService {
                 .orElseThrow(() -> new NoSuchElementException("해당 UserId가 존재하지 않습니다."));
         List<Workplace> workplaces = userWorkplaceRepository.findWorkplacesByUser(user);
 
+
         List<UserWorkplaceInfoResponse> userWorkplaceInfoResponses = new ArrayList<>();
 
         for (Workplace workplace : workplaces) {
-            userWorkplaceInfoResponses.add(new UserWorkplaceInfoResponse(workplace.getWorkplaceName(), workplace.getAddressVo()));
+            UserWorkplace userWorkplace = userWorkplaceRepository.findByUserAndWorkplace(user, workplace)
+                            .orElseThrow(() -> new NoSuchElementException("해당 유저는 해당 근무지 소속이 아닙니다."));
+            userWorkplaceInfoResponses.add(new UserWorkplaceInfoResponse(workplace.getIdWorkPlace(), workplace.getWorkplaceName(), workplace.getAddressVo(), userWorkplace.getIsManager()));
         }
 
         return new UserProfileResponse(user.getName(), getUserImageURL(user, request), user.getPhoneNumber(), userWorkplaceInfoResponses);
