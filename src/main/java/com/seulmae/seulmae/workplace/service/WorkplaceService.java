@@ -75,9 +75,9 @@ public class WorkplaceService {
     }
 
     @Transactional
-    public List<WorkplaceListInfoDto> getAllWorkplace(HttpServletRequest request) {
+    public List<WorkplaceListInfoDto> getAllWorkplace(HttpServletRequest request, String keyword) {
         /** 검색 가능하도록 수정 필요 **/
-        List<Workplace> workplaceList = workplaceRepository.findAll();
+        List<Workplace> workplaceList = workplaceRepository.findAllByKeyword(keyword);
         List<WorkplaceListInfoDto> workplaceListInfoDtoList = new ArrayList<>();
 
         workplaceList.stream()
