@@ -57,10 +57,9 @@ public class NotificationService {
         String title = "[공지사항]";
         String body = "'" + announcement.getTitle() + "'이 등록되었습니다.";
 
-        log.info("Sending announcement notification to topic: {}", topic);
-
         fcmTopicServiceImpl.sendMessageTo(topic, title, body, NotificationType.NOTICE, announcement.getIdAnnouncement());
 
+        log.info("Sending announcement notification to topic: {}", topic);
         for (User user : users) {
             UserWorkplace userWorkplace = userWorkplaceRepository.findByUserAndWorkplace(user, workplace)
                             .orElseThrow(() -> new NoSuchElementException("해당 User 및 Workplace와 관련된 UserWorkplace가 존재하지 않습니다."));
