@@ -1,6 +1,8 @@
 package com.seulmae.seulmae.workplace.repository;
 
+import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.workplace.dto.WorkplaceJoinRequestDto;
+import com.seulmae.seulmae.workplace.entity.Workplace;
 import com.seulmae.seulmae.workplace.entity.WorkplaceApprove;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -15,4 +17,6 @@ public interface WorkplaceApproveRepository extends JpaRepository<WorkplaceAppro
             "FROM WorkplaceApprove wa " +
             "WHERE wa.workplace.idWorkPlace = :workplaceId")
     List<WorkplaceJoinRequestDto> findByWorkplaceId(Long workplaceId);
+
+    boolean existsByUserAndWorkplace(User user, Workplace workplace);
 }
