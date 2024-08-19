@@ -50,9 +50,9 @@ public class WorkplaceController {
      * 근무지 전체 리스트
      */
     @GetMapping("info/all")
-    public ResponseEntity<?> getAllWorkplace(HttpServletRequest request) {
+    public ResponseEntity<?> getAllWorkplace(HttpServletRequest request, @RequestParam(required = false) String keyword) {
         try {
-            List<WorkplaceListInfoDto> workplaceListInfoDtoList = workplaceService.getAllWorkplace(request);
+            List<WorkplaceListInfoDto> workplaceListInfoDtoList = workplaceService.getAllWorkplace(request, keyword);
 
             return ResponseUtil.createSuccessResponse(SuccessCode.INSERT_SUCCESS, workplaceListInfoDtoList);
         } catch (Exception e) {
