@@ -2,6 +2,7 @@ package com.seulmae.seulmae.workplace.service;
 
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.seulmae.seulmae.global.util.FileUtil;
+import com.seulmae.seulmae.global.util.FindByIdUtil;
 import com.seulmae.seulmae.global.util.UUIDUtil;
 import com.seulmae.seulmae.global.util.UrlUtil;
 import com.seulmae.seulmae.notification.service.FcmTopicServiceImpl;
@@ -20,6 +21,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Null;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -40,11 +42,15 @@ public class WorkplaceService {
 
     private final FcmTopicServiceImpl fcmTopicServiceImpl;
 
+    private final FindByIdUtil findByIdUtil;
+
     @Value("${file.endPoint.workplace}")
     private String fileEndPoint;
 
     @Transactional
     public void addWorkplace(WorkplaceAddDto workplaceAddDto, List<MultipartFile> multipartFileList, User user) {
+        checkWorkplaceNameDuplicate(workplaceAddDto.getWorkplaceName());
+
         AddressVo addressVo = AddressVo.builder()
                 .mainAddress(workplaceAddDto.getMainAddress())
                 .subAddress(workplaceAddDto.getSubAddress())
@@ -94,7 +100,7 @@ public class WorkplaceService {
 
     @Transactional
     public WorkplaceInfoDto getSpecificWorkplace(Long workplaceId, HttpServletRequest request) {
-        Workplace workplace = getWorkplaceById(workplaceId);
+        Workplace workplace = findByIdUtil.getWorkplaceById(workplaceId);
 
         List<String> workplaceImageUrlList = getWorkplaceImageUrlList(workplace, request);
 
@@ -103,7 +109,7 @@ public class WorkplaceService {
 
     @Transactional
     public void modifyWorkplace(WorkplaceModifyDto workplaceModifyDto, List<MultipartFile> multipartFileList) throws IOException {
-        Workplace workplace = getWorkplaceById(workplaceModifyDto.getWorkplaceId());
+        Workplace workplace = findByIdUtil.getWorkplaceById(workplaceModifyDto.getWorkplaceId());
 
         AddressVo addressVo = AddressVo.builder()
                 .mainAddress(workplaceModifyDto.getMainAddress())
@@ -126,7 +132,7 @@ public class WorkplaceService {
 
     @Transactional
     public void deleteWorkplace(Long workplaceId) throws FirebaseMessagingException {
-        Workplace workplace = getWorkplaceById(workplaceId);
+        Workplace workplace = findByIdUtil.getWorkplaceById(workplaceId);
 
         workplace.deleteWorkplace();
 
@@ -139,10 +145,6 @@ public class WorkplaceService {
         fcmTopicServiceImpl.unsubscribeAllFromTopic(users, workplace.getWorkplaceTopic());
     }
 
-    public Workplace getWorkplaceById(Long workplaceId) {
-        return workplaceRepository.findById(workplaceId)
-                .orElseThrow(() -> new NullPointerException("This workplaceId doesn't exist."));
-    }
     public String getWorkplaceThumbnailUrl(Workplace workplace, HttpServletRequest request) {
 
         Long workplaceImageId = workplace.getWorkplaceImages() != null ?
@@ -171,5 +173,14 @@ public class WorkplaceService {
                 });
 
         return workplaceImageUrlList;
+    }
+
+    public void checkWorkplaceNameDuplicate(String workplaceName) {
+        if (existsByWorkplaceName(workplaceName)) {
+            throw new DuplicateKeyException("이미 등록된 근무지명입니다.");
+        }
+    }
+    public boolean existsByWorkplaceName(String workplaceName) {
+        return workplaceRepository.existsByWorkplaceName(workplaceName);
     }
 }
