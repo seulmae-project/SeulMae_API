@@ -5,6 +5,7 @@ import com.seulmae.seulmae.global.config.jwt.JwtAuthenticationProcessingFilter;
 import com.seulmae.seulmae.global.config.login.filter.CustomUsernamePasswordAuthenticationFilter;
 import com.seulmae.seulmae.global.config.login.handler.LoginFailureHandler;
 import com.seulmae.seulmae.global.config.login.handler.LoginSuccessHandler;
+import com.seulmae.seulmae.global.config.oauth2.SocialAuthenticationProvider;
 import com.seulmae.seulmae.global.config.oauth2.filter.SocialLoginAuthenticationFilter;
 //import com.seulmae.seulmae.global.config.oauth2.handler.OAuth2LoginFailureHandler;
 //import com.seulmae.seulmae.global.config.oauth2.handler.OAuth2LoginSuccessHandler;
@@ -109,24 +110,15 @@ public class SecurityConfig {
      */
     @Bean
     public AuthenticationManager authenticationManager() {
+
+        SocialAuthenticationProvider socialLoginProvider = new SocialAuthenticationProvider(socialLoginService);
+
         DaoAuthenticationProvider loginProvider = new DaoAuthenticationProvider();
         loginProvider.setPasswordEncoder(passwordEncoder());
         loginProvider.setUserDetailsService(loginService);
 
-        DaoAuthenticationProvider socialLoginProvider = new DaoAuthenticationProvider();
-        socialLoginProvider.setPasswordEncoder(passwordEncoder());
-        socialLoginProvider.setUserDetailsService(socialLoginService);
-
-        return new ProviderManager(loginProvider, socialLoginProvider);
+        return new ProviderManager(socialLoginProvider, loginProvider);
     }
-
-//    @Bean
-//    public AuthenticationManager socialAuthenticationManager() {
-//        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-//        provider.setPasswordEncoder(passwordEncoder());
-//        provider.setUserDetailsService(socialLoginService);
-//        return new ProviderManager(provider);
-//    }
 
     /**
      * 핸들러 빈 등록

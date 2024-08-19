@@ -1,7 +1,6 @@
 package com.seulmae.seulmae.global.config.oauth2.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.seulmae.seulmae.global.util.PasswordUtil;
 import com.seulmae.seulmae.user.service.AppleService;
 import com.seulmae.seulmae.user.service.KakaoService;
 import jakarta.servlet.ServletException;
@@ -83,13 +82,8 @@ public class SocialLoginAuthenticationFilter extends AbstractAuthenticationProce
             throw new NoSuchElementException("해당 소셜 로그인 종류는 존재하지 않습니다.");
         }
 
-        log.info("ACCOUNT_ID: {}", accountId);
 
-        String password = PasswordUtil.generateRandomPassword();
-
-        log.info("PASSWORD: {}", password);
-
-        UsernamePasswordAuthenticationToken authRequest = new UsernamePasswordAuthenticationToken(accountId, password);
+        UsernamePasswordAuthenticationToken authRequest = new UsernamePasswordAuthenticationToken(accountId, null);
 
         Map<String, Object> additionalDetails = new HashMap<>();
         additionalDetails.put(FCM_TOKEN_KEY, fcmToken);

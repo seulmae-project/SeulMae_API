@@ -1,23 +1,32 @@
 package com.seulmae.seulmae.global.config.oauth2;
 
+import com.seulmae.seulmae.user.service.SocialLoginService;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 
 public class SocialAuthenticationProvider implements AuthenticationProvider {
+
+    private final SocialLoginService socialLoginService;
+
+    public SocialAuthenticationProvider(SocialLoginService socialLoginService) {
+        this.socialLoginService = socialLoginService;
+    }
+
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         String accountId = authentication.getName();
-        // 이 부분에서 소셜 로그인 시 필요한 추가 검증 로직을 수행
-        // 예를 들어, 계정의 유효성을 확인하거나, 추가 사용자 정보를 조회
+        UserDetails user = socialLoginService.loadUserByUsername(accountId);
 
-        // 비밀번호 없이 사용자 인증 처리
-        return new UsernamePasswordAuthenticationToken(accountId, null, authentication.getAuthorities());
+        // 비밀번호 검증 없이 바로 인증 성공
+        return new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
     }
 
     @Override
     public boolean supports(Class<?> authentication) {
-        return false;
+        return UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication);
     }
 }

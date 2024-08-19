@@ -51,8 +51,8 @@ public class LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
                 })
                 .orElse(null);
 
-        List<UserWorkplace> userWorkplaces = userWorkplaceRepository.findAllByUser(accountUser);
-        jwtService.sendAccessTokenAndRefreshToken(response, accessToken, refreshToken, userWorkplaces);
+//        List<UserWorkplace> userWorkplaces = userWorkplaceRepository.findAllByUser(accountUser);
+        jwtService.sendAccessTokenAndRefreshToken(response, accessToken, refreshToken, accountUser);
 
         log.info("로그인에 성공하였습니다. 아이디: " + accountId);
         log.info("로그인에 성공하였습니다. AccessToken: " + accessToken);

@@ -2,6 +2,7 @@ package com.seulmae.seulmae.user.service;
 
 import com.seulmae.seulmae.global.config.oauth2.userInfo.OAuth2UserInfo;
 import com.seulmae.seulmae.global.util.FileUtil;
+import com.seulmae.seulmae.global.util.PasswordUtil;
 import com.seulmae.seulmae.user.SocialType;
 import com.seulmae.seulmae.user.dto.request.OAuthAttributesDto;
 import com.seulmae.seulmae.user.entity.User;
@@ -9,6 +10,7 @@ import com.seulmae.seulmae.user.entity.UserImage;
 import com.seulmae.seulmae.user.repository.UserImageRepository;
 import com.seulmae.seulmae.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class SocialLoginService implements UserDetailsService {
 
     private final UserRepository userRepository;
@@ -34,7 +37,7 @@ public class SocialLoginService implements UserDetailsService {
 
         return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getAccountId())
-//                .password(user.getPassword())
+                .password(PasswordUtil.generateRandomPassword())
                 .roles(user.getAuthorityRole().name())
                 .build();
     }

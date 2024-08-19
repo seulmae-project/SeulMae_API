@@ -54,8 +54,8 @@ public class SocialLoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
                 accountUser.addFcmToken(new FcmToken(extractFcmToken(authentication), accountUser));
                 userRepository.saveAndFlush(accountUser);
 
-                List<UserWorkplace> userWorkplaces = userWorkplaceRepository.findAllByUser(accountUser);
-                jwtService.sendAccessTokenAndRefreshToken(response, accessToken, refreshToken, userWorkplaces);
+//                List<UserWorkplace> userWorkplaces = userWorkplaceRepository.findAllByUser(accountUser);
+                jwtService.sendAccessTokenAndRefreshToken(response, accessToken, refreshToken, accountUser);
 
                 log.info("소셜 로그인에 성공하였습니다. 아이디: " + accountId);
                 log.info("소셜 로그인에 성공하였습니다. AccessToken: " + accessToken);
