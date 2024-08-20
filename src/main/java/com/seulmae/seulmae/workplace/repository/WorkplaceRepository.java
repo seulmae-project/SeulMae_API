@@ -15,4 +15,6 @@ public interface WorkplaceRepository extends JpaRepository<Workplace, Long> {
             "FROM Workplace w " +
             "WHERE (:keyword IS NULL OR w.workplaceName LIKE %:keyword%)")
     List<Workplace> findAllByKeyword(String keyword);
+
+    boolean existsByWorkplaceName(String workplaceName);
 }
