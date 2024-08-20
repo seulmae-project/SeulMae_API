@@ -4,6 +4,7 @@ import lombok.Getter;
 
 @Getter
 public class SmsCertificationRequest {
+    private String sendingType;
     private String phoneNumber;
     private String authCode;
 
