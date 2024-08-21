@@ -8,12 +8,12 @@ import com.seulmae.seulmae.notification.service.NotificationService;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.user.entity.UserWorkSchedule;
 import com.seulmae.seulmae.user.entity.UserWorkplace;
-import com.seulmae.seulmae.user.repository.UserRepository;
 import com.seulmae.seulmae.user.repository.UserWorkScheduleRepository;
 import com.seulmae.seulmae.user.repository.UserWorkplaceRepository;
 import com.seulmae.seulmae.wage.entity.Wage;
 import com.seulmae.seulmae.wage.repository.WageRepository;
 import com.seulmae.seulmae.workplace.dto.JoinApprovalDto;
+import com.seulmae.seulmae.workplace.dto.WorkplaceJoinDto;
 import com.seulmae.seulmae.workplace.dto.WorkplaceJoinRequestDto;
 import com.seulmae.seulmae.workplace.entity.WorkSchedule;
 import com.seulmae.seulmae.workplace.entity.Workplace;
@@ -23,6 +23,7 @@ import com.seulmae.seulmae.workplace.repository.WorkplaceApproveRepository;
 import com.seulmae.seulmae.workplace.repository.WorkplaceJoinHistoryRepository;
 import com.seulmae.seulmae.workplace.repository.WorkplaceRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,11 +52,13 @@ public class WorkplaceJoinService {
     private static final String TOPIC_PREFIX = "workplace";
 
     @Transactional
-    public void sendJoinRequest(User user, Long workplaceId) {
-        Workplace workplace = workplaceService.getWorkplaceById(workplaceId);
+    public void sendJoinRequest(User user, WorkplaceJoinDto workplaceJoinDto) {
+        Workplace workplace = findByIdUtil.getWorkplaceById(workplaceJoinDto.getWorkplaceId());
         User manager = userWorkplaceRepository.findUserByWorkplaceAndIsManager(workplace, true)
                 .orElseThrow(() -> new NoSuchElementException("해당 근무지의 매니저가 존재하지 않습니다."));
 
+        /** 중복 가입 신청 확인 **/
+        checkDuplicateWorkplaceJoin(user, workplace);
 
         WorkplaceJoinHistory workplaceJoinHistory = WorkplaceJoinHistory.builder()
                 .user(user)
@@ -76,7 +79,7 @@ public class WorkplaceJoinService {
         /** 매니저에게 알림 **/
         String title = "[가입요청]";
         String body = "'" + user.getName() + "'이 가입요청 하였습니다.";
-        notificationService.sendMessageToUserWithMultiDevice(title, body, manager, NotificationType.JOIN_REQUEST, workplaceApprove.getIdWorkPlaceApprove(), workplaceId);
+        notificationService.sendMessageToUserWithMultiDevice(title, body, manager, NotificationType.JOIN_REQUEST, workplaceApprove.getIdWorkPlaceApprove(), workplaceJoinDto.getWorkplaceId());
     }
 
     @Transactional
@@ -165,5 +168,14 @@ public class WorkplaceJoinService {
 
     public void deleteWorkplaceApproveById(Long workplaceApproveId) {
         workplaceApproveRepository.deleteById(workplaceApproveId);
+    }
+
+    public void checkDuplicateWorkplaceJoin(User user, Workplace workplace) {
+        if (existsByUserAndWorkplace(user, workplace)) {
+            throw new DuplicateKeyException("이미 해당 근무지에 가입 신청이 되어있습니다. 확인 후 다시 시도해 주세요.");
+        }
+    }
+    public boolean existsByUserAndWorkplace(User user, Workplace workplace) {
+        return workplaceApproveRepository.existsByUserAndWorkplace(user, workplace);
     }
 }

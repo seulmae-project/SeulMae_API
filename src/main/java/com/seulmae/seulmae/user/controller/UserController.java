@@ -27,7 +27,6 @@ import java.nio.file.AccessDeniedException;
 @RequestMapping("/api/users")
 public class UserController {
     private final UserService userService;
-    private final SmsService smsService;
 
     /**
      * 회원가입
@@ -102,8 +101,7 @@ public class UserController {
     @PostMapping("/sms-certification/send")
     public ResponseEntity<?> sendSMS(@RequestBody SmsSendingRequest request) {
         try {
-            smsService.sendSMS(request.setPhoneNumber(request.getPhoneNumber()));
-            FindAuthResponse result = userService.getAccountId(request.getPhoneNumber());
+            FindAuthResponse result = userService.sendSMSCertification(request);
             return ResponseUtil.createSuccessResponse(SuccessCode.SEND_SMS_SUCCESS, result);
         } catch (Exception e) {
             return ResponseUtil.handleException(e);
@@ -119,8 +117,8 @@ public class UserController {
     @PostMapping("/sms-certification/confirm")
     public ResponseEntity<?> verifySMS(@RequestBody SmsCertificationRequest request) {
         try {
-            smsService.verifySMS(request);
-            return ResponseUtil.createSuccessResponse(SuccessCode.VERIFY_SMS_SUCCESS);
+            FindAuthResponse result = userService.confirmSMSCertification(request);
+            return ResponseUtil.createSuccessResponse(SuccessCode.VERIFY_SMS_SUCCESS, result);
         } catch (Exception e) {
             return ResponseUtil.handleException(e);
         }

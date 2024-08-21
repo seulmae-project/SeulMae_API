@@ -42,8 +42,12 @@ public class UserService {
     private final FindByIdUtil findByIdUtil;
 
     private final UserImageService userImageService;
+    private final SmsService smsService;
 
     private final String FILE_ENDPOINT = "/api/users/file";
+    private final String SIGNUP = "signUp";
+    private final String FIND_ACCOUNT_ID = "findAccountId";
+    private final String FIND_PW = "findPassword";
 
     @Transactional
     public void createUser(UserSignUpDto userSignUpDto, MultipartFile file) {
@@ -108,8 +112,8 @@ public class UserService {
     public FindAuthResponse getAccountId(String phoneNumber) {
         String rePhoneNumber = phoneNumber.replace("-", "");
         User user = userRepository.findByPhoneNumber(rePhoneNumber)
-                .orElse(null);
-        return new FindAuthResponse(user == null ? null : user.getAccountId());
+                .orElseThrow(() -> new NoSuchElementException("해당 휴대폰번호로 가입한 이력이 없습니다."));
+        return new FindAuthResponse(true, user.getAccountId());
     }
 
     @Transactional
@@ -211,13 +215,107 @@ public class UserService {
                 .orElseThrow(() -> new NoSuchElementException("해당 UserId가 존재하지 않습니다."));
         List<Workplace> workplaces = userWorkplaceRepository.findWorkplacesByUser(user);
 
+
         List<UserWorkplaceInfoResponse> userWorkplaceInfoResponses = new ArrayList<>();
 
         for (Workplace workplace : workplaces) {
-            userWorkplaceInfoResponses.add(new UserWorkplaceInfoResponse(workplace.getWorkplaceName(), workplace.getAddressVo()));
+            UserWorkplace userWorkplace = userWorkplaceRepository.findByUserAndWorkplace(user, workplace)
+                            .orElseThrow(() -> new NoSuchElementException("해당 유저는 해당 근무지 소속이 아닙니다."));
+            userWorkplaceInfoResponses.add(new UserWorkplaceInfoResponse(workplace.getIdWorkPlace(), workplace.getWorkplaceName(), workplace.getAddressVo(), userWorkplace.getIsManager()));
         }
 
         return new UserProfileResponse(user.getName(), getUserImageURL(user, request), user.getPhoneNumber(), userWorkplaceInfoResponses);
     }
 
+    /**
+     * sms 보내기 서비스 (보내기 여부를 판단하는 서비스)
+     * 0. 보내는 상황
+     * - 회원가입
+     *   - 기존 db에 유저가 존재해서는 안된다.
+     *   - 기존 db에 유저가 존재하는 경우, '해당 휴대폰번호로 가입한 이력이 있습니다. 아이디 찾기를 이용하시기 바랍니다.'
+     * - 아이디 찾기
+     *   - 기존 db에 유저가 존재해야 한다.
+     *   - 기존 db에 휴대폰 번호에 대한 유저가 존재하지 않을 경우, sms를 보내면 안된다.
+     * - 비밀번호 찾기
+     *   - 아이디와 휴대폰번호가 동시에 존재하는 유저가 db에 존재해야 한다.
+     *   - 만약 일치하는 데이터가 없을 경우, sms를 보내면 안된다.
+     */
+    public FindAuthResponse sendSMSCertification(SmsSendingRequest request) {
+        /**
+         * 회원가입
+         */
+        if (request.getSendingType().equals(SIGNUP)) {
+
+            checkDuplicatedPhoneNumber(request.getPhoneNumber());
+
+            smsService.sendSMS(request.getPhoneNumber());
+
+            return new FindAuthResponse(true);
+        }
+
+        /**
+         * 아이디 찾기
+         */
+        if (request.getSendingType().equals(FIND_ACCOUNT_ID)) {
+            if (!isDuplicatedPhoneNumber(request.getPhoneNumber())) {
+                throw new IllegalArgumentException("가입된 휴대폰 번호가 아닙니다.");
+            }
+
+            smsService.sendSMS(request.getPhoneNumber());
+
+            return new FindAuthResponse(true);
+        }
+
+        /**
+         * 비밀번호 찾기
+         */
+        if (request.getSendingType().equals(FIND_PW)) {
+            if (!userRepository.existsByAccountIdAndPhoneNumber(request.getAccountId(), request.getPhoneNumber())) {
+                throw new IllegalArgumentException("해당 아이디와 휴대폰번호가 매칭되는 계정이 존재하지 않습니다.");
+            }
+
+            smsService.sendSMS(request.getPhoneNumber());
+
+            return new FindAuthResponse(true);
+        }
+
+        throw new IllegalArgumentException(request.getSendingType() + " 타입은 존재하지 않는 타입입니다.");
+    }
+
+    /**
+     * sms 인증 서비스 (종류에 따라 제공하는 리스폰스가 달라진다.)
+     * 1. 회원가입
+     * - 성공/실패 리스폰스
+     *
+     * 2. 아이디 찾기
+     * - 성공/실패 리스폰스
+     * - 아이디(accountId)
+     *
+     * 3. 비밀번호 찾기
+     * - 성공/실패 리스폰스
+     */
+
+    public FindAuthResponse confirmSMSCertification(SmsCertificationRequest request) {
+        /**
+         * 회원가입 & 비밀번호 찾기
+         */
+        if (request.getSendingType().equals(SIGNUP) || request.getSendingType().equals(FIND_PW)) {
+
+            smsService.verifySMS(request);
+
+            return new FindAuthResponse(true);
+        }
+
+        /**
+         * 아이디 찾기
+         */
+        if (request.getSendingType().equals(FIND_ACCOUNT_ID)) {
+            smsService.verifySMS(request);
+
+            return getAccountId(request.getPhoneNumber());
+        }
+
+        throw new IllegalArgumentException(request.getSendingType() + " 타입은 존재하지 않는 타입입니다.");
+
+    }
 }

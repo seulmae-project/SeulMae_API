@@ -9,7 +9,7 @@ import java.io.IOException;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/workplace/file/v1")
+@RequestMapping("/api/workplace/file")
 public class WorkplaceFileController {
 
     private final WorkplaceFileService workplaceFileService;
