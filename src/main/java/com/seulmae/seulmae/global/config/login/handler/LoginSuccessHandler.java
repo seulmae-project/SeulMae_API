@@ -45,13 +45,16 @@ public class LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
         User accountUser  = userRepository.findByAccountId(accountId)
                 .map(user -> {
                     user.updateRefreshToken(refreshToken);
-                    user.addFcmToken(new FcmToken(extractFcmToken(authentication), user));
+
+                    String fcmToken = extractFcmToken(authentication);
+                    if (fcmToken != null && !fcmToken.isEmpty()) {
+                        user.addFcmToken(new FcmToken(extractFcmToken(authentication), user));
+                    }
 
                     return userRepository.saveAndFlush(user);
                 })
                 .orElse(null);
 
-//        List<UserWorkplace> userWorkplaces = userWorkplaceRepository.findAllByUser(accountUser);
         jwtService.sendAccessTokenAndRefreshToken(response, accessToken, refreshToken, accountUser);
 
         log.info("로그인에 성공하였습니다. 아이디: " + accountId);

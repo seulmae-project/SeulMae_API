@@ -9,6 +9,7 @@ import com.seulmae.seulmae.announcement.entity.Announcement;
 import com.seulmae.seulmae.announcement.repository.AnnouncementRepository;
 import com.seulmae.seulmae.global.dao.RedisBasicDao;
 import com.seulmae.seulmae.global.util.JsonPagination;
+import com.seulmae.seulmae.notification.event.AnnouncementNotificationEvent;
 import com.seulmae.seulmae.notification.service.NotificationService;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.user.service.UserWorkplaceService;
@@ -16,6 +17,7 @@ import com.seulmae.seulmae.workplace.entity.Workplace;
 import com.seulmae.seulmae.workplace.repository.WorkplaceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -37,9 +39,11 @@ public class AnnouncementService {
     private final UserWorkplaceService userWorkplaceService;
     private final NotificationService notificationService;
 
+    private final ApplicationEventPublisher eventPublisher;
+
     // 공지사항 생성
     @Transactional
-    public void createAnnouncement(AddAnnouncementRequest request, User user) throws IOException {
+    public void createAnnouncement(AddAnnouncementRequest request, User user) {
         // 매니저 권한이 있는 유저여야 한다.
         Workplace workplace = workplaceRepository.findById(request.getWorkplaceId())
                 .orElseThrow(() -> new NoSuchElementException("해당 근무지 ID가 존재하지 않습니다."));
@@ -50,7 +54,8 @@ public class AnnouncementService {
         announcementRepository.save(announcement);
 
         // 알림을 보낸다.
-        notificationService.sendMessageToUsersAboutAnnouncement(announcement);
+        eventPublisher.publishEvent(new AnnouncementNotificationEvent(announcement));
+//        notificationService.sendMessageToUsersAboutAnnouncement(announcement);
     }
 
     // 공지사항 수정

@@ -1,6 +1,5 @@
 package com.seulmae.seulmae.user.service;
 
-import com.seulmae.seulmae.global.util.FileUtil;
 import com.seulmae.seulmae.global.util.FindByIdUtil;
 import com.seulmae.seulmae.global.util.PasswordUtil;
 import com.seulmae.seulmae.global.util.UrlUtil;
@@ -13,8 +12,8 @@ import com.seulmae.seulmae.user.dto.response.UserWorkplaceInfoResponse;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.user.entity.UserImage;
 import com.seulmae.seulmae.user.entity.UserWorkplace;
-import com.seulmae.seulmae.user.exception.InvalidAccountIdException;
-import com.seulmae.seulmae.user.exception.InvalidPasswordException;
+import com.seulmae.seulmae.global.exception.InvalidAccountIdException;
+import com.seulmae.seulmae.global.exception.InvalidPasswordException;
 import com.seulmae.seulmae.user.repository.UserImageRepository;
 import com.seulmae.seulmae.user.repository.UserRepository;
 import com.seulmae.seulmae.user.repository.UserWorkplaceRepository;

@@ -3,7 +3,7 @@ package com.seulmae.seulmae.user.entity;
 import com.seulmae.seulmae.notification.entity.FcmToken;
 import com.seulmae.seulmae.user.Role;
 import com.seulmae.seulmae.user.SocialType;
-import com.seulmae.seulmae.user.exception.MatchPasswordException;
+import com.seulmae.seulmae.global.exception.MatchPasswordException;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;

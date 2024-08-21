@@ -3,6 +3,7 @@ package com.seulmae.seulmae.workplace.service;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.seulmae.seulmae.global.util.FindByIdUtil;
 import com.seulmae.seulmae.notification.NotificationType;
+import com.seulmae.seulmae.notification.event.MultiDeviceNotificationEvent;
 import com.seulmae.seulmae.notification.service.FcmTopicServiceImpl;
 import com.seulmae.seulmae.notification.service.NotificationService;
 import com.seulmae.seulmae.user.entity.User;
@@ -23,6 +24,7 @@ import com.seulmae.seulmae.workplace.repository.WorkplaceApproveRepository;
 import com.seulmae.seulmae.workplace.repository.WorkplaceJoinHistoryRepository;
 import com.seulmae.seulmae.workplace.repository.WorkplaceRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,6 +49,8 @@ public class WorkplaceJoinService {
     private final WorkplaceService workplaceService;
     private final NotificationService notificationService;
     private final FcmTopicServiceImpl fcmTopicServiceImpl;
+
+    private final ApplicationEventPublisher eventPublisher;
 
     public static final LocalDate MAX_END_DATE = LocalDate.of(2999, 12, 31);
     private static final String TOPIC_PREFIX = "workplace";
@@ -77,9 +81,11 @@ public class WorkplaceJoinService {
         workplaceApproveRepository.save(workplaceApprove);
 
         /** 매니저에게 알림 **/
+        // 이벤트 발행
         String title = "[가입요청]";
         String body = "'" + user.getName() + "'이 가입요청 하였습니다.";
-        notificationService.sendMessageToUserWithMultiDevice(title, body, manager, NotificationType.JOIN_REQUEST, workplaceApprove.getIdWorkPlaceApprove(), workplaceJoinDto.getWorkplaceId());
+        eventPublisher.publishEvent(new MultiDeviceNotificationEvent(title, body, manager, NotificationType.JOIN_REQUEST, workplaceApprove.getIdWorkPlaceApprove(), workplaceJoinDto.getWorkplaceId()));
+//        notificationService.sendMessageToUserWithMultiDevice(title, body, manager, NotificationType.JOIN_REQUEST, workplaceApprove.getIdWorkPlaceApprove(), workplaceJoinDto.getWorkplaceId());
     }
 
     @Transactional
@@ -139,7 +145,8 @@ public class WorkplaceJoinService {
         /** 알바생에게 수락 알림 **/
         String title = "[가입수락]";
         String body = "'" + workplace.getWorkplaceName() + "'에 가입되었습니다.";
-        notificationService.sendMessageToUserWithMultiDevice(title, body, workplaceJoinHistory.getUser(), NotificationType.JOIN_RESPONSE, workplaceJoinHistory.getIdWorkplaceJoinHistory(), workplaceJoinHistory.getWorkplace().getIdWorkPlace());
+        eventPublisher.publishEvent(new MultiDeviceNotificationEvent(title, body, workplaceJoinHistory.getUser(), NotificationType.JOIN_RESPONSE, workplaceJoinHistory.getIdWorkplaceJoinHistory(), workplaceJoinHistory.getWorkplace().getIdWorkPlace()));
+//        notificationService.sendMessageToUserWithMultiDevice(title, body, workplaceJoinHistory.getUser(), NotificationType.JOIN_RESPONSE, workplaceJoinHistory.getIdWorkplaceJoinHistory(), workplaceJoinHistory.getWorkplace().getIdWorkPlace());
     }
 
     @Transactional
@@ -156,7 +163,8 @@ public class WorkplaceJoinService {
         /** 알바생에세 거절 알림 **/
         String title = "[가입거절]";
         String body = "'" + workplaceJoinHistory.getWorkplace().getWorkplaceName() + "'에 가입이 거절됐습니다. 해당 근무지의 매니저에게 문의하세요.";
-        notificationService.sendMessageToUserWithMultiDevice(title, body, workplaceJoinHistory.getUser(), NotificationType.JOIN_RESPONSE, workplaceJoinHistory.getIdWorkplaceJoinHistory(), workplaceJoinHistory.getWorkplace().getIdWorkPlace());
+        eventPublisher.publishEvent(new MultiDeviceNotificationEvent(title, body, workplaceJoinHistory.getUser(), NotificationType.JOIN_RESPONSE, workplaceJoinHistory.getIdWorkplaceJoinHistory(), workplaceJoinHistory.getWorkplace().getIdWorkPlace()));
+//        notificationService.sendMessageToUserWithMultiDevice(title, body, workplaceJoinHistory.getUser(), NotificationType.JOIN_RESPONSE, workplaceJoinHistory.getIdWorkplaceJoinHistory(), workplaceJoinHistory.getWorkplace().getIdWorkPlace());
     }
 
     @Transactional
