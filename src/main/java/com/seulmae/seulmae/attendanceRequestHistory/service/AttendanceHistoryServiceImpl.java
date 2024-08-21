@@ -17,7 +17,10 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.NoSuchElementException;
+
+import static java.time.temporal.ChronoUnit.DAYS;
 
 @Service
 @RequiredArgsConstructor
@@ -33,18 +36,17 @@ public class AttendanceHistoryServiceImpl implements AttendanceHistoryService {
      * 주어진 근무지 ID와 년, 월을 사용하여 근무 달력을 반환합니다.
      */
     @Override
-    public AttendanceCalendarDto getCalender(User user, Long workplaceId, Integer year, Integer month) {
+    public List<AttendanceCalendarDto> getCalender(User user, Long workplaceId, Integer year, Integer month) {
         Workplace workplace = findByIdUtil.getWorkplaceById(workplaceId);
 
+        LocalDate startDate = LocalDate.of(year, month, 1);
+        LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
 
-        // 예시 데이터 생성 (실제 데이터 조회 및 가공 필요)
-        LocalDate workDate = LocalDate.of(year, month, 1);
-        Boolean isRequestApprove = true; // 예시 데이터
-        Boolean isManagerCheck = true; // 예시 데이터
-        Long idAttendanceRequestHistory = 1L; // 예시 데이터
+        List<AttendanceCalendarDto> attendanceCalendarDtoList = attendanceRequestHistoryRepository
+                .findByUserAndWorkplaceAndDateBetween(user.getIdUser(), workplaceId, startDate, endDate);
+//                .orElseThrow(() -> new NoSuchElementException("조건에 맞는 근무요청이 없습니다."));
 
-        // AttendanceCalendarDto 객체 생성 및 반환
-        return new AttendanceCalendarDto(workDate, isRequestApprove, isManagerCheck, idAttendanceRequestHistory);
+        return attendanceCalendarDtoList;
     }
 
     /*
@@ -57,8 +59,9 @@ public class AttendanceHistoryServiceImpl implements AttendanceHistoryService {
         Wage wage = findByUserAndWorkPlaceUtil.getWageByUserAndWorkPlace(user, workplace);
 
         // 근무 현황 데이터 조회 및 가공
-        long workedDays = attendanceRequestHistoryRepository.countByWorkplaceId(workplaceId);
-        LocalDate firstWorkDate = attendanceRepository.findFirstWorkDateByUserIdAndWorkplaceId(user.getIdUser(), workplaceId);
+        LocalDate firstWorkDate = attendanceRepository.findFirstWorkDateByUserIdAndWorkplaceId(user.getIdUser(), workplaceId)
+                .orElseThrow(() -> new NoSuchElementException("첫 근무 정보가 없습니다."));
+        long workedDays = DAYS.between(firstWorkDate, LocalDate.now());
         Integer payday = wage.getPayday();
 
         // WorkStatusDto 객체 생성 및 반환
@@ -74,13 +77,14 @@ public class AttendanceHistoryServiceImpl implements AttendanceHistoryService {
         Workplace workplace = findByIdUtil.getWorkplaceById(workplaceId);
         Wage wage = findByUserAndWorkPlaceUtil.getWageByUserAndWorkPlace(user, workplace);
 
-
         LocalDate applyStartDate = LocalDate.of(year, month, 1);
         LocalDate applyEndDate = applyStartDate.withDayOfMonth(applyStartDate.lengthOfMonth());
         Integer baseWage = wage.getBaseWage();
-        BigDecimal monthlyWorkTime = attendanceRequestHistoryRepository.sumMonthlyWorkTime(user.getIdUser(), workplaceId, year, month);
+        BigDecimal monthlyWorkTime = attendanceRequestHistoryRepository.sumMonthlyWorkTime(user.getIdUser(), workplaceId, year, month)
+                .orElse(BigDecimal.ZERO);
 
-        Integer monthlyWage = attendanceRepository.sumConfirmedWage(user.getIdUser(), workplaceId, year, month);
+        Integer monthlyWage = attendanceRepository.sumConfirmedWage(user.getIdUser(), workplaceId, year, month)
+                .orElse(0);
 
         // MonthlyWorkSummaryDto 객체 생성 및 반환
         return new MonthlyWorkSummaryDto(monthlyWage, applyStartDate, applyEndDate, baseWage, monthlyWorkTime);
@@ -93,6 +97,11 @@ public class AttendanceHistoryServiceImpl implements AttendanceHistoryService {
     @Override
     public Page<AttendanceRequestHistoryDto> getHistoryList(User user, Long workplaceId, Integer year, Integer month, Integer page, Integer size) {
         Workplace workplace = findByIdUtil.getWorkplaceById(workplaceId);
+
+        // page, size 기본 값 설정
+        page = (page < 0) ? 0 : page;
+        size = (size <= 0) ? 10 : size;
+
 
         // 페이지 및 사이즈 정보를 사용하여 이력 리스트 조회
         Pageable pageable = PageRequest.of(page, size);
@@ -119,11 +128,12 @@ public class AttendanceHistoryServiceImpl implements AttendanceHistoryService {
         AttendanceRequestHistory history = attendanceRequestHistoryRepository.findById(idAttendanceRequestHistory)
                 .orElseThrow(() -> new NoSuchElementException("해당 근무 이력 ID가 존재하지 않습니다."));
 
+        AttendanceRequestHistoryDetailProjection detailProjection = attendanceRequestHistoryRepository.findDeliveryMessageAndAttendanceRequestMemoByIdAttendanceRequestHistory(idAttendanceRequestHistory);
+
         // AttendanceRequestHistoryDetailDto 객체 생성 및 반환
         return new AttendanceRequestHistoryDetailDto(
-                history.getAttendance().getConfirmedWage(),
-                history.getDeliveryMessage(),
-                history.getAttendanceRequestMemo()
+                detailProjection.getDeliveryMessage(),
+                detailProjection.getAttendanceRequestMemo()
         );
     }
 }

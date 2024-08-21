@@ -4,8 +4,10 @@ import com.seulmae.seulmae.attendanceRequestHistory.dto.*;
 import com.seulmae.seulmae.user.entity.User;
 import org.springframework.data.domain.Page;
 
+import java.util.List;
+
 public interface AttendanceHistoryService {
-    AttendanceCalendarDto getCalender(User user, Long workplaceId, Integer year, Integer month);
+    List<AttendanceCalendarDto> getCalender(User user, Long workplaceId, Integer year, Integer month);
 
     WorkStatusDto getStatus(User user, Long workplaceId);
 
