@@ -175,6 +175,7 @@ public class WorkplaceService {
         return workplaceImageUrlList;
     }
 
+    @Transactional
     public void checkWorkplaceNameDuplicate(String workplaceName) {
         if (existsByWorkplaceName(workplaceName)) {
             throw new DuplicateKeyException("이미 등록된 근무지명입니다.");

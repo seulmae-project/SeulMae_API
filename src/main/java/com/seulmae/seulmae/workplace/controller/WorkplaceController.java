@@ -2,7 +2,6 @@ package com.seulmae.seulmae.workplace.controller;
 
 import com.seulmae.seulmae.global.util.ResponseUtil;
 import com.seulmae.seulmae.global.util.enums.SuccessCode;
-import com.seulmae.seulmae.global.util.enums.SuccessResponse;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.workplace.dto.WorkplaceAddDto;
 import com.seulmae.seulmae.workplace.dto.WorkplaceInfoDto;
@@ -11,7 +10,6 @@ import com.seulmae.seulmae.workplace.dto.WorkplaceModifyDto;
 import com.seulmae.seulmae.workplace.service.WorkplaceService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -97,11 +95,26 @@ public class WorkplaceController {
      * @param workplaceId
      */
     @DeleteMapping("delete")
-    public ResponseEntity<?> modifyWorkplace(@RequestParam Long workplaceId) {
+    public ResponseEntity<?> deleteWorkplace(@RequestParam Long workplaceId) {
         try {
             workplaceService.deleteWorkplace(workplaceId);
 
             return ResponseUtil.createSuccessResponse(SuccessCode.DELETE_SUCCESS);
+        } catch (Exception e) {
+            return ResponseUtil.handleException(e);
+        }
+    }
+
+    /**
+     * 근무지명 중복 확인
+     * @param workplaceName
+     * **/
+    @GetMapping("duplicate/name")
+    public ResponseEntity<?> checkWorkplaceNameDuplicate(@RequestParam String workplaceName) {
+        try {
+            workplaceService.checkWorkplaceNameDuplicate(workplaceName);
+
+            return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS);
         } catch (Exception e) {
             return ResponseUtil.handleException(e);
         }
