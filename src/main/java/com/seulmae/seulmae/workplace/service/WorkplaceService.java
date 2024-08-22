@@ -6,6 +6,7 @@ import com.seulmae.seulmae.global.util.FindByIdUtil;
 import com.seulmae.seulmae.global.util.UUIDUtil;
 import com.seulmae.seulmae.global.util.UrlUtil;
 import com.seulmae.seulmae.notification.service.FcmTopicServiceImpl;
+import com.seulmae.seulmae.user.dto.response.UserWorkplaceInfoResponse;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.user.entity.UserWorkplace;
 import com.seulmae.seulmae.user.repository.UserWorkplaceRepository;
@@ -27,10 +28,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -145,6 +144,21 @@ public class WorkplaceService {
         fcmTopicServiceImpl.unsubscribeAllFromTopic(users, workplace.getWorkplaceTopic());
     }
 
+    @Transactional
+    public List<UserWorkplaceInfoResponse> getJoinWorkplaceList(User user) {
+        List<Workplace> workplaces = userWorkplaceRepository.findWorkplacesByUser(user);
+
+        List<UserWorkplaceInfoResponse> userWorkplaceInfoResponses = workplaces.stream()
+                .map(workplace -> {
+                    UserWorkplace userWorkplace = userWorkplaceRepository.findByUserAndWorkplace(user, workplace)
+                            .orElseThrow(() -> new NoSuchElementException("해당 유저는 해당 근무지 소속이 아닙니다."));
+                    return new UserWorkplaceInfoResponse(workplace.getIdWorkPlace(), workplace.getWorkplaceName(), workplace.getAddressVo(), userWorkplace.getIsManager());
+                })
+                .collect(Collectors.toList());
+
+        return userWorkplaceInfoResponses;
+    }
+
     public String getWorkplaceThumbnailUrl(Workplace workplace, HttpServletRequest request) {
 
         Long workplaceImageId = workplace.getWorkplaceImages() != null ?
@@ -175,6 +189,7 @@ public class WorkplaceService {
         return workplaceImageUrlList;
     }
 
+    @Transactional
     public void checkWorkplaceNameDuplicate(String workplaceName) {
         if (existsByWorkplaceName(workplaceName)) {
             throw new DuplicateKeyException("이미 등록된 근무지명입니다.");
