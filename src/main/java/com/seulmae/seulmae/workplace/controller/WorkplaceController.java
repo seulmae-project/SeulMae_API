@@ -2,6 +2,7 @@ package com.seulmae.seulmae.workplace.controller;
 
 import com.seulmae.seulmae.global.util.ResponseUtil;
 import com.seulmae.seulmae.global.util.enums.SuccessCode;
+import com.seulmae.seulmae.user.dto.response.UserWorkplaceInfoResponse;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.workplace.dto.WorkplaceAddDto;
 import com.seulmae.seulmae.workplace.dto.WorkplaceInfoDto;
@@ -68,6 +69,21 @@ public class WorkplaceController {
             WorkplaceInfoDto workplaceInfoDto = workplaceService.getSpecificWorkplace(workplaceId, request);
 
             return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, workplaceInfoDto);
+        } catch (Exception e) {
+            return ResponseUtil.handleException(e);
+        }
+    }
+
+    /**
+     * 유저별 가입 근무지 리스트
+     * @param user
+     */
+    @GetMapping("info/join")
+    public ResponseEntity<?> getJoinWorkplaceList(@AuthenticationPrincipal User user) {
+        try {
+            List<UserWorkplaceInfoResponse> userWorkplaceInfoResponse = workplaceService.getJoinWorkplaceList(user);
+
+            return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, userWorkplaceInfoResponse);
         } catch (Exception e) {
             return ResponseUtil.handleException(e);
         }
