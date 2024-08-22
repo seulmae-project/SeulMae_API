@@ -13,7 +13,9 @@ public class AttendanceRequestDto {
     private LocalDate workDate;
     private LocalDateTime workStartTime;
     private LocalDateTime workEndTime;
+    private Integer confirmedWage;
     private Integer unconfirmedWage;
     private BigDecimal totalWorkTime;
     private String deliveryMessage;
+    private Integer day;
 }
