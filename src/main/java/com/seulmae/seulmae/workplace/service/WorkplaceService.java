@@ -152,7 +152,9 @@ public class WorkplaceService {
                 .map(workplace -> {
                     UserWorkplace userWorkplace = userWorkplaceRepository.findByUserAndWorkplace(user, workplace)
                             .orElseThrow(() -> new NoSuchElementException("해당 유저는 해당 근무지 소속이 아닙니다."));
-                    return new UserWorkplaceInfoResponse(workplace.getIdWorkPlace(), workplace.getWorkplaceName(), workplace.getAddressVo(), userWorkplace.getIsManager());
+                    User manager = userWorkplaceRepository.findUserByWorkplaceAndIsManager(workplace, true)
+                            .orElseThrow(() -> new NoSuchElementException("해당 근무지에 매니저가 존재하지 않습니다."));
+                    return new UserWorkplaceInfoResponse(workplace.getIdWorkPlace(), workplace.getWorkplaceName(), workplace.getAddressVo(), workplace.getWorkplaceTel(), manager.getName(), userWorkplace.getIsManager());
                 })
                 .collect(Collectors.toList());
 
