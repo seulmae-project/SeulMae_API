@@ -211,7 +211,7 @@ public class AttendanceService {
         /** 매니저에게 알림 **/
         String title = "[출퇴근자동승인]";
         String body = "'" + user.getName() + "'이 [" + attendance.getWorkDate() + "]에 대한 출퇴근 자동 승인이 되었습니다.";
-        eventPublisher.publishEvent(new MultiDeviceNotificationEvent(title, body, manager, NotificationType.ATTENDANCE_REQUEST, attendanceRequestHistory.getIdAttendanceRequestHistory(), workplace.getIdWorkPlace());
+        eventPublisher.publishEvent(new MultiDeviceNotificationEvent(title, body, manager, NotificationType.ATTENDANCE_REQUEST, attendanceRequestHistory.getIdAttendanceRequestHistory(), workplace.getIdWorkPlace()));
 //         notificationService.sendMessageToUserWithMultiDevice(title, body, manager, NotificationType.ATTENDANCE_REQUEST, attendanceRequestHistory.getIdAttendanceRequestHistory(), workplace.getIdWorkPlace());
     }
 
