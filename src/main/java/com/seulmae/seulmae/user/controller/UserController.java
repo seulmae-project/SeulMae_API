@@ -91,6 +91,17 @@ public class UserController {
         }
     }
 
+    @GetMapping("my-profile")
+    public ResponseEntity<?> getMyProfile(@AuthenticationPrincipal User user,
+                                            HttpServletRequest request) {
+        try {
+            UserProfileResponse result = userService.getMyProfile(user, request);
+            return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, result);
+        } catch (Exception e) {
+            return ResponseUtil.handleException(e);
+        }
+    }
+
 
     /**
      * 휴대폰 인증번호 신청

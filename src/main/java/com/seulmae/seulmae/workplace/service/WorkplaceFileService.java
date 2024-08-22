@@ -38,9 +38,7 @@ public class WorkplaceFileService {
 
         if (workplaceImageList != null) {
             for (WorkplaceImage workplaceImage : workplaceImageList) {
-
-                File image = new File(workplaceImage.getWorkplaceImagePath(), workplaceImage.getWorkplaceImageName());
-                image.delete();
+                FileUtil.deleteImage(workplaceImage.getWorkplaceImagePath(), workplaceImage.getWorkplaceImageName());
             }
 
             workplaceImageRepository.deleteAllByWorkplace(workplace);
