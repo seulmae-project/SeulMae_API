@@ -35,7 +35,6 @@ public class SocialLoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
     @Override
     @Transactional
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-        log.info("OAuth2 로그인 성공!");
 
         String accountId = extractUsername(authentication);
         String accessToken = jwtService.createAccessToken(accountId);
@@ -51,10 +50,14 @@ public class SocialLoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
             // guest가 아닌 경우,
             } else if (accountUser.getAuthorityRole().equals(Role.USER)) {
                 accountUser.updateRefreshToken(refreshToken);
-                accountUser.addFcmToken(new FcmToken(extractFcmToken(authentication), accountUser));
+
+                String fcmToken = extractFcmToken(authentication);
+                if (fcmToken != null && !fcmToken.isEmpty()) {
+                    accountUser.addFcmToken(new FcmToken(extractFcmToken(authentication), accountUser));
+                }
+
                 userRepository.saveAndFlush(accountUser);
 
-//                List<UserWorkplace> userWorkplaces = userWorkplaceRepository.findAllByUser(accountUser);
                 jwtService.sendAccessTokenAndRefreshToken(response, accessToken, refreshToken, accountUser);
 
                 log.info("소셜 로그인에 성공하였습니다. 아이디: " + accountId);

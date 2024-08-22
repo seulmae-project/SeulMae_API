@@ -1,6 +1,7 @@
 package com.seulmae.seulmae.global.util;
 
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -10,6 +11,7 @@ import org.springframework.util.FileCopyUtils;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.swing.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -23,6 +25,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Service
+@Slf4j
 public class FileUtil {
     private static final List<String> PUBLIC_KEY_EXTENSIONS = Arrays.asList("cer", "crt", "pem", "der");
 
@@ -67,6 +70,16 @@ public class FileUtil {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static void deleteImage(String imagePath, String imageName) {
+        File image = new File(imagePath, imageName);
+        boolean deleted = image.delete();
+
+        if (!deleted) {
+            log.info("이미지 삭제에 실패했습니다.");
+        }
+
     }
 
     public static String getFileExtension(MultipartFile file) {

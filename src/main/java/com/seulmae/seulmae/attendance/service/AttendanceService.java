@@ -12,6 +12,7 @@ import com.seulmae.seulmae.global.exception.AttendanceRequestConflictException;
 import com.seulmae.seulmae.global.util.FindByIdUtil;
 import com.seulmae.seulmae.global.util.UrlUtil;
 import com.seulmae.seulmae.notification.NotificationType;
+import com.seulmae.seulmae.notification.event.MultiDeviceNotificationEvent;
 import com.seulmae.seulmae.notification.service.NotificationService;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.user.entity.UserImage;
@@ -25,6 +26,7 @@ import com.seulmae.seulmae.workplace.repository.WorkScheduleRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,6 +50,8 @@ public class AttendanceService {
 
     private final FindByIdUtil findByIdUtil;
     private final NotificationService notificationService;
+
+    private final ApplicationEventPublisher eventPublisher;
 
     @Value("${file.endPoint.user}")
     private String userImageEndPoint;
@@ -91,9 +95,10 @@ public class AttendanceService {
             autoApprove(user, workplace, attendanceRequestDto);
         } else {
             checkDuplicateAttendanceRequest(user, attendanceRequestDto);
-
+          
             sendRequestToManager(user, workplace, attendanceRequestDto);
         }
+
     }
 
     @Transactional
@@ -115,7 +120,8 @@ public class AttendanceService {
         /** 승인 알림 **/
         String title = "[출퇴근 승인 알림]";
         String body = "'" + attendance.getWorkplace().getWorkplaceName() + "'의 [" + attendance.getWorkDate() + "]에 대한 출퇴근 요청이 승인되었습니다.";
-        notificationService.sendMessageToUserWithMultiDevice(title, body, attendance.getUser(), NotificationType.ATTENDANCE_RESPONSE, attendanceRequestHistory.getIdAttendanceRequestHistory(), attendance.getWorkplace().getIdWorkPlace());
+        eventPublisher.publishEvent(new MultiDeviceNotificationEvent(title, body, attendance.getUser(), NotificationType.ATTENDANCE_RESPONSE, attendanceRequestHistory.getIdAttendanceRequestHistory(), attendance.getWorkplace().getIdWorkPlace()));
+//        notificationService.sendMessageToUserWithMultiDevice(title, body, attendance.getUser(), NotificationType.ATTENDANCE_RESPONSE, attendanceRequestHistory.getIdAttendanceRequestHistory(), attendance.getWorkplace().getIdWorkPlace());
     }
 
     @Transactional
@@ -135,7 +141,8 @@ public class AttendanceService {
         /** 거절 알림 **/
         String title = "[출퇴근 거절 알림]";
         String body = "'" + attendance.getWorkplace().getWorkplaceName() + "'의 [" + attendance.getWorkDate() + "]에 대한 출퇴근 요청이 거절되었습니다. 거절사유는 매니저에게 직접 문의바랍니다.";
-        notificationService.sendMessageToUserWithMultiDevice(title, body, attendance.getUser(), NotificationType.ATTENDANCE_RESPONSE, attendanceRequestHistory.getIdAttendanceRequestHistory(), attendance.getWorkplace().getIdWorkPlace());
+        eventPublisher.publishEvent(new MultiDeviceNotificationEvent(title, body, attendance.getUser(), NotificationType.ATTENDANCE_RESPONSE, attendanceRequestHistory.getIdAttendanceRequestHistory(), attendance.getWorkplace().getIdWorkPlace()));
+//        notificationService.sendMessageToUserWithMultiDevice(title, body, attendance.getUser(), NotificationType.ATTENDANCE_RESPONSE, attendanceRequestHistory.getIdAttendanceRequestHistory(), attendance.getWorkplace().getIdWorkPlace());
     }
 
     @Transactional
@@ -204,7 +211,8 @@ public class AttendanceService {
         /** 매니저에게 알림 **/
         String title = "[출퇴근자동승인]";
         String body = "'" + user.getName() + "'이 [" + attendance.getWorkDate() + "]에 대한 출퇴근 자동 승인이 되었습니다.";
-        notificationService.sendMessageToUserWithMultiDevice(title, body, manager, NotificationType.ATTENDANCE_REQUEST, attendanceRequestHistory.getIdAttendanceRequestHistory(), workplace.getIdWorkPlace());
+        eventPublisher.publishEvent(new MultiDeviceNotificationEvent(title, body, manager, NotificationType.ATTENDANCE_REQUEST, attendanceRequestHistory.getIdAttendanceRequestHistory(), workplace.getIdWorkPlace());
+//         notificationService.sendMessageToUserWithMultiDevice(title, body, manager, NotificationType.ATTENDANCE_REQUEST, attendanceRequestHistory.getIdAttendanceRequestHistory(), workplace.getIdWorkPlace());
     }
 
     public void sendRequestToManager(User user, Workplace workplace, AttendanceRequestDto attendanceRequestDto) {
@@ -236,7 +244,8 @@ public class AttendanceService {
         /** 매니저에게 알림 **/
         String title = "[출퇴근확인요청]";
         String body = "'" + user.getName() + "'이 [" + attendance.getWorkDate() + "]에 대한 출퇴근 확인 요청을 하였습니다.";
-        notificationService.sendMessageToUserWithMultiDevice(title, body, manager, NotificationType.ATTENDANCE_REQUEST, attendanceRequestHistory.getIdAttendanceRequestHistory(), workplace.getIdWorkPlace());
+        eventPublisher.publishEvent(new MultiDeviceNotificationEvent(title, body, manager, NotificationType.ATTENDANCE_REQUEST, attendanceRequestHistory.getIdAttendanceRequestHistory(), workplace.getIdWorkPlace()));
+//        notificationService.sendMessageToUserWithMultiDevice(title, body, manager, NotificationType.ATTENDANCE_REQUEST, attendanceRequestHistory.getIdAttendanceRequestHistory(), workplace.getIdWorkPlace());
     }
 
     public boolean checkIfWithinTimeRange(User user, Workplace workplace, Day day, Integer workDay, LocalTime startTime, LocalTime endTime) {

@@ -16,6 +16,8 @@ import com.seulmae.seulmae.workplace.entity.Workplace;
 import com.seulmae.seulmae.workplace.repository.WorkplaceRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +31,6 @@ import java.util.stream.Collectors;
 @Slf4j
 public class NotificationService {
     private final NotificationRepository notificationRepository;
-    private final FcmTokenRepository fcmTokenRepository;
     private final WorkplaceRepository workplaceRepository;
     private final UserWorkplaceRepository userWorkplaceRepository;
 

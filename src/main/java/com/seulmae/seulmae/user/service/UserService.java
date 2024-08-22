@@ -1,6 +1,5 @@
 package com.seulmae.seulmae.user.service;
 
-import com.seulmae.seulmae.global.util.FileUtil;
 import com.seulmae.seulmae.global.util.FindByIdUtil;
 import com.seulmae.seulmae.global.util.PasswordUtil;
 import com.seulmae.seulmae.global.util.UrlUtil;
@@ -13,14 +12,15 @@ import com.seulmae.seulmae.user.dto.response.UserWorkplaceInfoResponse;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.user.entity.UserImage;
 import com.seulmae.seulmae.user.entity.UserWorkplace;
-import com.seulmae.seulmae.user.exception.InvalidAccountIdException;
-import com.seulmae.seulmae.user.exception.InvalidPasswordException;
+import com.seulmae.seulmae.global.exception.InvalidAccountIdException;
+import com.seulmae.seulmae.global.exception.InvalidPasswordException;
 import com.seulmae.seulmae.user.repository.UserImageRepository;
 import com.seulmae.seulmae.user.repository.UserRepository;
 import com.seulmae.seulmae.user.repository.UserWorkplaceRepository;
 import com.seulmae.seulmae.workplace.entity.Workplace;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -215,16 +215,40 @@ public class UserService {
                 .orElseThrow(() -> new NoSuchElementException("해당 UserId가 존재하지 않습니다."));
         List<Workplace> workplaces = userWorkplaceRepository.findWorkplacesByUser(user);
 
-
         List<UserWorkplaceInfoResponse> userWorkplaceInfoResponses = new ArrayList<>();
 
         for (Workplace workplace : workplaces) {
             UserWorkplace userWorkplace = userWorkplaceRepository.findByUserAndWorkplace(user, workplace)
                             .orElseThrow(() -> new NoSuchElementException("해당 유저는 해당 근무지 소속이 아닙니다."));
-            userWorkplaceInfoResponses.add(new UserWorkplaceInfoResponse(workplace.getIdWorkPlace(), workplace.getWorkplaceName(), workplace.getAddressVo(), userWorkplace.getIsManager()));
+
+            User manger = userWorkplaceRepository.findUserByWorkplaceAndIsManager(workplace, true)
+                            .orElseThrow(() -> new NoSuchElementException("해당 근무지에 매니저가 존재하지 않습니다."));
+
+            userWorkplaceInfoResponses.add(new UserWorkplaceInfoResponse(workplace.getIdWorkPlace(), workplace.getWorkplaceName(), workplace.getAddressVo(), workplace.getWorkplaceName() , manger.getName(),  userWorkplace.getIsManager()));
         }
 
         return new UserProfileResponse(user.getName(), getUserImageURL(user, request), user.getPhoneNumber(), userWorkplaceInfoResponses);
+    }
+
+    public UserProfileResponse getMyProfile(User user, HttpServletRequest request) {
+        User me = userRepository.findById(user.getIdUser())
+                .orElseThrow(() -> new NoSuchElementException("해당 User가 존재하지 않습니다."));
+
+        List<Workplace> workplaces = userWorkplaceRepository.findWorkplacesByUser(me);
+
+        List<UserWorkplaceInfoResponse> userWorkplaceInfoResponses = new ArrayList<>();
+
+        for (Workplace workplace : workplaces) {
+            UserWorkplace userWorkplace = userWorkplaceRepository.findByUserAndWorkplace(user, workplace)
+                    .orElseThrow(() -> new NoSuchElementException("해당 유저는 해당 근무지 소속이 아닙니다."));
+
+            User manger = userWorkplaceRepository.findUserByWorkplaceAndIsManager(workplace, true)
+                    .orElseThrow(() -> new NoSuchElementException("해당 근무지에 매니저가 존재하지 않습니다."));
+
+            userWorkplaceInfoResponses.add(new UserWorkplaceInfoResponse(workplace.getIdWorkPlace(), workplace.getWorkplaceName(), workplace.getAddressVo(), workplace.getWorkplaceName() , manger.getName(),  userWorkplace.getIsManager()));
+        }
+
+        return new UserProfileResponse(me.getName(), getUserImageURL(me, request), me.getPhoneNumber(), userWorkplaceInfoResponses);
     }
 
     /**
