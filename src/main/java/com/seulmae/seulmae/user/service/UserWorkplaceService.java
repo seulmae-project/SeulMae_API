@@ -1,6 +1,7 @@
 package com.seulmae.seulmae.user.service;
 
 import com.seulmae.seulmae.global.util.FindByIdUtil;
+import com.seulmae.seulmae.user.dto.request.ManagerDelegationRequest;
 import com.seulmae.seulmae.user.dto.response.UserInfoWithWorkplaceResponse;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.user.entity.UserWorkSchedule;
@@ -15,6 +16,8 @@ import com.seulmae.seulmae.workplace.repository.WorkplaceJoinHistoryRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import java.util.Arrays;
 
 import java.util.NoSuchElementException;
 
@@ -43,6 +46,22 @@ public class UserWorkplaceService {
         String userImageURL = userService.getUserImageURL(userWorkplace.getUser(), request);
 
         return new UserInfoWithWorkplaceResponse(userWorkplace, userWorkSchedule, wage, workplaceJoinHistory,userImageURL);
+    }
+
+    @Transactional
+    public void delegateManagerAuthority(User user, ManagerDelegationRequest managerDelegationRequest) {
+        Workplace workplace = findByIdUtil.getWorkplaceById(managerDelegationRequest.getWorkplaceId());
+        User delegatee = findByIdUtil.getUserById(managerDelegationRequest.getUserId());
+
+        UserWorkplace delegatorUserWorkplace = userWorkplaceRepository.findByUserAndWorkplace(user, workplace)
+                .orElseThrow(() -> new NoSuchElementException("해당 유저는 해당 근무지 소속이 아닙니다."));
+        UserWorkplace delegateeUserWorkplace = userWorkplaceRepository.findByUserAndWorkplace(delegatee, workplace)
+                .orElseThrow(() -> new NoSuchElementException("해당 유저는 해당 근무지 소속이 아닙니다."));
+
+        delegateeUserWorkplace.setIsManagerTrue();
+        delegatorUserWorkplace.setIsManagerFalse();
+
+        userWorkplaceRepository.saveAll(Arrays.asList(delegatorUserWorkplace, delegateeUserWorkplace));
     }
 
     public void checkMangerAuthority(Workplace workplace, User user) {
