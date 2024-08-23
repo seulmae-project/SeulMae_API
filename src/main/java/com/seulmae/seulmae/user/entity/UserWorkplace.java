@@ -43,4 +43,12 @@ public class UserWorkplace {
     @LastModifiedDate
     @Column(name = "revision_date_user_workplace")
     private LocalDateTime revisionDateUserWorkplace;
+
+    public void setIsManagerTrue() {
+        this.isManager = true;
+    }
+
+    public void setIsManagerFalse() {
+        this.isManager = false;
+    }
 }
