@@ -45,6 +45,8 @@ public class WorkplaceService {
 
     @Value("${file.endPoint.workplace}")
     private String fileEndPoint;
+    private static final String TOPIC_PREFIX = "workplace";
+
 
     @Transactional
     public void addWorkplace(WorkplaceAddDto workplaceAddDto, List<MultipartFile> multipartFileList, User user) {
@@ -55,8 +57,11 @@ public class WorkplaceService {
                 .subAddress(workplaceAddDto.getSubAddress())
                 .build();
 
+        String topic = TOPIC_PREFIX + UUID.randomUUID().toString().replace("-","");
+
         Workplace workplace = Workplace.builder()
                 .workplaceCode(UUIDUtil.generateShortUUID())
+                .workplaceTopic(topic)
                 .workplaceName(workplaceAddDto.getWorkplaceName())
                 .addressVo(addressVo)
                 .workplaceTel(workplaceAddDto.getWorkplaceTel())
