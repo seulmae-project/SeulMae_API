@@ -37,6 +37,7 @@ public class UserWorkplace {
     private String memo;
 
     @Column(name = "is_del_user_workplace")
+    @Builder.Default
     private Boolean isDelUserWorkplace = false;
 
     @Column(name = "del_date_user_workplace")

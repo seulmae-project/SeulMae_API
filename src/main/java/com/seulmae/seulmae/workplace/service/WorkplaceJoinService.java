@@ -91,7 +91,10 @@ public class WorkplaceJoinService {
     @Transactional
     public void sendJoinApproval(Long workplaceApproveId, JoinApprovalDto request) throws FirebaseMessagingException {
         WorkplaceApprove workplaceApprove = findByIdUtil.getWorkplaceApproveById(workplaceApproveId);
-        WorkSchedule workSchedule = findByIdUtil.getWorkScheduleById(request.getWorkplaceScheduleId());
+        WorkSchedule workSchedule = null;
+        if(request.getWorkplaceScheduleId() != null) {
+            workSchedule = findByIdUtil.getWorkScheduleById(request.getWorkplaceScheduleId());
+        }
 
         WorkplaceJoinHistory workplaceJoinHistory = findByIdUtil.getWorkplaceJoinHistoryById(workplaceApprove.getWorkplaceJoinHistoryId());
         workplaceJoinHistory.setIsApproveTrue();
@@ -123,12 +126,14 @@ public class WorkplaceJoinService {
 
         /** UserWorkSchedule **/
 
-        UserWorkSchedule userWorkSchedule = UserWorkSchedule.builder()
-                .user(workplaceJoinHistory.getUser())
-                .workSchedule(workSchedule)
-                .build();
+        if (workSchedule != null) {
+            UserWorkSchedule userWorkSchedule = UserWorkSchedule.builder()
+                    .user(workplaceJoinHistory.getUser())
+                    .workSchedule(workSchedule)
+                    .build();
 
-        userWorkScheduleRepository.save(userWorkSchedule);
+            userWorkScheduleRepository.save(userWorkSchedule);
+        }
 
         /** 구독 **/
         Workplace workplace = workplaceJoinHistory.getWorkplace();

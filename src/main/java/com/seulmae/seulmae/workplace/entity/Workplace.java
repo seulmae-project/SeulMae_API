@@ -46,6 +46,7 @@ public class Workplace {
     private LocalDateTime regDateWorkplace;
 
     @Column(name = "is_del_workplace")
+    @Builder.Default
     private Boolean isDelWorkplace = false;
 
     @Column(name = "del_date_workplace")
