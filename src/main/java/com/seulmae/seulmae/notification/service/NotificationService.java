@@ -12,8 +12,11 @@ import com.seulmae.seulmae.notification.repository.NotificationRepository;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.user.entity.UserWorkplace;
 import com.seulmae.seulmae.user.repository.UserWorkplaceRepository;
+import com.seulmae.seulmae.user.service.UserService;
 import com.seulmae.seulmae.workplace.entity.Workplace;
 import com.seulmae.seulmae.workplace.repository.WorkplaceRepository;
+import com.seulmae.seulmae.workplace.service.WorkplaceService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -37,6 +40,8 @@ public class NotificationService {
     private final FcmIndividualServiceImpl fcmIndividualServiceImpl;
     private final FcmTopicServiceImpl fcmTopicServiceImpl;
     private final FindByIdUtil findByIdUtil;
+    private final UserService userService;
+    private final WorkplaceService workplaceService;
 
     private static final String TOPIC_PREFIX = "workplace";
 
@@ -108,10 +113,21 @@ public class NotificationService {
         return notificationRepository.save(notification);
     }
 
-    public List<NotificationResponse> getNotifications(Long userWorkplaceId) {
+    public List<NotificationResponse> getNotifications(Long userWorkplaceId, HttpServletRequest request) {
         UserWorkplace userWorkplace = findByIdUtil.getUserWorkplaceById(userWorkplaceId);
         return notificationRepository.findAllByUserWorkplace(userWorkplace).stream()
-                .map(NotificationResponse::new)
+                .map(notification -> {
+                    String imageURL = switch (notification.getNotificationType()) {
+                        case NOTICE ->
+                                workplaceService.getWorkplaceImageUrlList(userWorkplace.getWorkplace(), request).getFirst();
+                        case ATTENDANCE_REQUEST, ATTENDANCE_RESPONSE, JOIN_REQUEST, JOIN_RESPONSE ->
+                                userService.getUserImageURL(userWorkplace.getUser(), request);
+                        default -> throw new NoSuchElementException("관련 로직이 아직 존재하지 않음.");
+                    };
+                    NotificationResponse notificationResponse = new NotificationResponse(notification);
+                    notificationResponse.setImageURL(imageURL);
+                    return notificationResponse;
+                })
                 .collect(Collectors.toList());
     }
 }
