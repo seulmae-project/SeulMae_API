@@ -53,9 +53,9 @@ public class UserWorkplaceService {
         Workplace workplace = findByIdUtil.getWorkplaceById(managerDelegationRequest.getWorkplaceId());
         User delegatee = findByIdUtil.getUserById(managerDelegationRequest.getUserId());
 
-        UserWorkplace delegatorUserWorkplace = userWorkplaceRepository.findByUserAndWorkplace(user, workplace)
+        UserWorkplace delegatorUserWorkplace = userWorkplaceRepository.findByUserAndWorkplaceAndIsDelUserWorkplaceFalse(user, workplace)
                 .orElseThrow(() -> new NoSuchElementException("해당 유저는 해당 근무지 소속이 아닙니다."));
-        UserWorkplace delegateeUserWorkplace = userWorkplaceRepository.findByUserAndWorkplace(delegatee, workplace)
+        UserWorkplace delegateeUserWorkplace = userWorkplaceRepository.findByUserAndWorkplaceAndIsDelUserWorkplaceFalse(delegatee, workplace)
                 .orElseThrow(() -> new NoSuchElementException("해당 유저는 해당 근무지 소속이 아닙니다."));
 
         delegateeUserWorkplace.setIsManagerTrue();
@@ -77,12 +77,32 @@ public class UserWorkplaceService {
     }
 
     public boolean isManager(Workplace workplace, User user) {
-        return userWorkplaceRepository.existsByWorkplaceAndUserAndIsManager(workplace, user, true);
+        return userWorkplaceRepository.existsByWorkplaceAndUserAndIsManagerAndIsDelUserWorkplaceFalse(workplace, user, true);
     }
 
     public boolean isAssociated(Workplace workplace, User user) {
-        return userWorkplaceRepository.existsByWorkplaceAndUser(workplace, user);
+        return userWorkplaceRepository.existsByWorkplaceAndUserAndIsDelUserWorkplaceFalse(workplace, user);
     }
 
+    @Transactional
+    public void withdrawWorkplace(User user, Long workplaceId) {
+        // 해당 유저의 아이디와 workplaceId를 가진 userWorkplace가 존재하는지 확인
+        Workplace workplace = findByIdUtil.getWorkplaceById(workplaceId);
+        UserWorkplace userWorkplace = userWorkplaceRepository.findByUserAndWorkplaceAndIsDelUserWorkplaceFalse(user, workplace)
+                .orElseThrow(() -> new NoSuchElementException("해당 유저는 현재 해당 근무지에 소속되지 않았습니다."));
 
+        // 이미 true인 경우, 기존에 이미 삭제된 경우라고 말하기
+        if (userWorkplace.getIsDelUserWorkplace()) {
+            throw new IllegalStateException("이미 탈퇴한 근무지입니다.");
+        }
+        // 만약 매니저인 경우, 이양하고 삭제할 수 있게 에러를 띄우기
+        if (isManager(workplace, user)) {
+            throw new IllegalStateException("매니저 권한을 이양하고 탈퇴하시기 바랍니다.");
+        }
+
+        // 존재하고 isDel이 false인 경우만, true하기
+        userWorkplace.deleteUserWorkplace();
+        userWorkplaceRepository.save(userWorkplace);
+
+    }
 }

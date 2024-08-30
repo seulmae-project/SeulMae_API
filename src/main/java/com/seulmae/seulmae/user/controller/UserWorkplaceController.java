@@ -41,4 +41,14 @@ public class UserWorkplaceController {
             return ResponseUtil.createErrorResponse(ErrorCode.BAD_REQUEST_ERROR, e.getMessage());
         }
     }
+
+    @DeleteMapping("")
+    public ResponseEntity<?> withdrawWorkplace(@AuthenticationPrincipal User user, @RequestParam Long workplaceId) {
+        try {
+            userWorkplaceService.withdrawWorkplace(user, workplaceId);
+            return ResponseUtil.createSuccessResponse(SuccessCode.DELETE_SUCCESS);
+        } catch (Exception e) {
+            return ResponseUtil.createErrorResponse(ErrorCode.BAD_REQUEST_ERROR, e.getMessage());
+        }
+    }
 }

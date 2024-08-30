@@ -155,7 +155,7 @@ public class WorkplaceService {
 
         List<UserWorkplaceInfoResponse> userWorkplaceInfoResponses = workplaces.stream()
                 .map(workplace -> {
-                    UserWorkplace userWorkplace = userWorkplaceRepository.findByUserAndWorkplace(user, workplace)
+                    UserWorkplace userWorkplace = userWorkplaceRepository.findByUserAndWorkplaceAndIsDelUserWorkplaceFalse(user, workplace)
                             .orElseThrow(() -> new NoSuchElementException("해당 유저는 해당 근무지 소속이 아닙니다."));
                     User manager = userWorkplaceRepository.findUserByWorkplaceAndIsManager(workplace, true)
                             .orElseThrow(() -> new NoSuchElementException("해당 근무지에 매니저가 존재하지 않습니다."));

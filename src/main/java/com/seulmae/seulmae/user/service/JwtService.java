@@ -106,7 +106,7 @@ public class JwtService {
 
         TokenResponse tokenResponse = new TokenResponse(accessToken, refreshToken, BEARER);
 
-        List<UserWorkplace> userWorkplaces = userWorkplaceRepository.findAllByUser(user);
+        List<UserWorkplace> userWorkplaces = userWorkplaceRepository.findAllByUserAndIsDelUserWorkplaceFalse(user);
         List<WorkplaceResponse> workplaceResponses = userWorkplaces.stream()
                         .map(userWorkplace -> new WorkplaceResponse(userWorkplace)).collect(Collectors.toList());
         Role role = user.getAuthorityRole();

@@ -62,7 +62,7 @@ public class NotificationService {
 
         log.info("Sending announcement notification to topic: {}", topic);
         for (User user : users) {
-            UserWorkplace userWorkplace = userWorkplaceRepository.findByUserAndWorkplace(user, workplace)
+            UserWorkplace userWorkplace = userWorkplaceRepository.findByUserAndWorkplaceAndIsDelUserWorkplaceFalse(user, workplace)
                             .orElseThrow(() -> new NoSuchElementException("해당 User 및 Workplace와 관련된 UserWorkplace가 존재하지 않습니다."));
             storeNotification(title, body, userWorkplace, NotificationType.NOTICE);
         }
@@ -79,7 +79,7 @@ public class NotificationService {
                     .map(FcmToken::getFcmToken)
                     .toList();
             Workplace workplace = findByIdUtil.getWorkplaceById(workplaceId);
-            UserWorkplace userWorkplace = userWorkplaceRepository.findByUserAndWorkplace(receiver, workplace)
+            UserWorkplace userWorkplace = userWorkplaceRepository.findByUserAndWorkplaceAndIsDelUserWorkplaceFalse(receiver, workplace)
                     .orElseThrow(() -> new NoSuchElementException("해당 User 및 Workplace와 관련된 UserWorkplace가 존재하지 않습니다."));
 
             fcmIndividualServiceImpl.sendMultiMessageTo(fcmTokens, title, body, type, id, workplaceId);

@@ -36,6 +36,12 @@ public class UserWorkplace {
     @Column(name = "memo")
     private String memo;
 
+    @Column(name = "is_del_user_workplace")
+    private Boolean isDelUserWorkplace = false;
+
+    @Column(name = "del_date_user_workplace")
+    private LocalDateTime delDateUserWorkplace;
+
     @CreatedDate
     @Column(name = "reg_date_user_workplace")
     private LocalDateTime regDateUserWorkplace;
@@ -49,6 +55,11 @@ public class UserWorkplace {
     }
 
     public void setIsManagerFalse() {
-        this.isManager = false;
+            this.isManager = false;
+    }
+
+    public void deleteUserWorkplace() {
+        this.isDelUserWorkplace = true;
+        this.delDateUserWorkplace = LocalDateTime.now();
     }
 }
