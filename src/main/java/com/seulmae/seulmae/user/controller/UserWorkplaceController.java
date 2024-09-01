@@ -5,13 +5,17 @@ import com.seulmae.seulmae.global.util.enums.ErrorCode;
 import com.seulmae.seulmae.global.util.enums.SuccessCode;
 import com.seulmae.seulmae.user.dto.request.ManagerDelegationRequest;
 import com.seulmae.seulmae.user.dto.response.UserInfoWithWorkplaceResponse;
+import com.seulmae.seulmae.user.dto.response.UserWorkplaceUserResponse;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.user.service.UserWorkplaceService;
+import com.seulmae.seulmae.workplace.entity.Workplace;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -37,6 +41,20 @@ public class UserWorkplaceController {
         try {
             userWorkplaceService.delegateManagerAuthority(user, managerDelegationRequest);
             return ResponseUtil.createSuccessResponse(SuccessCode.INSERT_SUCCESS);
+        } catch (Exception e) {
+            return ResponseUtil.createErrorResponse(ErrorCode.BAD_REQUEST_ERROR, e.getMessage());
+        }
+    }
+
+    /**
+     * 근무지에 포함된 모든 유저 리스트
+     */
+    @GetMapping("list")
+    public ResponseEntity<?> getAllUserFromWorkplace(@RequestParam Long workplaceId, HttpServletRequest httpServletRequest) {
+        try {
+            List<UserWorkplaceUserResponse> userWorkplaceUserResponseList = userWorkplaceService.getAllUserFromWorkplace(workplaceId, httpServletRequest);
+
+            return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, userWorkplaceUserResponseList);
         } catch (Exception e) {
             return ResponseUtil.createErrorResponse(ErrorCode.BAD_REQUEST_ERROR, e.getMessage());
         }
