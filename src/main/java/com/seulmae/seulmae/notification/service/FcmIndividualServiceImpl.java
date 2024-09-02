@@ -60,7 +60,7 @@ public class FcmIndividualServiceImpl implements FcmService {
                 .setNotification(notification)
                 .addAllTokens(fcmTokens)
                 .build();
-        BatchResponse response = FirebaseMessaging.getInstance().sendMulticast(message);
+        BatchResponse response = FirebaseMessaging.getInstance().sendEachForMulticast(message);
 
         // See the BatchResponse reference documentation
         // for the contents of response.

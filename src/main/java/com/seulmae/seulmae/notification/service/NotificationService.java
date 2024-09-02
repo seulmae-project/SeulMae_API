@@ -63,14 +63,15 @@ public class NotificationService {
         String title = "[공지사항]";
         String body = "'" + announcement.getTitle() + "'이 등록되었습니다.";
 
-        fcmTopicServiceImpl.sendMessageTo(topic, title, body, NotificationType.NOTICE, announcement.getIdAnnouncement());
-
-        log.info("Sending announcement notification to topic: {}", topic);
         for (User user : users) {
             UserWorkplace userWorkplace = userWorkplaceRepository.findByUserAndWorkplaceAndIsDelUserWorkplaceFalse(user, workplace)
                             .orElseThrow(() -> new NoSuchElementException("해당 User 및 Workplace와 관련된 UserWorkplace가 존재하지 않습니다."));
             storeNotification(title, body, userWorkplace, NotificationType.NOTICE);
         }
+
+        fcmTopicServiceImpl.sendMessageTo(topic, title, body, NotificationType.NOTICE, announcement.getIdAnnouncement());
+
+        log.info("Sending announcement notification to topic: {}", topic);
     }
 
 
@@ -87,9 +88,9 @@ public class NotificationService {
             UserWorkplace userWorkplace = userWorkplaceRepository.findByUserAndWorkplaceAndIsDelUserWorkplaceFalse(receiver, workplace)
                     .orElseThrow(() -> new NoSuchElementException("해당 User 및 Workplace와 관련된 UserWorkplace가 존재하지 않습니다."));
 
-            fcmIndividualServiceImpl.sendMultiMessageTo(fcmTokens, title, body, type, id, workplaceId);
-
             storeNotification(title, body, userWorkplace, type);
+
+            fcmIndividualServiceImpl.sendMultiMessageTo(fcmTokens, title, body, type, id, workplaceId);
 
         } catch (FirebaseMessagingException e) {
             log.error("Failed to send FCM message to user {} with title '{}'", receiver.getUsername(), title, e);
@@ -103,14 +104,14 @@ public class NotificationService {
 
 
 
-    public Notification storeNotification(String title, String message, UserWorkplace userWorkplace, NotificationType notificationType) {
+    public void storeNotification(String title, String message, UserWorkplace userWorkplace, NotificationType notificationType) {
         Notification notification = Notification.builder()
                 .title(title)
                 .message(message)
                 .userWorkplace(userWorkplace)
                 .notificationType(notificationType)
                 .build();
-        return notificationRepository.save(notification);
+        notificationRepository.save(notification);
     }
 
     public List<NotificationResponse> getNotifications(Long userWorkplaceId, HttpServletRequest request) {

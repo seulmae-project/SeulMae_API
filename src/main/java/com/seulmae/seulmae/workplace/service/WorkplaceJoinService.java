@@ -58,14 +58,15 @@ public class WorkplaceJoinService {
     @Transactional
     public void sendJoinRequest(User user, WorkplaceJoinDto workplaceJoinDto) {
         Workplace workplace = findByIdUtil.getWorkplaceById(workplaceJoinDto.getWorkplaceId());
+        User requestUser = findByIdUtil.getUserById(user.getIdUser());
         User manager = userWorkplaceRepository.findUserByWorkplaceAndIsManager(workplace, true)
                 .orElseThrow(() -> new NoSuchElementException("해당 근무지의 매니저가 존재하지 않습니다."));
 
         /** 중복 가입 신청 확인 **/
-        checkDuplicateWorkplaceJoin(user, workplace);
+        checkDuplicateWorkplaceJoin(requestUser, workplace);
 
         WorkplaceJoinHistory workplaceJoinHistory = WorkplaceJoinHistory.builder()
-                .user(user)
+                .user(requestUser)
                 .workplace(workplace)
                 .isApprove(false)
                 .build();
@@ -73,7 +74,7 @@ public class WorkplaceJoinService {
         workplaceJoinHistoryRepository.save(workplaceJoinHistory);
 
         WorkplaceApprove workplaceApprove = WorkplaceApprove.builder()
-                .user(user)
+                .user(requestUser)
                 .workplace(workplace)
                 .workplaceJoinHistoryId(workplaceJoinHistory.getIdWorkplaceJoinHistory())
                 .build();
@@ -83,7 +84,7 @@ public class WorkplaceJoinService {
         /** 매니저에게 알림 **/
         // 이벤트 발행
         String title = "[가입요청]";
-        String body = "'" + user.getName() + "'이 가입요청 하였습니다.";
+        String body = "'" + requestUser.getName() + "'이 가입요청 하였습니다.";
         eventPublisher.publishEvent(new MultiDeviceNotificationEvent(title, body, manager, NotificationType.JOIN_REQUEST, workplaceApprove.getIdWorkPlaceApprove(), workplaceJoinDto.getWorkplaceId()));
 //        notificationService.sendMessageToUserWithMultiDevice(title, body, manager, NotificationType.JOIN_REQUEST, workplaceApprove.getIdWorkPlaceApprove(), workplaceJoinDto.getWorkplaceId());
     }
