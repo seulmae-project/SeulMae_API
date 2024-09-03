@@ -46,6 +46,16 @@ public class UserWorkplaceController {
         }
     }
 
+    @DeleteMapping("")
+    public ResponseEntity<?> withdrawWorkplace(@AuthenticationPrincipal User user, @RequestParam Long workplaceId) {
+        try {
+            userWorkplaceService.withdrawWorkplace(user, workplaceId);
+            return ResponseUtil.createSuccessResponse(SuccessCode.DELETE_SUCCESS);
+        } catch (Exception e) {
+            return ResponseUtil.createErrorResponse(ErrorCode.BAD_REQUEST_ERROR, e.getMessage());
+        }
+    }
+  
     /**
      * 근무지에 포함된 모든 유저 리스트
      */
@@ -53,7 +63,6 @@ public class UserWorkplaceController {
     public ResponseEntity<?> getAllUserFromWorkplace(@RequestParam Long workplaceId, HttpServletRequest httpServletRequest) {
         try {
             List<UserWorkplaceUserResponse> userWorkplaceUserResponseList = userWorkplaceService.getAllUserFromWorkplace(workplaceId, httpServletRequest);
-
             return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, userWorkplaceUserResponseList);
         } catch (Exception e) {
             return ResponseUtil.createErrorResponse(ErrorCode.BAD_REQUEST_ERROR, e.getMessage());

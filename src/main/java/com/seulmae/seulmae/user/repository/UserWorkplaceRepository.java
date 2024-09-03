@@ -16,24 +16,27 @@ public interface UserWorkplaceRepository extends JpaRepository<UserWorkplace, Lo
 
     @Query("SELECT uw.user FROM UserWorkplace uw " +
             "WHERE uw.workplace = :workplace " +
-            "AND uw.isManager = :isManager")
+            "AND uw.isManager = :isManager " +
+            "AND uw.isDelUserWorkplace is false")
     Optional<User> findUserByWorkplaceAndIsManager(Workplace workplace, boolean isManager);
 
-    Optional<UserWorkplace> findByUserAndWorkplace(User user, Workplace workplace);
+    Optional<UserWorkplace> findByUserAndWorkplaceAndIsDelUserWorkplaceFalse(User user, Workplace workplace);
 
     @Query("SELECT uw.workplace FROM UserWorkplace uw " +
-            "WHERE uw.user = :user")
+            "WHERE uw.user = :user " +
+            "AND uw.isDelUserWorkplace is false")
     List<Workplace> findWorkplacesByUser(User user);
 
-    List<UserWorkplace> findAllByUser(User user);
+    List<UserWorkplace> findAllByUserAndIsDelUserWorkplaceFalse(User user);
 
     @Query("SELECT uw.user FROM UserWorkplace uw " +
-            "WHERE uw.workplace = :workplace")
+            "WHERE uw.workplace = :workplace " +
+            "AND uw.isDelUserWorkplace is false")
     List<User> findUsersByWorkplace(Workplace workplace);
 
-    boolean existsByWorkplaceAndUserAndIsManager(Workplace workplace, User user, boolean isManager);
+    boolean existsByWorkplaceAndUserAndIsManagerAndIsDelUserWorkplaceFalse(Workplace workplace, User user, boolean isManager);
 
-    boolean existsByWorkplaceAndUser(Workplace workplace, User user);
+    boolean existsByWorkplaceAndUserAndIsDelUserWorkplaceFalse(Workplace workplace, User user);
 
     @Query(value = "SELECT uw " +
             "FROM UserWorkplace uw " +

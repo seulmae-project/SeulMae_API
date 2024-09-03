@@ -218,7 +218,7 @@ public class UserService {
         List<UserWorkplaceInfoResponse> userWorkplaceInfoResponses = new ArrayList<>();
 
         for (Workplace workplace : workplaces) {
-            UserWorkplace userWorkplace = userWorkplaceRepository.findByUserAndWorkplace(user, workplace)
+            UserWorkplace userWorkplace = userWorkplaceRepository.findByUserAndWorkplaceAndIsDelUserWorkplaceFalse(user, workplace)
                             .orElseThrow(() -> new NoSuchElementException("해당 유저는 해당 근무지 소속이 아닙니다."));
 
             User manger = userWorkplaceRepository.findUserByWorkplaceAndIsManager(workplace, true)
@@ -239,7 +239,7 @@ public class UserService {
         List<UserWorkplaceInfoResponse> userWorkplaceInfoResponses = new ArrayList<>();
 
         for (Workplace workplace : workplaces) {
-            UserWorkplace userWorkplace = userWorkplaceRepository.findByUserAndWorkplace(user, workplace)
+            UserWorkplace userWorkplace = userWorkplaceRepository.findByUserAndWorkplaceAndIsDelUserWorkplaceFalse(user, workplace)
                     .orElseThrow(() -> new NoSuchElementException("해당 유저는 해당 근무지 소속이 아닙니다."));
 
             User manger = userWorkplaceRepository.findUserByWorkplaceAndIsManager(workplace, true)
