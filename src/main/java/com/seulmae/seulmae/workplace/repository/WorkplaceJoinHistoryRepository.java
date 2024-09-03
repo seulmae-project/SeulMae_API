@@ -10,5 +10,5 @@ import java.util.Optional;
 
 @Repository
 public interface WorkplaceJoinHistoryRepository extends JpaRepository<WorkplaceJoinHistory, Long> {
-    Optional<WorkplaceJoinHistory> findByUserAndWorkplace(User user, Workplace workplace);
+    Optional<WorkplaceJoinHistory> findByUserAndWorkplaceAndIsApproveTrue(User user, Workplace workplace);
 }
