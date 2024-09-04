@@ -31,7 +31,7 @@ public class UserInfoWithWorkplaceResponse {
         this.imageURL = imageURL;
         this.joinDate = workplaceJoinHistory.getDecisionDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
-        this.workScheduleDto = new WorkScheduleDto(userWorkSchedule);
+        this.workScheduleDto = userWorkSchedule != null ? new WorkScheduleDto(userWorkSchedule) : null;
 
         this.payDay = wage.getPayday();
         this.baseWage = wage.getBaseWage();

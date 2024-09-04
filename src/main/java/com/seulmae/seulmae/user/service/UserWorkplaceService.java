@@ -47,7 +47,9 @@ public class UserWorkplaceService {
         Wage wage = wageRepository.findByUserAndWorkplace(userWorkplace.getUser(), userWorkplace.getWorkplace())
                 .orElseThrow(() -> new NoSuchElementException("해당 유저 ID와 근무지 ID와 관련된 Wage가 존재하지 않습니다."));
         UserWorkSchedule userWorkSchedule = userWorkScheduleRepository.findByUserAndWorkplace(userWorkplace.getUser(), userWorkplace.getWorkplace())
-                .orElseThrow(() -> new NoSuchElementException("해당 유저 ID와 근무지 ID와 관련된 UserWorkSchedule이 존재하지 않습니다."));
+                .orElse(null);
+//        UserWorkSchedule userWorkSchedule = userWorkScheduleRepository.findByUserAndWorkplace(userWorkplace.getUser(), userWorkplace.getWorkplace())
+//                .orElseThrow(() -> new NoSuchElementException("해당 유저 ID와 근무지 ID와 관련된 UserWorkSchedule이 존재하지 않습니다."));
         WorkplaceJoinHistory workplaceJoinHistory = workplaceJoinHistoryRepository.findByUserAndWorkplaceAndIsApproveTrue(userWorkplace.getUser(), userWorkplace.getWorkplace())
                 .orElseThrow(() -> new NoSuchElementException("해당 유저 ID와 근무지 ID와 관련된 WorkplaceJoinHistory가 존재하지 않습니다."));
 

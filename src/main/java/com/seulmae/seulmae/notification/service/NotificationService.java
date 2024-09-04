@@ -55,7 +55,7 @@ public class NotificationService {
         String topic = workplace.getWorkplaceTopic();
 
         if (topic == null) {
-            topic = TOPIC_PREFIX + UUID.randomUUID().toString().replace("-","");
+            topic = TOPIC_PREFIX + UUID.randomUUID().toString().replace("-", "");
             workplace.setWorkplaceTopic(topic);
             workplaceRepository.save(workplace);
         }
@@ -65,7 +65,7 @@ public class NotificationService {
 
         for (User user : users) {
             UserWorkplace userWorkplace = userWorkplaceRepository.findByUserAndWorkplaceAndIsDelUserWorkplaceFalse(user, workplace)
-                            .orElseThrow(() -> new NoSuchElementException("해당 User 및 Workplace와 관련된 UserWorkplace가 존재하지 않습니다."));
+                    .orElseThrow(() -> new NoSuchElementException("해당 User 및 Workplace와 관련된 UserWorkplace가 존재하지 않습니다."));
             storeNotification(title, body, userWorkplace, NotificationType.NOTICE);
         }
 
@@ -103,7 +103,6 @@ public class NotificationService {
     }
 
 
-
     public void storeNotification(String title, String message, UserWorkplace userWorkplace, NotificationType notificationType) {
         Notification notification = Notification.builder()
                 .title(title)
@@ -119,8 +118,10 @@ public class NotificationService {
         return notificationRepository.findAllByUserWorkplace(userWorkplace).stream()
                 .map(notification -> {
                     String imageURL = switch (notification.getNotificationType()) {
-                        case NOTICE ->
-                                workplaceService.getWorkplaceImageUrlList(userWorkplace.getWorkplace(), request).getFirst();
+                        case NOTICE -> {
+                            List<String> imageUrls = workplaceService.getWorkplaceImageUrlList(userWorkplace.getWorkplace(), request);
+                            yield imageUrls.isEmpty() ? null : imageUrls.getFirst();
+                        }
                         case ATTENDANCE_REQUEST, ATTENDANCE_RESPONSE, JOIN_REQUEST, JOIN_RESPONSE ->
                                 userService.getUserImageURL(userWorkplace.getUser(), request);
                         default -> throw new NoSuchElementException("관련 로직이 아직 존재하지 않음.");

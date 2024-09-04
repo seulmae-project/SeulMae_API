@@ -6,14 +6,12 @@ import com.seulmae.seulmae.user.dto.request.UserWorkScheduleAddRequest;
 import com.seulmae.seulmae.user.dto.request.UserWorkScheduleUpdateRequest;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.user.entity.UserWorkSchedule;
-import com.seulmae.seulmae.user.entity.UserWorkplace;
 import com.seulmae.seulmae.user.repository.UserRepository;
 import com.seulmae.seulmae.user.repository.UserWorkScheduleRepository;
 import com.seulmae.seulmae.user.repository.UserWorkplaceRepository;
-import com.seulmae.seulmae.workplace.Day;
+import com.seulmae.seulmae.util.MockSetUpUtil;
 import com.seulmae.seulmae.workplace.dto.WorkplaceAddDto;
 import com.seulmae.seulmae.workplace.entity.WorkSchedule;
-import com.seulmae.seulmae.workplace.entity.WorkScheduleDay;
 import com.seulmae.seulmae.workplace.entity.Workplace;
 import com.seulmae.seulmae.workplace.repository.WorkScheduleRepository;
 import com.seulmae.seulmae.workplace.repository.WorkplaceRepository;
@@ -40,7 +38,6 @@ import org.springframework.web.context.WebApplicationContext;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -75,6 +72,9 @@ class UserWorkScheduleControllerTest {
     @Autowired
     private UserWorkScheduleRepository userWorkScheduleRepository;
 
+    @Autowired
+    private MockSetUpUtil mockSetUpUtil;
+
     private final String URL = "/api/user/schedule/v1";
 
     @BeforeEach
@@ -88,7 +88,7 @@ class UserWorkScheduleControllerTest {
         boolean isMale = true;
 
         // 사용자 객체 생성
-        User mockUser = createUser(accountId, password, phoneNumber, name, birthday, isMale);
+        User mockUser = mockSetUpUtil.createUser(accountId, password, phoneNumber, name, birthday, isMale);
 
         // SecurityContext 설정
         Authentication authentication = new UsernamePasswordAuthenticationToken(mockUser, mockUser.getPassword(), AuthorityUtils.createAuthorityList(String.valueOf(Role.USER)));
@@ -123,7 +123,7 @@ class UserWorkScheduleControllerTest {
         final LocalTime endTime = LocalTime.of(13, 0);
         final List<Integer> days = List.of(1, 2, 3);
 
-        createWorkSchedule(workplace, workScheduleTitle, startTime, endTime, days);
+        mockSetUpUtil.createWorkSchedule(workplace, workScheduleTitle, startTime, endTime, days);
     }
 
     @AfterEach
@@ -146,16 +146,15 @@ class UserWorkScheduleControllerTest {
         String birthday = "19930103";
         boolean isMale = false;
 
-        User targetUser = createUser(accountId, password, phoneNumber, name, birthday, isMale);
+        User targetUser = mockSetUpUtil.createUser(accountId, password, phoneNumber, name, birthday, isMale);
         WorkSchedule workSchedule = workScheduleRepository.findAll().get(0);
         Workplace workplace = workplaceRepository.findAll().get(0);
-        createUserWorkplaceNotManager(targetUser, workplace);
-        UserWorkSchedule userWorkSchedule = createUserWorkSchedule(targetUser, workSchedule);
+        mockSetUpUtil.createUserWorkplaceNotManager(targetUser, workplace);
+        UserWorkSchedule userWorkSchedule = mockSetUpUtil.createUserWorkSchedule(targetUser, workSchedule);
 
         ResultActions result = mockMvc.perform(get(URL + "/list")
                 .param("workScheduleId", String.valueOf(workSchedule.getIdWorkSchedule())));
 
-        System.out.println(result.andReturn().getResponse().getContentAsString());
         result
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[0].userName").value(targetUser.getName()))
@@ -174,10 +173,10 @@ class UserWorkScheduleControllerTest {
         String birthday = "19930103";
         boolean isMale = false;
 
-        User targetUser = createUser(accountId, password, phoneNumber, name, birthday, isMale);
+        User targetUser = mockSetUpUtil.createUser(accountId, password, phoneNumber, name, birthday, isMale);
         WorkSchedule workSchedule = workScheduleRepository.findAll().get(0);
         Workplace workplace = workplaceRepository.findAll().get(0);
-        createUserWorkplaceNotManager(targetUser, workplace);
+        mockSetUpUtil.createUserWorkplaceNotManager(targetUser, workplace);
 
         UserWorkScheduleAddRequest userWorkScheduleAddRequest = new UserWorkScheduleAddRequest(targetUser.getIdUser(), workSchedule.getIdWorkSchedule());
         String request = objectMapper.writeValueAsString(userWorkScheduleAddRequest);
@@ -205,18 +204,18 @@ class UserWorkScheduleControllerTest {
         String birthday = "19930103";
         boolean isMale = false;
 
-        User targetUser = createUser(accountId, password, phoneNumber, name, birthday, isMale);
+        User targetUser = mockSetUpUtil.createUser(accountId, password, phoneNumber, name, birthday, isMale);
         WorkSchedule workSchedule = workScheduleRepository.findAll().get(0);
         Workplace workplace = workplaceRepository.findAll().get(0);
-        createUserWorkplaceNotManager(targetUser, workplace);
-        UserWorkSchedule userWorkSchedule = createUserWorkSchedule(targetUser, workSchedule);
+        mockSetUpUtil.createUserWorkplaceNotManager(targetUser, workplace);
+        UserWorkSchedule userWorkSchedule = mockSetUpUtil.createUserWorkSchedule(targetUser, workSchedule);
 
         final String workScheduleTitle = "오후일정";
         final LocalTime startTime = LocalTime.of(13, 0);
         final LocalTime endTime = LocalTime.of(19, 0);
         final List<Integer> days = List.of(1, 2, 3);
 
-        WorkSchedule newWorkSchedule = createWorkSchedule(workplace, workScheduleTitle, startTime, endTime, days);
+        WorkSchedule newWorkSchedule = mockSetUpUtil.createWorkSchedule(workplace, workScheduleTitle, startTime, endTime, days);
 
         UserWorkScheduleUpdateRequest userWorkScheduleUpdateRequest = new UserWorkScheduleUpdateRequest(newWorkSchedule.getIdWorkSchedule());
         String request = objectMapper.writeValueAsString(userWorkScheduleUpdateRequest);
@@ -243,11 +242,11 @@ class UserWorkScheduleControllerTest {
         String birthday = "19930103";
         boolean isMale = false;
 
-        User targetUser = createUser(accountId, password, phoneNumber, name, birthday, isMale);
+        User targetUser = mockSetUpUtil.createUser(accountId, password, phoneNumber, name, birthday, isMale);
         WorkSchedule workSchedule = workScheduleRepository.findAll().get(0);
         Workplace workplace = workplaceRepository.findAll().get(0);
-        createUserWorkplaceNotManager(targetUser, workplace);
-        UserWorkSchedule userWorkSchedule = createUserWorkSchedule(targetUser, workSchedule);
+        mockSetUpUtil.createUserWorkplaceNotManager(targetUser, workplace);
+        UserWorkSchedule userWorkSchedule = mockSetUpUtil.createUserWorkSchedule(targetUser, workSchedule);
 
         ResultActions result = mockMvc.perform(delete(URL)
                 .param("userWorkScheduleId", String.valueOf(userWorkSchedule.getIdUserWorkSchedule())));
@@ -257,58 +256,4 @@ class UserWorkScheduleControllerTest {
         assertThat(userWorkSchedules.size()).isZero();
     }
 
-    private WorkSchedule createWorkSchedule(Workplace workplace, String workScheduleTitle, LocalTime startTime, LocalTime endTime, List<Integer> days) {
-        WorkSchedule workSchedule = WorkSchedule.builder()
-                .workScheduleTitle(workScheduleTitle)
-                .workplace(workplace)
-                .startTime(startTime)
-                .endTime(endTime)
-                .build();
-
-        List<WorkScheduleDay> workScheduleDays = days.stream()
-                .map(dayInt -> {
-                    Day day = Day.fromInt(dayInt);
-                    return WorkScheduleDay.builder()
-                            .workSchedule(workSchedule)
-                            .day(day)
-                            .build();
-                }).collect(Collectors.toList());
-
-        workSchedule.setWorkScheduleDays(workScheduleDays);
-
-        return workScheduleRepository.save(workSchedule);
-
-        }
-
-    private User createUser(String accountId, String password, String phoneNumber, String name, String birthday, Boolean isMale) {
-
-        // 사용자 객체 생성
-        User mockUser = userRepository.save(User.builder()
-                .accountId(accountId)
-                .password(password)
-                .phoneNumber(phoneNumber)
-                .name(name)
-                .isMale(isMale)
-                .birthday(birthday)
-                .authorityRole(Role.USER)
-                .build());
-        return mockUser;
-    }
-
-    private void createUserWorkplaceNotManager(User targetUser, Workplace workplace) {
-        userWorkplaceRepository.save(UserWorkplace.builder()
-                .user(targetUser)
-                .workplace(workplace)
-                .isManager(false)
-                .build());
-    }
-
-    private UserWorkSchedule createUserWorkSchedule(User targetUser, WorkSchedule workSchedule) {
-        return userWorkScheduleRepository.save(
-                UserWorkSchedule.builder()
-                        .user(targetUser)
-                        .workSchedule(workSchedule)
-                        .build()
-        );
-    }
 }
