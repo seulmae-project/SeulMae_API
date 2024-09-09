@@ -2,6 +2,7 @@ package com.seulmae.seulmae.util;
 
 import com.seulmae.seulmae.global.util.UUIDUtil;
 import com.seulmae.seulmae.user.Role;
+import com.seulmae.seulmae.user.SocialType;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.user.entity.UserWorkSchedule;
 import com.seulmae.seulmae.user.entity.UserWorkplace;
@@ -58,6 +59,16 @@ public class MockSetUpUtil {
                 .isMale(isMale)
                 .birthday(birthday)
                 .authorityRole(Role.USER)
+                .build());
+    }
+
+    public User creatSocialUser(String accountId, String password, String socialId, SocialType socialType) {
+        return userRepository.saveAndFlush(User.builder()
+                .accountId(accountId)
+                .password(password)
+                .socialId(socialId)
+                .socialType(socialType)
+                .authorityRole(Role.GUEST)
                 .build());
     }
 

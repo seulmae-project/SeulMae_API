@@ -1,8 +1,10 @@
 package com.seulmae.seulmae.user.dto.request;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
+@AllArgsConstructor
 public class SmsCertificationRequest {
     private String sendingType;
     private String phoneNumber;
