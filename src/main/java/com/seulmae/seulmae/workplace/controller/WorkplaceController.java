@@ -53,7 +53,7 @@ public class WorkplaceController {
         try {
             List<WorkplaceListInfoDto> workplaceListInfoDtoList = workplaceService.getAllWorkplace(request, keyword);
 
-            return ResponseUtil.createSuccessResponse(SuccessCode.INSERT_SUCCESS, workplaceListInfoDtoList);
+            return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, workplaceListInfoDtoList);
         } catch (Exception e) {
             return ResponseUtil.handleException(e);
         }
