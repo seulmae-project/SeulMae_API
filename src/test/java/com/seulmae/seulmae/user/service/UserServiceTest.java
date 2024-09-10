@@ -2,17 +2,21 @@ package com.seulmae.seulmae.user.service;
 
 import com.seulmae.seulmae.global.exception.InvalidAccountIdException;
 import com.seulmae.seulmae.global.exception.InvalidPasswordException;
+import com.seulmae.seulmae.global.exception.MatchPasswordException;
 import com.seulmae.seulmae.global.support.ServiceTestSupport;
 import com.seulmae.seulmae.user.Role;
 import com.seulmae.seulmae.user.SocialType;
 import com.seulmae.seulmae.user.dto.request.*;
+import com.seulmae.seulmae.user.dto.response.AccountDuplicatedResponse;
 import com.seulmae.seulmae.user.dto.response.FindAuthResponse;
 import com.seulmae.seulmae.user.dto.response.UserProfileResponse;
 import com.seulmae.seulmae.user.entity.User;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.AccessDeniedException;
@@ -23,9 +27,13 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 
+
 class UserServiceTest extends ServiceTestSupport {
     @MockBean
     private SmsService smsService;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
 
     /**
@@ -405,6 +413,7 @@ class UserServiceTest extends ServiceTestSupport {
         User anotherUser = mockSetUpUtil.createUser("anotherId1234", password, "01012341111", name, birthday, isMale);
         UpdateUserRequest updateUserRequest = new UpdateUserRequest(newName);
 
+        // WHEN & THEN
         assertThatThrownBy(() -> userService.updateUser(user.getIdUser(), anotherUser, updateUserRequest, file))
                 .isInstanceOf(AccessDeniedException.class)
                 .hasMessage("프로필을 수정할 권한이 없습니다.");
@@ -439,31 +448,102 @@ class UserServiceTest extends ServiceTestSupport {
     @Test
     @DisplayName("아이디 중복 여부를 확인한다")
     void checkAccountId() {
+        User existUser = mockSetUpUtil.createUser(accountId, password, phoneNumber, name, birthday, isMale);
+        CheckAccountIdRequest checkAccountIdRequest = new CheckAccountIdRequest(existUser.getAccountId());
 
+        // WHEN
+        AccountDuplicatedResponse response = new AccountDuplicatedResponse(userService.isDuplicatedAccountId(checkAccountIdRequest.getAccountId()));
+
+        // THEN
+        assertThat(response.isDuplicated()).isTrue();
     }
 
     @Test
     @DisplayName("비밀번호를 변경한다")
     void changePassword() {
+        // GIVEN
+        User user = mockSetUpUtil.createUser(accountId, password, phoneNumber, name, birthday, isMale);
+        user.encodePassword(passwordEncoder);
+
+        String changingPassword = "changePassword!123";
+        ChangePasswordRequest request = new ChangePasswordRequest(accountId, changingPassword);
+
+        // WHEN
+        userService.changePassword(request);
+
+        // THEN
+        assertThat(passwordEncoder.matches(changingPassword, user.getPassword())).isTrue();
 
     }
 
     @Test
-    @DisplayName("비밀번호를 변경한다")
-    void changePasswordFail() {
+    @DisplayName("새로 넣은 비빌번호가 형식에 맞지 않아 비밀번호 변경에 실패한다")
+    void changePasswordFailWhenUnValidatedPassword() {
+        // GIVEN
+        User user = mockSetUpUtil.createUser(accountId, password, phoneNumber, name, birthday, isMale);
+        user.encodePassword(passwordEncoder);
 
+        String changingPassword = "!123";
+        ChangePasswordRequest request = new ChangePasswordRequest(accountId, changingPassword);
+
+        // WHEN & THEN
+        assertThatThrownBy(() -> userService.changePassword(request))
+                .isInstanceOf(InvalidPasswordException.class)
+                .hasMessage("비밀번호로 영문, 숫자, 특수문자 포함 8자 이상을 입력해주세요.");
+    }
+
+    @Test
+    @DisplayName("기존 비밀번호를 그대로 넣어 비밀번호 변경에 실패한다")
+    void changePasswordFailWhenSamePassword() {
+        // GIVEN
+        User user = mockSetUpUtil.createUser(accountId, password, phoneNumber, name, birthday, isMale);
+        user.encodePassword(passwordEncoder);
+
+        String changingPassword = password;
+        ChangePasswordRequest request = new ChangePasswordRequest(accountId, changingPassword);
+
+        // WHEN & THEN
+        assertThatThrownBy(() -> userService.changePassword(request))
+                .isInstanceOf(MatchPasswordException.class)
+                .hasMessage("기존 비밀번호와 일치합니다. 다른 비밀번호를 입력해주세요.");
     }
 
     @Test
     @DisplayName("휴대폰번호를 변경한다")
-    void changePhoneNumber() {
+    void changePhoneNumber() throws AccessDeniedException {
+        User user = mockSetUpUtil.createUser(accountId, password, phoneNumber, name, birthday, isMale);
+        String changingPhoneNumber ="01022223333";
+        ChangePhoneNumberRequest request = new ChangePhoneNumberRequest(changingPhoneNumber);
 
+        userService.changePhoneNumber(user.getIdUser(), request, user);
+
+        assertThat(user.getPhoneNumber()).isEqualTo(changingPhoneNumber);
     }
 
     @Test
-    @DisplayName("휴대폰번호를 변경한다")
-    void changePhoneNumberFail() {
+    @DisplayName("수정 권한이 없는 유저가 휴대폰번호 변경을 시도하다가 실패한다.")
+    void changePhoneNumberFailWithNoAuthority() {
+        User user = mockSetUpUtil.createUser(accountId, password, phoneNumber, name, birthday, isMale);
+        User anotherUser = mockSetUpUtil.createUser("anotherId1234", password, "01012341111", name, birthday, isMale);
+        String changingPhoneNumber ="01022223333";
+        ChangePhoneNumberRequest request = new ChangePhoneNumberRequest(changingPhoneNumber);
 
+        assertThatThrownBy(() -> userService.changePhoneNumber(user.getIdUser(), request, anotherUser))
+                .isInstanceOf(AccessDeniedException.class)
+                .hasMessage("휴대폰 번호를 변경할 권한이 없습니다.");
+    }
+
+    @Test
+    @DisplayName("존재하는 휴대폰 번호로 변경을 시도하다가 실패한다.")
+    void changePhoneNumberFailWithDuplicatedPhoneNumber() {
+        User user = mockSetUpUtil.createUser(accountId, password, phoneNumber, name, birthday, isMale);
+        User anotherUser = mockSetUpUtil.createUser("anotherId1234", password, "01012341111", name, birthday, isMale);
+        String changingPhoneNumber = phoneNumber;
+        ChangePhoneNumberRequest request = new ChangePhoneNumberRequest(changingPhoneNumber);
+
+        assertThatThrownBy(() -> userService.changePhoneNumber(anotherUser.getIdUser(), request, anotherUser))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("이미 존재하는 휴대폰번호입니다.");
     }
 
 }

@@ -177,7 +177,7 @@ public class UserService {
     @Transactional
     public void changePhoneNumber(Long id, ChangePhoneNumberRequest request, User user) throws AccessDeniedException {
         if (!id.equals(user.getIdUser())) {
-            throw new AccessDeniedException("앱을 탈퇴할 권한이 없습니다.");
+            throw new AccessDeniedException("휴대폰 번호를 변경할 권한이 없습니다.");
         }
         checkDuplicatedPhoneNumber(request.getPhoneNumber());
         user.updatePhoneNumber(request.getPhoneNumber());
@@ -187,7 +187,7 @@ public class UserService {
     @Transactional
     public void deleteUser(Long id, User user) throws AccessDeniedException {
         if (!id.equals(user.getIdUser())) {
-            throw new AccessDeniedException("프로필을 수정할 권한이 없습니다.");
+            throw new AccessDeniedException("앱을 탈퇴할 권한이 없습니다.");
         }
         user.deleteUser();
         userImageRepository.findByUser(user)

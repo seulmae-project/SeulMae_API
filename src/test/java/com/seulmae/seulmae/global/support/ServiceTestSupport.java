@@ -12,8 +12,9 @@ import com.seulmae.seulmae.user.service.UserWorkScheduleService;
 import com.seulmae.seulmae.user.service.UserWorkplaceService;
 import com.seulmae.seulmae.util.MockSetUpUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
