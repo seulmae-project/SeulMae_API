@@ -13,7 +13,8 @@ public interface WorkplaceRepository extends JpaRepository<Workplace, Long> {
 
     @Query(value = "SELECT w " +
             "FROM Workplace w " +
-            "WHERE (:keyword IS NULL OR w.workplaceName LIKE %:keyword%)")
+            "WHERE (:keyword IS NULL OR w.workplaceName LIKE %:keyword%) " +
+            "AND w.isDelWorkplace = false")
     List<Workplace> findAllByKeyword(String keyword);
 
     boolean existsByWorkplaceName(String workplaceName);

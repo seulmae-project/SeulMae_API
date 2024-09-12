@@ -27,4 +27,11 @@ public class AddressVo {
             throw new IllegalArgumentException("Sub address cannot be null or empty");
         }
     }
+
+    public static AddressVo toBuilder(String mainAddress, String subAddress) {
+        return AddressVo.builder()
+                .mainAddress(mainAddress)
+                .subAddress(subAddress)
+                .build();
+    }
 }
