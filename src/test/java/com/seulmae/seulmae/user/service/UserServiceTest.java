@@ -121,9 +121,7 @@ class UserServiceTest extends ServiceTestSupport {
         // GIVEN
         String sendingType = "signUp";
 
-        SmsSendingRequest smsSendingRequest = new SmsSendingRequest();
-        smsSendingRequest.setSendingType(sendingType);
-        smsSendingRequest.setPhoneNumber(phoneNumber);
+        SmsSendingRequest smsSendingRequest = new SmsSendingRequest(sendingType, phoneNumber);
 
         // SmsService의 sendSMS 메서드를 모의하여 실제로 실행되지 않도록 처리
         doNothing().when(smsService).sendSMS(anyString());
@@ -144,9 +142,7 @@ class UserServiceTest extends ServiceTestSupport {
         User user = mockSetUpUtil.createUser(accountId, password, phoneNumber, name, birthday, isMale);
         String sendingType = "signUp";
 
-        SmsSendingRequest smsSendingRequest = new SmsSendingRequest();
-        smsSendingRequest.setSendingType(sendingType);
-        smsSendingRequest.setPhoneNumber(phoneNumber);
+        SmsSendingRequest smsSendingRequest = new SmsSendingRequest(sendingType, phoneNumber);
 
         // SmsService의 sendSMS 메서드를 모의하여 실제로 실행되지 않도록 처리
         doNothing().when(smsService).sendSMS(anyString());
@@ -165,10 +161,7 @@ class UserServiceTest extends ServiceTestSupport {
         User user = mockSetUpUtil.createUser(accountId, password, phoneNumber, name, birthday, isMale);
 
         String sendingType = "findAccountId";
-        SmsSendingRequest smsSendingRequest = new SmsSendingRequest();
-        smsSendingRequest.setSendingType(sendingType);
-        smsSendingRequest.setPhoneNumber(user.getPhoneNumber());
-
+        SmsSendingRequest smsSendingRequest = new SmsSendingRequest(sendingType, user.getPhoneNumber());
         doNothing().when(smsService).sendSMS(anyString());
 
         // WHEN
@@ -185,9 +178,7 @@ class UserServiceTest extends ServiceTestSupport {
     void sendSMSCertificationFailWhenFindingId() {
         // GIVEN
         String sendingType = "findAccountId";
-        SmsSendingRequest smsSendingRequest = new SmsSendingRequest();
-        smsSendingRequest.setSendingType(sendingType);
-        smsSendingRequest.setPhoneNumber(phoneNumber);
+        SmsSendingRequest smsSendingRequest = new SmsSendingRequest(sendingType, phoneNumber);
 
         doNothing().when(smsService).sendSMS(anyString());
 
@@ -204,10 +195,7 @@ class UserServiceTest extends ServiceTestSupport {
         User user = mockSetUpUtil.createUser(accountId, password, phoneNumber, name, birthday, isMale);
 
         String sendingType = "findPassword";
-        SmsSendingRequest smsSendingRequest = new SmsSendingRequest();
-        smsSendingRequest.setSendingType(sendingType);
-        smsSendingRequest.setPhoneNumber(user.getPhoneNumber());
-        smsSendingRequest.setAccountId(user.getAccountId());
+        SmsSendingRequest smsSendingRequest = new SmsSendingRequest(sendingType, user.getPhoneNumber(), user.getAccountId());
 
         doNothing().when(smsService).sendSMS(anyString());
 
@@ -227,11 +215,7 @@ class UserServiceTest extends ServiceTestSupport {
         User user = mockSetUpUtil.createUser(accountId, "anotherpw1234!", phoneNumber, name, birthday, isMale);
 
         String sendingType = "findPassword";
-        SmsSendingRequest smsSendingRequest = new SmsSendingRequest();
-        smsSendingRequest.setSendingType(sendingType);
-        smsSendingRequest.setPhoneNumber(password);
-        smsSendingRequest.setAccountId(user.getAccountId());
-
+        SmsSendingRequest smsSendingRequest = new SmsSendingRequest(sendingType, password, user.getAccountId());
         doNothing().when(smsService).sendSMS(anyString());
 
         // WHEN & THEN
@@ -245,9 +229,7 @@ class UserServiceTest extends ServiceTestSupport {
     void sendSMSCertificationFail() {
         // GIVEN
         String sendingType = "wrongSendingType";
-        SmsSendingRequest smsSendingRequest = new SmsSendingRequest();
-        smsSendingRequest.setSendingType(sendingType);
-        smsSendingRequest.setPhoneNumber(password);
+        SmsSendingRequest smsSendingRequest = new SmsSendingRequest(sendingType, password);
 
         doNothing().when(smsService).sendSMS(anyString());
 

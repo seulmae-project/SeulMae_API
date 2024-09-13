@@ -1,29 +1,31 @@
 package com.seulmae.seulmae.user.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.seulmae.seulmae.global.support.ControllerUnitTestSupport;
-import com.seulmae.seulmae.user.dto.request.UpdateUserRequest;
-import com.seulmae.seulmae.user.dto.request.UserSignUpDto;
+import com.seulmae.seulmae.user.Role;
+import com.seulmae.seulmae.user.SocialType;
+import com.seulmae.seulmae.user.dto.request.*;
+import com.seulmae.seulmae.user.dto.response.FindAuthResponse;
+import com.seulmae.seulmae.user.dto.response.UserProfileResponse;
 import com.seulmae.seulmae.user.entity.User;
-import com.seulmae.seulmae.util.MockUser;
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.charset.StandardCharsets;
-import java.nio.file.AccessDeniedException;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -34,7 +36,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * 2. 유효성 검증이 제대로 이루어지는지 확인
  * 3. 비즈니스 로직이 변경되거나 API가 확장되어도 기존 기능이 동일하게 동작하는지 검증
  */
-
 
 public class UserControllerUnitTest extends ControllerUnitTestSupport {
 
@@ -69,35 +70,252 @@ public class UserControllerUnitTest extends ControllerUnitTestSupport {
                 .andExpect(status().isCreated());
     }
 
-//    @Test
-//    @DisplayName("프로필을 수정한다")
-//    @MockUser()
-//    void updateProfile() throws Exception {
-//        // GIVEN
-//        Long id = 1L;
-//        String changingName = "newName";
-//        UpdateUserRequest request = new UpdateUserRequest(changingName);
-//        String requestBody = objectMapper.writeValueAsString(request);
-//        MockMultipartFile updateUserRequestPart = new MockMultipartFile("updateUserRequest", "updateUserRequest", "application/json", requestBody.getBytes());
-//        MockMultipartFile filePart = new MockMultipartFile("file", "profile.png", "image/png", "test image".getBytes());
-//
-//        doNothing().when(userService).updateUser(anyLong(), any(User.class), any(UpdateUserRequest.class), any(MultipartFile.class));
-//
-//        // WHEN & THEN
-//        mockMvc.perform(multipart(URL)
-//                        .file(updateUserRequestPart)
-//                        .file(filePart)
-//                        .param("id", String.valueOf(id))
-//                        .contentType(MediaType.MULTIPART_FORM_DATA)
-//                        .with(csrf())
-//                        .with(_request -> {
-//                            _request.setMethod("PUT");
-//                            return _request;
-//                        })
-//                )
-//                .andDo(print())
-//                .andExpect(status().isOk());
-//    }
+    @Test
+    @DisplayName("프로필을 수정한다")
+    void updateProfile() throws Exception {
+        // GIVEN
+        Long id = 1L;
+        User mockUser = User.builder().build();
+        mockUser.setIdUser(id);
+        when(authenticationHelper.getCurrentUser()).thenReturn(mockUser);
 
+        String changingName = "newName";
+        UpdateUserRequest request = new UpdateUserRequest(changingName);
+        String requestBody = objectMapper.writeValueAsString(request);
+        MockMultipartFile updateUserRequestPart = new MockMultipartFile("updateUserRequest", "updateUserRequest", "application/json", requestBody.getBytes());
+        MockMultipartFile filePart = new MockMultipartFile("file", "profile.png", "image/png", "test image".getBytes());
+
+        // WHEN & THEN
+        mockMvc.perform(multipart(URL)
+                        .file(updateUserRequestPart)
+                        .file(filePart)
+                        .param("id", String.valueOf(mockUser.getIdUser()))
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .with(user(mockUser))
+                        .with(csrf())
+                        .with(_request -> {
+                            _request.setMethod("PUT");
+                            return _request;
+                        })
+                )
+                .andDo(print())
+                .andExpect(status().isOk());
+
+    }
+
+    @Test
+    @DisplayName("앱을 탈퇴한다")
+    void deleteUser() throws Exception {
+        Long id = 1L;
+        User mockUser = User.builder().build();
+        mockUser.setIdUser(id);
+        when(authenticationHelper.getCurrentUser()).thenReturn(mockUser);
+
+        mockMvc.perform(delete(URL)
+                        .param("id", String.valueOf(mockUser.getIdUser()))
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .with(user(mockUser))
+                        .with(csrf())
+                )
+                .andDo(print())
+                .andExpect(status().isOk());
+
+    }
+
+    @Test
+    @DisplayName("소셜 아이디로 가입할 때, 추가적인 프로필 정보를 입력한다")
+    void updateAdditionalProfile() throws Exception {
+
+        // GIVEN
+        User mockUser = User.builder()
+                .socialId("socialId")
+                .socialType(SocialType.KAKAO)
+                .authorityRole(Role.GUEST)
+                .build();
+
+        when(authenticationHelper.getCurrentUser()).thenReturn(mockUser);
+
+        String name = "소셜이름";
+        Boolean isMale = true;
+        String birthday = "20000121";
+        OAuth2AdditionalDataRequest request = new OAuth2AdditionalDataRequest(name, isMale, birthday);
+        String requestBody = objectMapper.writeValueAsString(request);
+        MockMultipartFile oAuth2AdditionalDataRequestPart = new MockMultipartFile("oAuth2AdditionalDataRequest", "oAuth2AdditionalDataRequest", "application/json", requestBody.getBytes());
+        MockMultipartFile filePart = new MockMultipartFile("file", "profile.png", "image/jpg", "test image".getBytes());
+
+
+        // WHEN & THEN
+        mockMvc.perform(multipart(URL + "/extra-profile")
+                        .file(oAuth2AdditionalDataRequestPart)
+                        .file(filePart)
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .with(user(mockUser))
+                        .with(csrf())
+                        .with(_request -> {
+                            _request.setMethod("PUT");
+                            return _request;
+                        })
+                )
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("유저 ID로 프로필 정보를 확인한다")
+    @WithMockUser
+    void getUserProfile() throws Exception {
+        // GIVEN
+        User mockUser = User.builder().idUser(1L).build();
+        when(authenticationHelper.getCurrentUser()).thenReturn(mockUser);
+        UserProfileResponse result = new UserProfileResponse(null, null, null, List.of());
+        when(userService.getUserProfile(anyLong(), any(HttpServletRequest.class))).thenReturn(result);
+
+
+        // WHEN & THEN
+        mockMvc.perform(get(URL)
+                        .param("id", String.valueOf(mockUser.getIdUser()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .with(csrf())
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").isNotEmpty());
+
+    }
+
+    @Test
+    @DisplayName("내 프로필 정보를 확인한다")
+    void getMyProfile() throws Exception {
+        // GIVEN
+        User mockUser = User.builder().build();
+        UserProfileResponse result = new UserProfileResponse(null, null, null, List.of());
+        when(userService.getMyProfile(any(User.class), any())).thenReturn(result);
+
+        // WHEN & THEN
+        mockMvc.perform(get(URL + "/my-profile")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .with(user(mockUser))
+                        .with(csrf())
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").isNotEmpty());
+
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("SMS로 인증 코드를 보낸다")
+    void sendSMS() throws Exception {
+        // GIVEN
+        SmsSendingRequest request = new SmsSendingRequest("signup", "01012341234");
+        String requestBody = objectMapper.writeValueAsString(request);
+
+        FindAuthResponse result = new FindAuthResponse(true);
+        when(userService.sendSMSCertification(any(SmsSendingRequest.class))).thenReturn(result);
+
+        System.out.println("result = " + result);
+
+        // WHEN & THEN
+        mockMvc.perform(post(URL + "/sms-certification/send")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .with(csrf())
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").isNotEmpty());
+    }
+
+    @Test
+    @DisplayName("SMS로 인증 코드를 확인한다")
+    void verifySMS() throws Exception {
+        // GIVEN
+        SmsCertificationRequest request = new SmsCertificationRequest("findAccountId", "01012341234", "010111");
+        String requestBody = objectMapper.writeValueAsString(request);
+
+        FindAuthResponse result = new FindAuthResponse(true, "accountId123");
+        when(userService.confirmSMSCertification(any(SmsCertificationRequest.class))).thenReturn(result);
+
+        // WHEN & THEN
+        mockMvc.perform(post(URL + "/sms-certification/confirm")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody)
+                .accept(MediaType.APPLICATION_JSON)
+                .with(csrf())
+        )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").isNotEmpty());
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("아이디 중복 여부를 확인한다.")
+    void checkAccountId() throws Exception {
+        String newAccountId = "newAccount1234";
+        CheckAccountIdRequest request = new CheckAccountIdRequest(newAccountId);
+        String requestBody = objectMapper.writeValueAsString(request);
+
+        when(userService.isDuplicatedAccountId(request.getAccountId())).thenReturn(true);
+
+        // WHEN & THEN
+        mockMvc.perform(post(URL + "/id/duplication")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .with(csrf())
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").isNotEmpty());
+    }
+
+    @Test
+    @DisplayName("비밀번호를 변경한다")
+    @WithMockUser
+    void changePassword() throws Exception {
+        String existAccount = "account1234";
+        String newPassword = "abc12342!";
+        ChangePasswordRequest request = new ChangePasswordRequest(existAccount, newPassword);
+        String requestBody = objectMapper.writeValueAsString(request);
+
+        doNothing().when(userService).changePassword(any(ChangePasswordRequest.class));
+
+        mockMvc.perform(put(URL + "/pw")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .with(csrf())
+                )
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("휴대폰 번호를 변경한다")
+    void changePhoneNumber() throws Exception {
+        User mockUser = User.builder().idUser(1L).build();
+        when(authenticationHelper.getCurrentUser()).thenReturn(mockUser);
+
+        String newPhoneNumber = "01012342222";
+        ChangePhoneNumberRequest request = new ChangePhoneNumberRequest(newPhoneNumber);
+        String requestBody = objectMapper.writeValueAsString(request);
+        doNothing().when(userService).changePhoneNumber(anyLong(), any(ChangePhoneNumberRequest.class), any(User.class));
+
+        mockMvc.perform(put(URL + "/phone")
+                        .param("id", String.valueOf(mockUser.getIdUser()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .with(user(mockUser))
+                        .with(csrf())
+                )
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
 
 }
