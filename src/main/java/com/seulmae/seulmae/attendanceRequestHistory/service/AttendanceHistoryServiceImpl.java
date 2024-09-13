@@ -113,6 +113,7 @@ public class AttendanceHistoryServiceImpl implements AttendanceHistoryService {
                 history.getWorkStartTime(),
                 history.getWorkEndTime(),
                 history.getTotalWorkTime(),
+                history.getAttendance().getUnconfirmedWage(),
                 history.getAttendance().getConfirmedWage(),
                 history.getIsRequestApprove(),
                 history.getIsManagerCheck(),
@@ -128,12 +129,21 @@ public class AttendanceHistoryServiceImpl implements AttendanceHistoryService {
         AttendanceRequestHistory history = attendanceRequestHistoryRepository.findById(idAttendanceRequestHistory)
                 .orElseThrow(() -> new NoSuchElementException("해당 근무 이력 ID가 존재하지 않습니다."));
 
-        AttendanceRequestHistoryDetailProjection detailProjection = attendanceRequestHistoryRepository.findDeliveryMessageAndAttendanceRequestMemoByIdAttendanceRequestHistory(idAttendanceRequestHistory);
+        AttendanceRequestHistory attendanceRequestHistorydetail = attendanceRequestHistoryRepository.findById(idAttendanceRequestHistory)
+                .orElseThrow(() -> new NoSuchElementException("해당 근무기록정보가 존재하지 않습니다."));
 
         // AttendanceRequestHistoryDetailDto 객체 생성 및 반환
         return new AttendanceRequestHistoryDetailDto(
-                detailProjection.getDeliveryMessage(),
-                detailProjection.getAttendanceRequestMemo()
+                attendanceRequestHistorydetail.getAttendance().getWorkDate(),
+                attendanceRequestHistorydetail.getWorkStartTime(),
+                attendanceRequestHistorydetail.getWorkEndTime(),
+                attendanceRequestHistorydetail.getTotalWorkTime(),
+                attendanceRequestHistorydetail.getAttendance().getUnconfirmedWage(),
+                attendanceRequestHistorydetail.getAttendance().getConfirmedWage(),
+                attendanceRequestHistorydetail.getIsRequestApprove(),
+                attendanceRequestHistorydetail.getIsManagerCheck(),
+                attendanceRequestHistorydetail.getDeliveryMessage(),
+                attendanceRequestHistorydetail.getAttendanceRequestMemo()
         );
     }
 }

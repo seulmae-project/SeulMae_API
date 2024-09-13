@@ -17,7 +17,8 @@ public class AttendanceRequestHistoryDto {
     // 총 일한 시간
     private final BigDecimal totalWorkTime;
     // 일급
-    private final Integer wage;
+    private final Integer unconfirmedWage;
+    private final Integer confirmedWage;
     // 요청 승인 및 거절 여부
     private final Boolean isRequestApprove;
     // 미처리 상태 구분을 위한 확인 여부
@@ -29,7 +30,8 @@ public class AttendanceRequestHistoryDto {
                                        LocalDateTime workStartTime,
                                        LocalDateTime workEndTime,
                                        BigDecimal totalWorkTime,
-                                       Integer wage,
+                                       Integer unconfirmedWage,
+                                       Integer confirmedWage,
                                        Boolean isRequestApprove,
                                        Boolean isManagerCheck,
                                        Long idAttendanceRequestHistory) {
@@ -37,7 +39,8 @@ public class AttendanceRequestHistoryDto {
         this.workStartTime = workStartTime;
         this.workEndTime = workEndTime;
         this.totalWorkTime = totalWorkTime;
-        this.wage = wage;
+        this.unconfirmedWage = unconfirmedWage;
+        this.confirmedWage = confirmedWage;
         this.isRequestApprove = isRequestApprove;
         this.isManagerCheck = isManagerCheck;
         this.idAttendanceRequestHistory = idAttendanceRequestHistory;
