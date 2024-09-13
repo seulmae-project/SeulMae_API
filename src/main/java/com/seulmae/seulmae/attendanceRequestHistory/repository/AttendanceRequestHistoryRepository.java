@@ -47,7 +47,8 @@ public interface AttendanceRequestHistoryRepository extends JpaRepository<Attend
     @Query("SELECT arh FROM AttendanceRequestHistory arh " +
             "WHERE arh.attendance.workplace.idWorkPlace = :workplaceId " +
             "AND YEAR(arh.attendance.workDate) = :year " +
-            "AND MONTH(arh.attendance.workDate) = :month")
+            "AND MONTH(arh.attendance.workDate) = :month " +
+            "ORDER BY arh.attendance.workDate ASC ")
     Page<AttendanceRequestHistory> findByWorkplaceIdAndYearAndMonth(Long workplaceId, Integer year, Integer month, Pageable pageable);
 
     @Query("SELECT SUM(arh.totalWorkTime) " +
