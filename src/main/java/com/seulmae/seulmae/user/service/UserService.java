@@ -51,6 +51,10 @@ public class UserService {
 
     @Transactional
     public void createUser(UserSignUpDto userSignUpDto, MultipartFile file) {
+        if (userSignUpDto.getAccountId() == null || userSignUpDto.getPassword() == null) {
+            throw new IllegalArgumentException("아이디와 비빌번호는 필수 입력 정보입니다.");
+        }
+
 
         checkDuplicatedAccountId(userSignUpDto.getAccountId());
         checkDuplicatedPhoneNumber(userSignUpDto.getPhoneNumber());

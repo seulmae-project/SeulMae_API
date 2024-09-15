@@ -198,7 +198,7 @@ public class UserController {
             userService.deleteUser(id, user);
             return ResponseUtil.createSuccessResponse(SuccessCode.DELETE_SUCCESS);
         } catch (AccessDeniedException e) {
-            return ResponseUtil.createErrorResponse(ErrorCode.UNAUTHORIZED, e.getMessage());
+            return ResponseUtil.createErrorResponse(ErrorCode.FORBIDDEN_ERROR, e.getMessage());
         } catch (Exception e) {
             return ResponseUtil.handleException(e);
         }

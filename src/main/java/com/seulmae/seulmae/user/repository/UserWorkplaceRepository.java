@@ -20,6 +20,10 @@ public interface UserWorkplaceRepository extends JpaRepository<UserWorkplace, Lo
             "AND uw.isDelUserWorkplace is false")
     Optional<User> findUserByWorkplaceAndIsManager(Workplace workplace, boolean isManager);
 
+    @Query("SELECT uw FROM UserWorkplace uw " +
+            "WHERE uw.user = :user " +
+            "AND uw.workplace = :workplace " +
+            "AND uw.isDelUserWorkplace is false")
     Optional<UserWorkplace> findByUserAndWorkplaceAndIsDelUserWorkplaceFalse(User user, Workplace workplace);
 
     @Query("SELECT uw.workplace FROM UserWorkplace uw " +

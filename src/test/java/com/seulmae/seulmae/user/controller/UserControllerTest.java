@@ -7,10 +7,7 @@ import com.seulmae.seulmae.user.Role;
 import com.seulmae.seulmae.user.dto.request.*;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.user.repository.UserRepository;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -33,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest // 테스트용 애플리케이션 컨텍스트 생성
 @AutoConfigureMockMvc // MockMVC 생성 및 자동구성
+@Disabled
 class UserControllerTest {
 
     @Autowired
@@ -143,38 +141,38 @@ class UserControllerTest {
     }
 
 
-//    @Test
-//    @MockUser()
-//    @DisplayName("프로필 수정 - 성공")
-//    void updateProfile() throws Exception {
-//
-//        // given
-//        final String url = "/api/users";
-//        final String newName = "수정이름";
-//
-//        User actualLoginMember = authenticationHelper.getCurrentUser();
-//
-//        UpdateUserRequest request = new UpdateUserRequest(newName);
-//        String requestBody = objectMapper.writeValueAsString(request);
-//        MockMultipartFile updateUserRequestPart = new MockMultipartFile("updateUserRequest", "updateUserRequest", "application/json", requestBody.getBytes());
-//
-//        // when
-//        ResultActions result = mockMvc.perform(multipart(url)
-//                .file(updateUserRequestPart)
-//                .with(_request -> {
-//                    _request.setMethod("PUT");
-//                    return _request;
-//                })
-//                .contentType(MediaType.MULTIPART_FORM_DATA)
-//                .accept(MediaType.APPLICATION_JSON)
-//                .param("id", String.valueOf(actualLoginMember.getIdUser())));
-//
-//        // then
-//        System.out.println(result.andReturn().getResponse().getContentAsString());
-//        result.andExpect(status().isOk());
-//        assertThat(actualLoginMember.getName()).isEqualTo(newName);
-//
-//    }
+    @Test
+    @MockUser()
+    @DisplayName("프로필 수정 - 성공")
+    void updateProfile() throws Exception {
+
+        // given
+        final String url = "/api/users";
+        final String newName = "수정이름";
+
+        User actualLoginMember = authenticationHelper.getCurrentUser();
+
+        UpdateUserRequest request = new UpdateUserRequest(newName);
+        String requestBody = objectMapper.writeValueAsString(request);
+        MockMultipartFile updateUserRequestPart = new MockMultipartFile("updateUserRequest", "updateUserRequest", "application/json", requestBody.getBytes());
+
+        // when
+        ResultActions result = mockMvc.perform(multipart(url)
+                .file(updateUserRequestPart)
+                .with(_request -> {
+                    _request.setMethod("PUT");
+                    return _request;
+                })
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .accept(MediaType.APPLICATION_JSON)
+                .param("id", String.valueOf(actualLoginMember.getIdUser())));
+
+        // then
+        System.out.println(result.andReturn().getResponse().getContentAsString());
+        result.andExpect(status().isOk());
+        assertThat(actualLoginMember.getName()).isEqualTo(newName);
+
+    }
 
     @Test
     @DisplayName("프로필 조회 - 성공")

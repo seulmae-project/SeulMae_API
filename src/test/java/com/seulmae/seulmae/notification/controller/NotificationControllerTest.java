@@ -4,11 +4,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.seulmae.seulmae.announcement.dto.request.AddAnnouncementRequest;
 import com.seulmae.seulmae.announcement.repository.AnnouncementRepository;
 import com.seulmae.seulmae.notification.NotificationType;
+import com.seulmae.seulmae.notification.entity.Notification;
 import com.seulmae.seulmae.notification.repository.NotificationRepository;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.user.entity.UserWorkplace;
 import com.seulmae.seulmae.user.repository.UserRepository;
 import com.seulmae.seulmae.user.repository.UserWorkplaceRepository;
+import com.seulmae.seulmae.util.AuthenticationHelper;
 import com.seulmae.seulmae.util.MockSetUpUtil;
 import com.seulmae.seulmae.workplace.entity.Workplace;
 import com.seulmae.seulmae.workplace.repository.WorkplaceRepository;
@@ -20,6 +22,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -27,6 +33,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -60,6 +67,9 @@ class NotificationControllerTest {
     @Autowired
     private MockSetUpUtil mockSetUpUtil;
 
+    @Autowired
+    private AuthenticationHelper authenticationHelper;
+
     private final String URL = "/api/notification/v1";
 
     @BeforeEach
@@ -73,6 +83,10 @@ class NotificationControllerTest {
         boolean isMale = true;
 
         User mockUser = mockSetUpUtil.createUser(accountId, password, phoneNumber, name, birthday, isMale);
+        Authentication auth = new UsernamePasswordAuthenticationToken(mockUser, null, mockUser.getAuthorities());
+        SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
+        securityContext.setAuthentication(auth);
+        SecurityContextHolder.setContext(securityContext);
 
         String workplaceName = "근무지";
         String mainAddress = "경기도";
@@ -91,8 +105,9 @@ class NotificationControllerTest {
         String announcementRequest = objectMapper.writeValueAsString(addAnnouncementRequest);
 
         mockMvc.perform(post(announcementURL)
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(announcementRequest));
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(announcementRequest))
+                .andDo(print());
 
     }
 
@@ -110,13 +125,10 @@ class NotificationControllerTest {
     void getNotifications() throws Exception {
         UserWorkplace userWorkplace = userWorkplaceRepository.findAll().getFirst();
 
-        System.out.println("userWorkplace.getIdUserWorkplace() = " + userWorkplace.getIdUserWorkplace());
-        ResultActions result = mockMvc.perform(get(URL + "/list")
-                .param("userWorkplaceId", String.valueOf(userWorkplace.getIdUserWorkplace())));
-
-        System.out.println(result.andReturn().getResponse().getContentAsString());
-
-        result
+        mockMvc.perform(get(URL + "/list")
+                        .param("userWorkplaceId", String.valueOf(userWorkplace.getIdUserWorkplace()))
+                )
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[0].notificationType").value(NotificationType.NOTICE.name()));
     }
