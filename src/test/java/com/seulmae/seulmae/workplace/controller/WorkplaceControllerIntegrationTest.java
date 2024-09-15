@@ -2,19 +2,12 @@ package com.seulmae.seulmae.workplace.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.seulmae.seulmae.user.Role;
-import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.user.entity.UserWorkplace;
-import com.seulmae.seulmae.user.repository.UserRepository;
 import com.seulmae.seulmae.user.repository.UserWorkplaceRepository;
-import com.seulmae.seulmae.util.AuthenticationHelper;
-import com.seulmae.seulmae.util.MockUser;
-import com.seulmae.seulmae.util.UserUtil;
-import com.seulmae.seulmae.workplace.dto.WorkplaceAddDto;
+import com.seulmae.seulmae.util.WorkplaceUtil;
 import com.seulmae.seulmae.workplace.dto.WorkplaceModifyDto;
 import com.seulmae.seulmae.workplace.entity.Workplace;
 import com.seulmae.seulmae.workplace.repository.WorkplaceRepository;
-import com.seulmae.seulmae.workplace.service.WorkplaceService;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -23,13 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.AuthorityUtils;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -65,7 +54,7 @@ public class WorkplaceControllerIntegrationTest {
     protected ObjectMapper objectMapper;
 
     @Autowired
-    private UserUtil userUtil;
+    private WorkplaceUtil workplaceUtil;
 
     @Autowired
     private WorkplaceRepository workplaceRepository;
@@ -90,31 +79,10 @@ public class WorkplaceControllerIntegrationTest {
     @Transactional
     @DisplayName("근무지 생성")
     public void shouldCreateWorkplaceSuccessfully() throws Exception {
-        String addEndPoint = workplaceEndPoint + "/add";
+        MvcResult result = workplaceUtil.createWorkplace();
 
-        userUtil.createDefaultTestUserAndLogin("test1234", "qwer1234!", "01012344321", "이름");
-
-        WorkplaceAddDto workplaceAddDto = createAddWorkplaceObject();
-
-        /** writeValueAsString - Java 객체를 JSON 문자열로 직렬화하는 메서드**/
-        String request = objectMapper.writeValueAsString(workplaceAddDto);
-
-        /** 이미지 파일 생성 **/
-        byte[] imageBytes = Files.readAllBytes(Paths.get("src/test/resources/testImage.png"));
-
-        MockMultipartFile mockMultipartFile = new MockMultipartFile("workplaceAddDto", "workplaceAddDto", "application/json; charset=UTF-8", request.getBytes(StandardCharsets.UTF_8));
-        MockMultipartFile mockImageFile = new MockMultipartFile("multipartFileList", "testImage.png", "image/png", imageBytes);
-
-        mockMvc.perform( /** 특정 HTTP 요청을 모의 실행 - 기본 POST 요청 **/
-                multipart(addEndPoint)
-                        .file(mockMultipartFile)
-                        .file(mockImageFile)
-                        .contentType(MediaType.MULTIPART_FORM_DATA) /** 요청의 Content-Type 헤더 MULTIPART_FORM_DATA 설정 **/
-                        .accept(MediaType.APPLICATION_JSON) /** 응답의 Content-Type application/json 설정 **/
-                )
-                .andDo(print())
-                .andExpect(status().isCreated())
-                .andReturn();
+        // 상태 코드 검증 (201 Created)
+        assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.CREATED.value());
 
         List<UserWorkplace> all = userWorkplaceRepository.findAll();
 
@@ -128,7 +96,7 @@ public class WorkplaceControllerIntegrationTest {
     public void getAllListWorkplace() throws Exception {
         String getAllEndPoint = workplaceEndPoint + "/info/all";
 
-        shouldCreateWorkplaceSuccessfully();
+        workplaceUtil.createWorkplace();
 
         /**
          *  ResultActions - 체이닝 방식
@@ -166,7 +134,7 @@ public class WorkplaceControllerIntegrationTest {
     public void getSpecificWorkplace() throws Exception {
         String getSpecificEndPoint = workplaceEndPoint + "/info";
 
-        shouldCreateWorkplaceSuccessfully();
+        workplaceUtil.createWorkplace();
         Workplace workplace = workplaceRepository.findAll().get(0);
 
         MvcResult result = mockMvc.perform(
@@ -192,7 +160,7 @@ public class WorkplaceControllerIntegrationTest {
     public void modifyWorkplace() throws Exception{
         String modifyEndPoint = workplaceEndPoint + "/modify";
 
-        shouldCreateWorkplaceSuccessfully();
+        workplaceUtil.createWorkplace();
         Workplace workplace = workplaceRepository.findAll().get(0);
 
         WorkplaceModifyDto modifyWorkplace = createModifyWorkplaceObject(workplace);
@@ -221,7 +189,7 @@ public class WorkplaceControllerIntegrationTest {
     public void deleteWorkplace() throws Exception {
         String deleteEndPoint = workplaceEndPoint + "/delete";
 
-        shouldCreateWorkplaceSuccessfully();
+        workplaceUtil.createWorkplace();
         Workplace workplace = workplaceRepository.findAll().get(0);
 
         mockMvc.perform(
@@ -260,7 +228,7 @@ public class WorkplaceControllerIntegrationTest {
     public void getJoinWorkplaceList() throws Exception{
         String joinWorkplaceEndPoint = workplaceEndPoint + "/info/join";
 
-        shouldCreateWorkplaceSuccessfully();
+        workplaceUtil.createWorkplace();
 
         mockMvc.perform(
                         get(joinWorkplaceEndPoint)
@@ -270,16 +238,6 @@ public class WorkplaceControllerIntegrationTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andReturn();
-    }
-
-    public WorkplaceAddDto createAddWorkplaceObject() throws Exception {
-
-        return WorkplaceAddDto.builder()
-                .workplaceName("testName")
-                .workplaceTel("02-1234-1234")
-                .mainAddress("메인주소")
-                .subAddress("서브주소")
-                .build();
     }
 
     public WorkplaceModifyDto createModifyWorkplaceObject(Workplace workplace) throws Exception {
