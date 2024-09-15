@@ -79,7 +79,7 @@ public class WorkplaceControllerIntegrationTest {
     @Transactional
     @DisplayName("근무지 생성")
     public void shouldCreateWorkplaceSuccessfully() throws Exception {
-        MvcResult result = workplaceUtil.createWorkplace();
+        MvcResult result = workplaceUtil.createWorkplace(mockMvc);
 
         // 상태 코드 검증 (201 Created)
         assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.CREATED.value());
@@ -96,7 +96,7 @@ public class WorkplaceControllerIntegrationTest {
     public void getAllListWorkplace() throws Exception {
         String getAllEndPoint = workplaceEndPoint + "/info/all";
 
-        workplaceUtil.createWorkplace();
+        workplaceUtil.createWorkplace(mockMvc);
 
         /**
          *  ResultActions - 체이닝 방식
@@ -134,7 +134,7 @@ public class WorkplaceControllerIntegrationTest {
     public void getSpecificWorkplace() throws Exception {
         String getSpecificEndPoint = workplaceEndPoint + "/info";
 
-        workplaceUtil.createWorkplace();
+        workplaceUtil.createWorkplace(mockMvc);
         Workplace workplace = workplaceRepository.findAll().get(0);
 
         MvcResult result = mockMvc.perform(
@@ -160,7 +160,7 @@ public class WorkplaceControllerIntegrationTest {
     public void modifyWorkplace() throws Exception{
         String modifyEndPoint = workplaceEndPoint + "/modify";
 
-        workplaceUtil.createWorkplace();
+        workplaceUtil.createWorkplace(mockMvc);
         Workplace workplace = workplaceRepository.findAll().get(0);
 
         WorkplaceModifyDto modifyWorkplace = createModifyWorkplaceObject(workplace);
@@ -189,7 +189,7 @@ public class WorkplaceControllerIntegrationTest {
     public void deleteWorkplace() throws Exception {
         String deleteEndPoint = workplaceEndPoint + "/delete";
 
-        workplaceUtil.createWorkplace();
+        workplaceUtil.createWorkplace(mockMvc);
         Workplace workplace = workplaceRepository.findAll().get(0);
 
         mockMvc.perform(
@@ -228,7 +228,7 @@ public class WorkplaceControllerIntegrationTest {
     public void getJoinWorkplaceList() throws Exception{
         String joinWorkplaceEndPoint = workplaceEndPoint + "/info/join";
 
-        workplaceUtil.createWorkplace();
+        workplaceUtil.createWorkplace(mockMvc);
 
         mockMvc.perform(
                         get(joinWorkplaceEndPoint)
