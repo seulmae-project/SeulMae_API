@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.stereotype.Component;
 import org.springframework.test.web.servlet.MockMvc;
@@ -24,9 +23,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class WorkplaceUtil {
 
     @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
     private ObjectMapper objectMapper;
 
     @Autowired
@@ -34,7 +30,7 @@ public class WorkplaceUtil {
 
     private String workplaceEndPoint = "/api/workplace/v1";
 
-    public MvcResult createWorkplace() throws Exception {
+    public MvcResult createWorkplace(MockMvc mockMvc) throws Exception {
         String addEndPoint = workplaceEndPoint + "/add";
 
         userUtil.createDefaultTestUserAndLogin("test1234", "qwer1234!", "01012344321", "이름");
@@ -50,6 +46,7 @@ public class WorkplaceUtil {
         MockMultipartFile mockMultipartFile = new MockMultipartFile("workplaceAddDto", "workplaceAddDto", "application/json; charset=UTF-8", request.getBytes(StandardCharsets.UTF_8));
         MockMultipartFile mockImageFile = new MockMultipartFile("multipartFileList", "testImage.png", "image/png", imageBytes);
 
+        /** 테스트 환경에서만 MockMvc 주입 가능. 때문에 인자로 전달 **/
         return mockMvc.perform( /** 특정 HTTP 요청을 모의 실행 - 기본 POST 요청 **/
                         multipart(addEndPoint)
                                 .file(mockMultipartFile)
