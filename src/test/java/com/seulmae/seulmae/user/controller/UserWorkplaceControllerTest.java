@@ -7,7 +7,6 @@ import com.seulmae.seulmae.user.repository.UserRepository;
 import com.seulmae.seulmae.user.repository.UserWorkScheduleRepository;
 import com.seulmae.seulmae.user.repository.UserWorkplaceRepository;
 import com.seulmae.seulmae.util.MockSetUpUtil;
-import com.seulmae.seulmae.util.MockUser;
 import com.seulmae.seulmae.wage.repository.WageRepository;
 import com.seulmae.seulmae.workplace.entity.WorkSchedule;
 import com.seulmae.seulmae.workplace.entity.Workplace;
@@ -18,21 +17,18 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.time.LocalTime;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -77,9 +73,14 @@ class UserWorkplaceControllerTest {
 
     private final String URL = "/api/workplace/user/v1";
 
+    private User initUser;
+    private Workplace initWorkplace;
+
     @BeforeEach
     public void mockMvcSetUp() throws Exception {
-        this.mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
+        this.mockMvc = MockMvcBuilders.webAppContextSetup(context)
+                .apply(springSecurity())
+                .build();
 
         // 유저 생성
         String accountId = "test12345";
@@ -89,22 +90,17 @@ class UserWorkplaceControllerTest {
         String name = "매니저인사람";
         boolean isMale = false;
 
-        // 사용자 객체 생성
-        User mockUser = mockSetUpUtil.createUser(accountId, password, phoneNumber, name, birthday, isMale);
-
+        initUser = mockSetUpUtil.createUser(accountId, password, phoneNumber, name, birthday, isMale);
 
         // 근무지 생성
-        String url = "/api/workplace/v1/add";
-
         String workplaceName = "근무지";
         String mainAddress = "경기도";
         String subAddress = "안양시";
         String workplaceTel = "01015341234";
 
-        Workplace mockWorkplace = mockSetUpUtil.createWorkplace(workplaceName, mainAddress, subAddress, workplaceTel);
-        mockSetUpUtil.createUserWorkplace(mockUser, mockWorkplace, true);
-        mockSetUpUtil.createWorkSchedule(mockWorkplace, "오전근무", LocalTime.of(9, 0), LocalTime.of(13, 0), List.of(1,2,3));
-
+        initWorkplace = mockSetUpUtil.createWorkplace(workplaceName, mainAddress, subAddress, workplaceTel);
+        mockSetUpUtil.createUserWorkplace(initUser, initWorkplace, true);
+        mockSetUpUtil.createWorkSchedule(initWorkplace, "오전근무", LocalTime.of(9, 0), LocalTime.of(13, 0), List.of(1,2,3));
     }
 
     @AfterEach
@@ -122,7 +118,7 @@ class UserWorkplaceControllerTest {
     @Test
     @DisplayName("근무지 내 유저정보 - 성공")
     void getUserInfoWithWorkplace() throws Exception {
-        Workplace workplace = workplaceRepository.findAll().getFirst();
+//        Workplace workplace = workplaceRepository.findAll().getFirst();
         WorkSchedule workSchedule = workScheduleRepository.findAll().getFirst();
 
         String accountId = "test1234";
@@ -134,9 +130,9 @@ class UserWorkplaceControllerTest {
         Integer payday = 25;
 
         User mockUser = mockSetUpUtil.createUser(accountId, password, phoneNumber, name, birthday, true);
-        UserWorkplace userWorkplace = mockSetUpUtil.createUserWorkplace(mockUser, workplace, false);
-        mockSetUpUtil.createWorkplaceJoinHistoryWithApprove(workplace, mockUser);
-        mockSetUpUtil.createWage(mockUser, workplace, baseWage, payday);
+        UserWorkplace userWorkplace = mockSetUpUtil.createUserWorkplace(mockUser, initWorkplace, false);
+        mockSetUpUtil.createWorkplaceJoinHistoryWithApprove(initWorkplace, mockUser);
+        mockSetUpUtil.createWage(mockUser, initWorkplace, baseWage, payday);
         mockSetUpUtil.createUserWorkSchedule(mockUser, workSchedule);
 
         mockMvc.perform(get(URL)
@@ -152,22 +148,18 @@ class UserWorkplaceControllerTest {
 
     @Test
     @DisplayName("유저 근무지 탈퇴 - 성공")
-    @Disabled
     void withdrawWorkplace() throws Exception {
-        Workplace workplace = workplaceRepository.findAll().getFirst();
 
-        User mockUser = mockSetUpUtil.createUser("test1234", "qwer1234!", "01024231234", "이름", "19920103", true);
+        User anotherMockUser = mockSetUpUtil.createUser("test1234", "qwer1234!", "01024231234", "이름", "19920103", true);
 
-        UserWorkplace userWorkplace = mockSetUpUtil.createUserWorkplace(mockUser, workplace, false);
+        UserWorkplace userWorkplace = mockSetUpUtil.createUserWorkplace(anotherMockUser, initWorkplace, false);
 
         mockMvc.perform(delete(URL)
-                        .with(user(mockUser))
-                        .param("workplaceId", String.valueOf(workplace.getIdWorkPlace())))
+                        .with(user(anotherMockUser))
+                        .param("workplaceId", String.valueOf(initWorkplace.getIdWorkPlace())))
                 .andDo(print())
                 .andExpect(status().isOk());
 
-
-//        result.andExpect(status().isOk());
         UserWorkplace deletedUserWorkplace = userWorkplaceRepository.findById(userWorkplace.getIdUserWorkplace())
                 .orElse(null);
         assertThat(deletedUserWorkplace.getIsDelUserWorkplace()).isTrue();

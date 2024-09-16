@@ -17,7 +17,7 @@ class UserRepositoryUnitTest extends RepositoryUnitTestSupport {
 
     final String accountId = "test1234";
     final String password = "qwer1234!";
-    final String phoneNumber = "01012341234";
+    final String phoneNumber = "010123412b34";
     final String name = "테스트이름";
     final String birthday = "19930815";
     final boolean isMale = false;

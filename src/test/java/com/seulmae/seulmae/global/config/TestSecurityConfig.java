@@ -30,7 +30,6 @@ public class TestSecurityConfig {
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
-//                .logout(AbstractHttpConfigurer::disable)
 
                 // 세션 사용하지 않으므로 STATELESS 설정
                 .sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -40,11 +39,9 @@ public class TestSecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/users/sms-certification/send").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/users/sms-certification/confirm").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/users/id/duplication").permitAll()
-//                        .requestMatchers(HttpMethod.POST, "/api/users/email/search").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/api/users/pw").permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/api/**")).authenticated()
-                        .anyRequest().permitAll()) //여기 부분 다시 고민해보자
-
+                        .anyRequest().permitAll())
                 .build();
     }
 
