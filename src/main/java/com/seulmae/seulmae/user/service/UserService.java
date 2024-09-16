@@ -3,8 +3,9 @@ package com.seulmae.seulmae.user.service;
 import com.seulmae.seulmae.global.util.FindByIdUtil;
 import com.seulmae.seulmae.global.util.PasswordUtil;
 import com.seulmae.seulmae.global.util.UrlUtil;
-import com.seulmae.seulmae.user.Role;
-import com.seulmae.seulmae.user.SocialType;
+import com.seulmae.seulmae.user.enums.Role;
+import com.seulmae.seulmae.user.enums.SmsSendingType;
+import com.seulmae.seulmae.user.enums.SocialType;
 import com.seulmae.seulmae.user.dto.request.*;
 import com.seulmae.seulmae.user.dto.response.FindAuthResponse;
 import com.seulmae.seulmae.user.dto.response.UserProfileResponse;
@@ -20,7 +21,6 @@ import com.seulmae.seulmae.user.repository.UserWorkplaceRepository;
 import com.seulmae.seulmae.workplace.entity.Workplace;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,9 +45,9 @@ public class UserService {
     private final SmsService smsService;
 
     private final String FILE_ENDPOINT = "/api/users/file";
-    private final String SIGNUP = "signUp";
-    private final String FIND_ACCOUNT_ID = "findAccountId";
-    private final String FIND_PW = "findPassword";
+//    private final String SIGNUP = "signUp";
+//    private final String FIND_ACCOUNT_ID = "findAccountId";
+//    private final String FIND_PW = "findPassword";
 
     @Transactional
     public void createUser(UserSignUpDto userSignUpDto, MultipartFile file) {
@@ -219,15 +219,15 @@ public class UserService {
 
         for (Workplace workplace : workplaces) {
             UserWorkplace userWorkplace = userWorkplaceRepository.findByUserAndWorkplaceAndIsDelUserWorkplaceFalse(user, workplace)
-                            .orElseThrow(() -> new NoSuchElementException("해당 유저는 해당 근무지 소속이 아닙니다."));
+                    .orElseThrow(() -> new NoSuchElementException("해당 유저는 해당 근무지 소속이 아닙니다."));
 
             User manger = userWorkplaceRepository.findUserByWorkplaceAndIsManager(workplace, true)
-                            .orElseThrow(() -> new NoSuchElementException("해당 근무지에 매니저가 존재하지 않습니다."));
+                    .orElseThrow(() -> new NoSuchElementException("해당 근무지에 매니저가 존재하지 않습니다."));
 
-            userWorkplaceInfoResponses.add(new UserWorkplaceInfoResponse(workplace.getIdWorkPlace(), workplace.getWorkplaceName(), workplace.getAddressVo(), workplace.getWorkplaceName() , manger.getName(),  userWorkplace.getIsManager()));
+            userWorkplaceInfoResponses.add(new UserWorkplaceInfoResponse(workplace.getIdWorkPlace(), workplace.getWorkplaceName(), workplace.getAddressVo(), workplace.getWorkplaceName(), manger.getName(), userWorkplace.getIsManager()));
         }
 
-        return new UserProfileResponse(user.getName(), getUserImageURL(user, request), user.getPhoneNumber(), userWorkplaceInfoResponses);
+        return new UserProfileResponse(user.getName(), getUserImageURL(user, request), user.getPhoneNumber(), user.getBirthday(), userWorkplaceInfoResponses);
     }
 
     public UserProfileResponse getMyProfile(User user, HttpServletRequest request) {
@@ -245,30 +245,35 @@ public class UserService {
             User manger = userWorkplaceRepository.findUserByWorkplaceAndIsManager(workplace, true)
                     .orElseThrow(() -> new NoSuchElementException("해당 근무지에 매니저가 존재하지 않습니다."));
 
-            userWorkplaceInfoResponses.add(new UserWorkplaceInfoResponse(workplace.getIdWorkPlace(), workplace.getWorkplaceName(), workplace.getAddressVo(), workplace.getWorkplaceName() , manger.getName(),  userWorkplace.getIsManager()));
+            userWorkplaceInfoResponses.add(new UserWorkplaceInfoResponse(workplace.getIdWorkPlace(), workplace.getWorkplaceName(), workplace.getAddressVo(), workplace.getWorkplaceName(), manger.getName(), userWorkplace.getIsManager()));
         }
 
-        return new UserProfileResponse(me.getName(), getUserImageURL(me, request), me.getPhoneNumber(), userWorkplaceInfoResponses);
+        return new UserProfileResponse(me.getName(), getUserImageURL(me, request), me.getPhoneNumber(), me.getBirthday(), userWorkplaceInfoResponses);
     }
 
     /**
      * sms 보내기 서비스 (보내기 여부를 판단하는 서비스)
      * 0. 보내는 상황
      * - 회원가입
-     *   - 기존 db에 유저가 존재해서는 안된다.
-     *   - 기존 db에 유저가 존재하는 경우, '해당 휴대폰번호로 가입한 이력이 있습니다. 아이디 찾기를 이용하시기 바랍니다.'
+     * - 기존 db에 유저가 존재해서는 안된다.
+     * - 기존 db에 유저가 존재하는 경우, '해당 휴대폰번호로 가입한 이력이 있습니다. 아이디 찾기를 이용하시기 바랍니다.'
      * - 아이디 찾기
-     *   - 기존 db에 유저가 존재해야 한다.
-     *   - 기존 db에 휴대폰 번호에 대한 유저가 존재하지 않을 경우, sms를 보내면 안된다.
+     * - 기존 db에 유저가 존재해야 한다.
+     * - 기존 db에 휴대폰 번호에 대한 유저가 존재하지 않을 경우, sms를 보내면 안된다.
      * - 비밀번호 찾기
-     *   - 아이디와 휴대폰번호가 동시에 존재하는 유저가 db에 존재해야 한다.
-     *   - 만약 일치하는 데이터가 없을 경우, sms를 보내면 안된다.
+     * - 아이디와 휴대폰번호가 동시에 존재하는 유저가 db에 존재해야 한다.
+     * - 만약 일치하는 데이터가 없을 경우, sms를 보내면 안된다.
+     * - 휴대폰 번호 변경
+     * - 새로운 휴대폰 번호로 변경하는 거니까, 새로운 휴대폰 번호를 입력할테고, ....
+     * - 그 휴대폰 번호가 기존 db에 존재하는지 확인하고, 없으면
+     * - auth 코드를 보내고,
+     * - 확인되면,
      */
     public FindAuthResponse sendSMSCertification(SmsSendingRequest request) {
         /**
-         * 회원가입
+         * 회원가입 & 휴대폰번호 변경
          */
-        if (request.getSendingType().equals(SIGNUP)) {
+        if (request.getSendingType().equals(SmsSendingType.SIGNUP) || request.getSendingType().equals(SmsSendingType.CHANGE_PHONE_NUM)) {
 
             checkDuplicatedPhoneNumber(request.getPhoneNumber());
 
@@ -280,7 +285,7 @@ public class UserService {
         /**
          * 아이디 찾기
          */
-        if (request.getSendingType().equals(FIND_ACCOUNT_ID)) {
+        if (request.getSendingType().equals(SmsSendingType.FIND_ACCOUNT_ID)) {
             if (!isDuplicatedPhoneNumber(request.getPhoneNumber())) {
                 throw new IllegalArgumentException("가입된 휴대폰 번호가 아닙니다.");
             }
@@ -293,7 +298,7 @@ public class UserService {
         /**
          * 비밀번호 찾기
          */
-        if (request.getSendingType().equals(FIND_PW)) {
+        if (request.getSendingType().equals(SmsSendingType.FIND_PW)) {
             if (!userRepository.existsByAccountIdAndPhoneNumber(request.getAccountId(), request.getPhoneNumber())) {
                 throw new IllegalArgumentException("해당 아이디와 휴대폰번호가 매칭되는 계정이 존재하지 않습니다.");
             }
@@ -310,20 +315,25 @@ public class UserService {
      * sms 인증 서비스 (종류에 따라 제공하는 리스폰스가 달라진다.)
      * 1. 회원가입
      * - 성공/실패 리스폰스
-     *
+     * <p>
      * 2. 아이디 찾기
      * - 성공/실패 리스폰스
      * - 아이디(accountId)
-     *
+     * <p>
      * 3. 비밀번호 찾기
+     * - 성공/실패 리스폰스
+     * <p>
+     * 4. 휴대폰번호 변경
      * - 성공/실패 리스폰스
      */
 
     public FindAuthResponse confirmSMSCertification(SmsCertificationRequest request) {
         /**
-         * 회원가입 & 비밀번호 찾기
+         * 회원가입 & 비밀번호 찾기 & 휴대폰번호 변경
          */
-        if (request.getSendingType().equals(SIGNUP) || request.getSendingType().equals(FIND_PW)) {
+        if (request.getSendingType().equals(SmsSendingType.SIGNUP)
+                || request.getSendingType().equals(SmsSendingType.FIND_PW)
+                || request.getSendingType().equals(SmsSendingType.CHANGE_PHONE_NUM)) {
 
             smsService.verifySMS(request);
 
@@ -333,7 +343,7 @@ public class UserService {
         /**
          * 아이디 찾기
          */
-        if (request.getSendingType().equals(FIND_ACCOUNT_ID)) {
+        if (request.getSendingType().equals(SmsSendingType.FIND_ACCOUNT_ID)) {
             smsService.verifySMS(request);
 
             return getAccountId(request.getPhoneNumber());

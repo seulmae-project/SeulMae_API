@@ -73,6 +73,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(new AntPathRequestMatcher("/api/token")).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/users/file").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/workplace/file").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/users/sms-certification/send").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/users/sms-certification/confirm").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/users/id/duplication").permitAll()

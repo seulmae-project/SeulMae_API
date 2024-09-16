@@ -1,7 +1,7 @@
 //package com.seulmae.seulmae.global.config.oauth2.handler;
 //
 //import com.fasterxml.jackson.databind.ObjectMapper;
-//import com.seulmae.seulmae.user.Role;
+//import com.seulmae.seulmae.user.enums.Role;
 //import com.seulmae.seulmae.user.entity.CustomOAuth2User;
 //import com.seulmae.seulmae.user.entity.User;
 //import com.seulmae.seulmae.user.entity.UserWorkplace;

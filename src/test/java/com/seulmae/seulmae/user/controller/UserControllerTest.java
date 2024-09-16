@@ -3,7 +3,7 @@ package com.seulmae.seulmae.user.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.seulmae.seulmae.util.AuthenticationHelper;
 import com.seulmae.seulmae.util.MockUser;
-import com.seulmae.seulmae.user.Role;
+import com.seulmae.seulmae.user.enums.Role;
 import com.seulmae.seulmae.user.dto.request.*;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.user.repository.UserRepository;

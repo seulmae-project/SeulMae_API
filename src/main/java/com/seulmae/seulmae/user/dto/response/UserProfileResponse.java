@@ -13,5 +13,6 @@ public class UserProfileResponse {
     private String name;
     private String userImageURL;
     private String phoneNumber;
+    private String birthday;
     private List<UserWorkplaceInfoResponse> userWorkplaceInfoResponses;
 }

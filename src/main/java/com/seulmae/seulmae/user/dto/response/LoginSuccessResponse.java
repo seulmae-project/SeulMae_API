@@ -1,6 +1,6 @@
 package com.seulmae.seulmae.user.dto.response;
 
-import com.seulmae.seulmae.user.Role;
+import com.seulmae.seulmae.user.enums.Role;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;

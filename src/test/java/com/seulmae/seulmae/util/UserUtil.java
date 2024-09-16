@@ -1,8 +1,7 @@
 package com.seulmae.seulmae.util;
 
 import com.seulmae.seulmae.global.config.login.handler.LoginSuccessHandler;
-import com.seulmae.seulmae.notification.entity.FcmToken;
-import com.seulmae.seulmae.user.Role;
+import com.seulmae.seulmae.user.enums.Role;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;

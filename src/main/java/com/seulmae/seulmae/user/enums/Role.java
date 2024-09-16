@@ -1,4 +1,4 @@
-package com.seulmae.seulmae.user;
+package com.seulmae.seulmae.user.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

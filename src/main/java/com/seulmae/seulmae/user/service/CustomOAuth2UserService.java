@@ -2,7 +2,7 @@
 //
 //import com.seulmae.seulmae.global.config.oauth2.userInfo.OAuth2UserInfo;
 //import com.seulmae.seulmae.global.util.FileUtil;
-//import com.seulmae.seulmae.user.SocialType;
+//import com.seulmae.seulmae.user.enums.SocialType;
 //import com.seulmae.seulmae.user.dto.request.OAuthAttributesDto;
 //import com.seulmae.seulmae.user.entity.CustomOAuth2User;
 //import com.seulmae.seulmae.user.entity.User;
