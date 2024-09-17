@@ -1,5 +1,7 @@
 package com.seulmae.seulmae.util;
 
+import com.seulmae.seulmae.announcement.entity.Announcement;
+import com.seulmae.seulmae.announcement.repository.AnnouncementRepository;
 import com.seulmae.seulmae.global.util.UUIDUtil;
 import com.seulmae.seulmae.user.Role;
 import com.seulmae.seulmae.user.SocialType;
@@ -39,8 +41,9 @@ public class MockSetUpUtil {
     private final UserWorkScheduleRepository userWorkScheduleRepository;
     private final WageRepository wageRepository;
     private final WorkplaceJoinHistoryRepository workplaceJoinHistoryRepository;
+    private final AnnouncementRepository announcementRepository;
 
-    public MockSetUpUtil(UserRepository userRepository, WorkplaceRepository workplaceRepository, WorkScheduleRepository workScheduleRepository, UserWorkplaceRepository userWorkplaceRepository, UserWorkScheduleRepository userWorkScheduleRepository, WageRepository wageRepository, WorkplaceJoinHistoryRepository workplaceJoinHistoryRepository) {
+    public MockSetUpUtil(UserRepository userRepository, WorkplaceRepository workplaceRepository, WorkScheduleRepository workScheduleRepository, UserWorkplaceRepository userWorkplaceRepository, UserWorkScheduleRepository userWorkScheduleRepository, WageRepository wageRepository, WorkplaceJoinHistoryRepository workplaceJoinHistoryRepository, AnnouncementRepository announcementRepository) {
         this.userRepository = userRepository;
         this.workplaceRepository = workplaceRepository;
         this.workScheduleRepository = workScheduleRepository;
@@ -48,6 +51,7 @@ public class MockSetUpUtil {
         this.userWorkScheduleRepository = userWorkScheduleRepository;
         this.wageRepository = wageRepository;
         this.workplaceJoinHistoryRepository = workplaceJoinHistoryRepository;
+        this.announcementRepository = announcementRepository;
     }
 
     public User createUser(String accountId, String password, String phoneNumber, String name, String birthday, Boolean isMale) {
@@ -155,5 +159,9 @@ public class MockSetUpUtil {
                         .workSchedule(workSchedule)
                         .build()
         );
+    }
+
+    public Announcement createAnnouncement(User user, Workplace workplace, String title, String content, Boolean isImportant) {
+        return announcementRepository.saveAndFlush(new Announcement(user, workplace, title, content, isImportant));
     }
 }

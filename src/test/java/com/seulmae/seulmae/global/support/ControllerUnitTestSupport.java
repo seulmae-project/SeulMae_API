@@ -1,6 +1,8 @@
 package com.seulmae.seulmae.global.support;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.seulmae.seulmae.announcement.controller.AnnouncementController;
+import com.seulmae.seulmae.announcement.service.AnnouncementService;
 import com.seulmae.seulmae.global.config.TestSecurityConfig;
 import com.seulmae.seulmae.user.controller.UserController;
 import com.seulmae.seulmae.user.service.UserService;
@@ -12,7 +14,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 
 
-@WebMvcTest(controllers = {UserController.class})
+@WebMvcTest(controllers = {UserController.class, AnnouncementController.class})
 @Import(TestSecurityConfig.class)
 public class ControllerUnitTestSupport {
     @Autowired
@@ -26,4 +28,7 @@ public class ControllerUnitTestSupport {
 
     @MockBean
     protected UserService userService;
+
+    @MockBean
+    protected AnnouncementService announcementService;
 }
