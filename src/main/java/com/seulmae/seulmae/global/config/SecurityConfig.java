@@ -80,6 +80,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/users/id/duplication").permitAll()
 //                        .requestMatchers(HttpMethod.POST, "/api/users/email/search").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/api/users/pw").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/version/**").permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/api/**")).authenticated()
                         .anyRequest().permitAll()) //여기 부분 다시 고민해보자
 //                .oauth2Login(oauth2 -> oauth2
