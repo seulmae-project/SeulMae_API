@@ -6,7 +6,7 @@ import com.seulmae.seulmae.announcement.dto.request.UpdateAnnouncementRequest;
 import com.seulmae.seulmae.announcement.entity.Announcement;
 import com.seulmae.seulmae.announcement.repository.AnnouncementRepository;
 import com.seulmae.seulmae.notification.repository.NotificationRepository;
-import com.seulmae.seulmae.user.Role;
+import com.seulmae.seulmae.user.enums.Role;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.user.repository.UserRepository;
 import com.seulmae.seulmae.user.repository.UserWorkplaceRepository;

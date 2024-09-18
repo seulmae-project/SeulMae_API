@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.seulmae.seulmae.global.config.oauth2.apple.ApplePublicKey;
-import com.seulmae.seulmae.user.SocialType;
+import com.seulmae.seulmae.user.enums.SocialType;
 import com.seulmae.seulmae.user.controller.AppleClient;
 import com.seulmae.seulmae.user.dto.request.ApplePublicKeysFromApple;
 import com.seulmae.seulmae.user.dto.request.OAuthAttributesDto;

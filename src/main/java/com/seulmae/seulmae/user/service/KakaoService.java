@@ -1,6 +1,6 @@
 package com.seulmae.seulmae.user.service;
 
-import com.seulmae.seulmae.user.SocialType;
+import com.seulmae.seulmae.user.enums.SocialType;
 import com.seulmae.seulmae.user.dto.request.OAuthAttributesDto;
 import com.seulmae.seulmae.user.entity.User;
 import lombok.RequiredArgsConstructor;

@@ -1,9 +1,8 @@
 package com.seulmae.seulmae.global.config.jwt;
 
 import com.seulmae.seulmae.global.util.PasswordUtil;
-import com.seulmae.seulmae.user.Role;
+import com.seulmae.seulmae.user.enums.Role;
 import com.seulmae.seulmae.user.entity.User;
-import com.seulmae.seulmae.user.entity.UserWorkplace;
 import com.seulmae.seulmae.user.repository.UserRepository;
 import com.seulmae.seulmae.user.repository.UserWorkplaceRepository;
 import com.seulmae.seulmae.user.service.JwtService;

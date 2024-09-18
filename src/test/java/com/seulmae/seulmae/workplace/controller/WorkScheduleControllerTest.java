@@ -1,7 +1,7 @@
 package com.seulmae.seulmae.workplace.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.seulmae.seulmae.user.Role;
+import com.seulmae.seulmae.user.enums.Role;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.user.repository.UserRepository;
 import com.seulmae.seulmae.user.repository.UserWorkplaceRepository;

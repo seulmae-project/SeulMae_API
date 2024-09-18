@@ -73,11 +73,14 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(new AntPathRequestMatcher("/api/token")).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/users/file").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/workplace/file").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/users/sms-certification/send").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/users/sms-certification/confirm").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/users/id/duplication").permitAll()
 //                        .requestMatchers(HttpMethod.POST, "/api/users/email/search").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/api/users/pw").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/version/**").permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/api/**")).authenticated()
                         .anyRequest().permitAll()) //여기 부분 다시 고민해보자
 //                .oauth2Login(oauth2 -> oauth2

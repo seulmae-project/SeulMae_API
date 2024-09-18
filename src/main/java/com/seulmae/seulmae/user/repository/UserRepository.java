@@ -1,6 +1,6 @@
 package com.seulmae.seulmae.user.repository;
 
-import com.seulmae.seulmae.user.SocialType;
+import com.seulmae.seulmae.user.enums.SocialType;
 import com.seulmae.seulmae.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
