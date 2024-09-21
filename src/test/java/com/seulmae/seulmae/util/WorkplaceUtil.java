@@ -1,7 +1,14 @@
 package com.seulmae.seulmae.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.seulmae.seulmae.workplace.dto.JoinApprovalDto;
+import com.seulmae.seulmae.workplace.dto.WorkScheduleAddDto;
 import com.seulmae.seulmae.workplace.dto.WorkplaceAddDto;
+import com.seulmae.seulmae.workplace.dto.WorkplaceJoinDto;
+import com.seulmae.seulmae.workplace.entity.Workplace;
+import com.seulmae.seulmae.workplace.repository.WorkScheduleRepository;
+import com.seulmae.seulmae.workplace.repository.WorkplaceApproveRepository;
+import com.seulmae.seulmae.workplace.repository.WorkplaceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
@@ -11,11 +18,15 @@ import org.springframework.stereotype.Component;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.LocalTime;
+import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -28,7 +39,17 @@ public class WorkplaceUtil {
     @Autowired
     private UserUtil userUtil;
 
+    @Autowired
+    private WorkplaceRepository workplaceRepository;
+
+    @Autowired
+    private WorkplaceApproveRepository workplaceApproveRepository;
+
+    @Autowired
+    private WorkScheduleRepository workScheduleRepository;
     private String workplaceEndPoint = "/api/workplace/v1";
+
+    private String workplaceJoinEndPoint = "/api/workplace/join/v1";
 
     public MvcResult createWorkplace(MockMvc mockMvc) throws Exception {
         String addEndPoint = workplaceEndPoint + "/add";
@@ -62,10 +83,57 @@ public class WorkplaceUtil {
                          */
                 )
                 .andDo(print())
-                .andExpect(status().isCreated())
                 .andReturn();
     }
 
+    public MvcResult joinWorkplace(MockMvc mockMvc) throws Exception {
+        String endPoint = workplaceJoinEndPoint + "/request";
+
+        createWorkplace(mockMvc);
+
+        userUtil.createDefaultTestUserAndLogin("test12345", "qwer1234!", "01043211234", "이름");
+
+        List<Workplace> workplaceList = workplaceRepository.findAll();
+        Workplace workplace = workplaceList.getFirst();
+
+        WorkplaceJoinDto workplaceJoinDto = createWorkplaceJoinObject(workplace);
+        String content = objectMapper.writeValueAsString(workplaceJoinDto);
+
+        return mockMvc.perform(
+                        post(endPoint)
+                                .content(content)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print())
+                .andReturn();
+    }
+
+    public MvcResult joinApproval(MockMvc mockMvc) throws Exception {
+        String endPoint = workplaceJoinEndPoint + "/approval";
+
+        joinWorkplace(mockMvc);
+
+        Workplace workplace = workplaceRepository.findAll().getFirst();
+        Long workplaceApproveId = workplaceApproveRepository.findAll().getFirst().getIdWorkPlaceApprove();
+
+        testAddWorkSchedule(workplace, mockMvc);
+
+        Long idWorkSchedule = workScheduleRepository.findAll().getFirst().getIdWorkSchedule();
+
+        JoinApprovalDto joinApprovalDto = new JoinApprovalDto(idWorkSchedule, 25, 10000, "memo");
+        String contentJoinApprovalDto = objectMapper.writeValueAsString(joinApprovalDto);
+
+        return mockMvc.perform(
+                        post(endPoint)
+                                .param("workplaceApproveId", String.valueOf(workplaceApproveId))
+                                .content(contentJoinApprovalDto)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print())
+                .andReturn();
+    }
     public WorkplaceAddDto createAddWorkplaceObject() throws Exception {
 
         return WorkplaceAddDto.builder()
@@ -74,5 +142,30 @@ public class WorkplaceUtil {
                 .mainAddress("메인주소")
                 .subAddress("서브주소")
                 .build();
+    }
+
+    public WorkplaceJoinDto createWorkplaceJoinObject(Workplace workplace){
+        return WorkplaceJoinDto.builder()
+                .workplaceId(workplace.getIdWorkPlace())
+                .build();
+    }
+
+    public void testAddWorkSchedule(Workplace workplace, MockMvc mockMvc) throws Exception {
+        String endPoint = "/api/schedule/v1";
+
+        WorkScheduleAddDto workScheduleAddDto = new WorkScheduleAddDto(workplace.getIdWorkPlace(), "평일오전", LocalTime.of(9, 0), LocalTime.of(15, 0), List.of(1, 2));
+        String request = objectMapper.writeValueAsString(workScheduleAddDto);
+
+        userUtil.loginTestUser("test1234");
+
+        mockMvc.perform(
+                        post(endPoint)
+                                .content(request)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print())
+                .andExpect(status().isCreated())
+                .andReturn();
     }
 }
