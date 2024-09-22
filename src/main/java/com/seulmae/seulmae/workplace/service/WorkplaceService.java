@@ -151,11 +151,11 @@ public class WorkplaceService {
         /** 삭제된 근무지의 근무자의 UserWorkplace 삭제 처리 **/
         List<UserWorkplace> userWorkplaceList = userWorkplaceRepository.findByWorkplaceId(workplaceId);
 
-        userWorkplaceList.parallelStream()
+        userWorkplaceList = userWorkplaceList.stream()
                 .map(userWorkplace -> {
                     userWorkplace.deleteUserWorkplace();
                     return userWorkplace;
-                });
+                }).toList();
 
         userWorkplaceRepository.saveAll(userWorkplaceList);
     }

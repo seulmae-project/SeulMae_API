@@ -23,6 +23,11 @@ import java.util.List;
 public class UserWorkplaceController {
     private final UserWorkplaceService userWorkplaceService;
 
+    /**
+     * 근무지 유저 상세조회
+     * @param userWorkplaceId
+     * @param request
+     */
     @GetMapping("")
     public ResponseEntity<?> getUserInfoWithWorkplace(@RequestParam Long userWorkplaceId, HttpServletRequest request) {
         try {
@@ -35,6 +40,8 @@ public class UserWorkplaceController {
 
     /**
      * 매니저 권한 위임
+     * @param user
+     * @param managerDelegationRequest
      */
     @PostMapping("manager/delegate")
     public ResponseEntity<?> delegateManagerAuthority(@AuthenticationPrincipal User user, @RequestBody ManagerDelegationRequest managerDelegationRequest) {
@@ -46,6 +53,11 @@ public class UserWorkplaceController {
         }
     }
 
+    /**
+     * 근무자의 근무지 탈퇴
+     * @param user
+     * @param workplaceId
+     */
     @DeleteMapping("")
     public ResponseEntity<?> withdrawWorkplace(@AuthenticationPrincipal User user, @RequestParam Long workplaceId) {
         try {
@@ -55,9 +67,11 @@ public class UserWorkplaceController {
             return ResponseUtil.createErrorResponse(ErrorCode.BAD_REQUEST_ERROR, e.getMessage());
         }
     }
-  
+
     /**
      * 근무지에 포함된 모든 유저 리스트
+     * @param workplaceId
+     * @param httpServletRequest
      */
     @GetMapping("list")
     public ResponseEntity<?> getAllUserFromWorkplace(@RequestParam Long workplaceId, HttpServletRequest httpServletRequest) {

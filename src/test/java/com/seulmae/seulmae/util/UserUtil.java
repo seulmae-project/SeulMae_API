@@ -1,6 +1,5 @@
 package com.seulmae.seulmae.util;
 
-import com.seulmae.seulmae.global.config.login.handler.LoginSuccessHandler;
 import com.seulmae.seulmae.user.enums.Role;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.user.repository.UserRepository;
@@ -18,8 +17,6 @@ public class UserUtil {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private LoginSuccessHandler loginSuccessHandler;
 
     public User createDefaultTestUserAndLogin(String accountId, String password, String phoneNumber, String userName) {
         return createTestUserAndLogin(accountId, password, phoneNumber, userName, Role.USER);
@@ -42,10 +39,7 @@ public class UserUtil {
                 .build());
 
         // Authentication 설정
-        Authentication authentication = new UsernamePasswordAuthenticationToken(user, user.getPassword(), AuthorityUtils.createAuthorityList(String.valueOf(user.getAuthorityRole())));
-        SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-        securityContext.setAuthentication(authentication);
-        SecurityContextHolder.setContext(securityContext);
+        setAuthentication(user);
 
         return user;
     }
@@ -61,5 +55,18 @@ public class UserUtil {
                 .birthday("19920103")
                 .authorityRole(role)
                 .build());
+    }
+
+    public void loginTestUser(String accountId) {
+        User user = userRepository.findByAccountId(accountId).orElseThrow(() -> new NullPointerException("존재하지 않는 사용자 아이디입니다."));
+
+        setAuthentication(user);
+    }
+
+    public void setAuthentication(User user) {
+        Authentication authentication = new UsernamePasswordAuthenticationToken(user, user.getPassword(), AuthorityUtils.createAuthorityList(String.valueOf(user.getAuthorityRole())));
+        SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
+        securityContext.setAuthentication(authentication);
+        SecurityContextHolder.setContext(securityContext);
     }
 }

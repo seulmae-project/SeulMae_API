@@ -2,8 +2,6 @@ package com.seulmae.seulmae.workplace.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.seulmae.seulmae.user.entity.UserWorkplace;
-import com.seulmae.seulmae.user.repository.UserWorkplaceRepository;
 import com.seulmae.seulmae.util.WorkplaceUtil;
 import com.seulmae.seulmae.workplace.dto.WorkplaceModifyDto;
 import com.seulmae.seulmae.workplace.entity.Workplace;
@@ -28,7 +26,6 @@ import org.springframework.web.context.WebApplicationContext;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -59,8 +56,6 @@ public class WorkplaceControllerIntegrationTest {
     @Autowired
     private WorkplaceRepository workplaceRepository;
 
-    @Autowired
-    private UserWorkplaceRepository userWorkplaceRepository;
     private String workplaceEndPoint = "/api/workplace/v1";
 
 
@@ -84,10 +79,9 @@ public class WorkplaceControllerIntegrationTest {
         // 상태 코드 검증 (201 Created)
         assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.CREATED.value());
 
-        List<UserWorkplace> all = userWorkplaceRepository.findAll();
+        Workplace workplace = workplaceRepository.findAll().getFirst();
 
-        assertThat(all).isNotEmpty();
-        assertWorkplaceStructure(all.get(0).getWorkplace());
+        assertWorkplaceStructure(workplace);
     }
 
     @Test
