@@ -38,10 +38,10 @@ public class AttendanceHistoryServiceImpl implements AttendanceHistoryService {
      * 주어진 근무지 ID와 년, 월을 사용하여 근무 달력을 반환합니다.
      */
     @Override
-    public List<AttendanceCalendarDto> getEmployeeCalendar(User user, Long workplaceId, Integer year, Integer month) {
+    public List<AttendanceCalendarDto> getEmployeeCalendar(User user, Long workplaceId, LocalDate todayDate) {
         Workplace workplace = findByIdUtil.getWorkplaceById(workplaceId);
 
-        LocalDate startDate = LocalDate.of(year, month, 1);
+        LocalDate startDate = LocalDate.of(todayDate.getYear(), todayDate.getMonthValue(), 1);
         LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
 
         return attendanceRequestHistoryRepository

@@ -30,10 +30,9 @@ public class AttendanceHistoryController {
     @GetMapping("calendar-employee")
     public ResponseEntity<?> getEmployeeCalendar(@AuthenticationPrincipal User user,
                                                  @RequestParam Long workplaceId,
-                                                 @RequestParam Integer year,
-                                                 @RequestParam Integer month) {
+                                                 @RequestParam LocalDate todayDate) {
         try {
-            List<AttendanceCalendarDto> attendanceCalendarDtoList = historyService.getEmployeeCalendar(user, workplaceId, year, month);
+            List<AttendanceCalendarDto> attendanceCalendarDtoList = historyService.getEmployeeCalendar(user, workplaceId, todayDate);
             return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, attendanceCalendarDtoList);
         } catch (Exception e) {
             return ResponseUtil.handleException(e);

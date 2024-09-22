@@ -8,7 +8,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface AttendanceHistoryService {
-    List<AttendanceCalendarDto> getEmployeeCalendar(User user, Long workplaceId, Integer year, Integer month);
+    List<AttendanceCalendarDto> getEmployeeCalendar(User user, Long workplaceId, LocalDate todayDate);
 
     List<AttendanceCalendarDto> getManagerCalendar(User user, Long workplaceId, LocalDate todayDate);
 
