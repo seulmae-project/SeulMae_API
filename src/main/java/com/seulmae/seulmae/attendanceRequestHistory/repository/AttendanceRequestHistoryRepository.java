@@ -2,8 +2,6 @@ package com.seulmae.seulmae.attendanceRequestHistory.repository;
 
 import com.seulmae.seulmae.attendance.dto.AttendanceManagerMainListDto;
 import com.seulmae.seulmae.attendanceRequestHistory.dto.AttendanceCalendarDto;
-import com.seulmae.seulmae.attendanceRequestHistory.dto.AttendanceRequestHistoryDetailDto;
-import com.seulmae.seulmae.attendanceRequestHistory.dto.AttendanceRequestHistoryDetailProjection;
 import com.seulmae.seulmae.attendanceRequestHistory.entity.AttendanceRequestHistory;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.workplace.entity.Workplace;
@@ -61,19 +59,29 @@ public interface AttendanceRequestHistoryRepository extends JpaRepository<Attend
     Optional<BigDecimal> sumMonthlyWorkTime(Long userId, Long workplaceId, Integer year, Integer month);
 
     @Query("SELECT new com.seulmae.seulmae.attendanceRequestHistory.dto.AttendanceCalendarDto(" +
-            "arh.attendance.workDate, arh.isRequestApprove, arh.isManagerCheck, arh.idAttendanceRequestHistory) " +
+            "arh.attendance.user.idUser, arh.attendance.workDate, arh.isRequestApprove, arh.isManagerCheck, arh.idAttendanceRequestHistory) " +
             "FROM AttendanceRequestHistory arh " +
             "WHERE arh.attendance.user.idUser = :userId " +
             "AND arh.attendance.workplace.idWorkPlace = :workplaceId " +
             "AND arh.attendance.workDate >= :startDate " +
-            "AND arh.attendance.workDate <= :endDate ")
+            "AND arh.attendance.workDate <= :endDate " +
+            "ORDER BY arh.attendance.workDate ASC")
     List<AttendanceCalendarDto> findByUserAndWorkplaceAndDateBetween(Long userId, Long workplaceId, LocalDate startDate, LocalDate endDate);
 
-    @Query("SELECT new com.seulmae.seulmae.attendanceRequestHistory.dto.AttendanceRequestHistoryDetailDto(" +
-            "arh.deliveryMessage, arh.attendanceRequestMemo) " +
+    @Query("SELECT new com.seulmae.seulmae.attendanceRequestHistory.dto.AttendanceCalendarDto(" +
+            "arh.attendance.user.idUser, arh.attendance.workDate, arh.isRequestApprove, arh.isManagerCheck, arh.idAttendanceRequestHistory) " +
             "FROM AttendanceRequestHistory arh " +
-            "WHERE arh.idAttendanceRequestHistory = :idAttendanceRequestHistory ")
-    AttendanceRequestHistoryDetailDto findMessageAndMemoById(Long idAttendanceRequestHistory);
+            "WHERE arh.attendance.workplace.idWorkPlace = :workplaceId " +
+            "AND arh.attendance.workDate >= :startDate " +
+            "AND arh.attendance.workDate <= :endDate " +
+            "ORDER BY arh.attendance.workDate ASC")
+    List<AttendanceCalendarDto> findByWorkplaceAndDateBetween(Long workplaceId, LocalDate startDate, LocalDate endDate);
 
-    AttendanceRequestHistoryDetailProjection findDeliveryMessageAndAttendanceRequestMemoByIdAttendanceRequestHistory(Long idAttendanceRequestHistory);
+//    @Query("SELECT new com.seulmae.seulmae.attendanceRequestHistory.dto.AttendanceRequestHistoryDetailDto(" +
+//            "arh.deliveryMessage, arh.attendanceRequestMemo) " +
+//            "FROM AttendanceRequestHistory arh " +
+//            "WHERE arh.idAttendanceRequestHistory = :idAttendanceRequestHistory ")
+//    AttendanceRequestHistoryDetailDto findMessageAndMemoById(Long idAttendanceRequestHistory);
+
+//    AttendanceRequestHistoryDetailProjection findDeliveryMessageAndAttendanceRequestMemoByIdAttendanceRequestHistory(Long idAttendanceRequestHistory);
 }

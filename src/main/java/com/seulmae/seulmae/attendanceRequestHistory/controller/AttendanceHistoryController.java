@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -26,13 +27,25 @@ public class AttendanceHistoryController {
     /*
      * 근무 달력
      * */
-    @GetMapping("calender")
-    public ResponseEntity<?> getCalender(@AuthenticationPrincipal User user,
-                                         @RequestParam Long workplaceId,
-                                         @RequestParam Integer year,
-                                         @RequestParam Integer month) {
+    @GetMapping("calendar-employee")
+    public ResponseEntity<?> getEmployeeCalendar(@AuthenticationPrincipal User user,
+                                                 @RequestParam Long workplaceId,
+                                                 @RequestParam Integer year,
+                                                 @RequestParam Integer month) {
         try {
-            List<AttendanceCalendarDto> attendanceCalendarDtoList = historyService.getCalender(user, workplaceId, year, month);
+            List<AttendanceCalendarDto> attendanceCalendarDtoList = historyService.getEmployeeCalendar(user, workplaceId, year, month);
+            return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, attendanceCalendarDtoList);
+        } catch (Exception e) {
+            return ResponseUtil.handleException(e);
+        }
+    }
+
+    @GetMapping("calendar-manager")
+    public ResponseEntity<?> getManagerCalendar(@AuthenticationPrincipal User user,
+                                                @RequestParam Long workplaceId,
+                                                @RequestParam LocalDate todayDate) {
+        try {
+            List<AttendanceCalendarDto> attendanceCalendarDtoList = historyService.getManagerCalendar(user, workplaceId, todayDate);
             return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, attendanceCalendarDtoList);
         } catch (Exception e) {
             return ResponseUtil.handleException(e);
@@ -86,7 +99,7 @@ public class AttendanceHistoryController {
      * */
     @GetMapping("detail")
     public ResponseEntity<?> getRequestHistoryDetail(@AuthenticationPrincipal User user,
-                                       @RequestParam Long idAttendanceRequestHistory) {
+                                                     @RequestParam Long idAttendanceRequestHistory) {
         try {
             AttendanceRequestHistoryDetailDto historyDetail = historyService.getHistoryDetail(user, idAttendanceRequestHistory);
             return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, historyDetail);

@@ -16,7 +16,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -36,17 +38,26 @@ public class AttendanceHistoryServiceImpl implements AttendanceHistoryService {
      * 주어진 근무지 ID와 년, 월을 사용하여 근무 달력을 반환합니다.
      */
     @Override
-    public List<AttendanceCalendarDto> getCalender(User user, Long workplaceId, Integer year, Integer month) {
+    public List<AttendanceCalendarDto> getEmployeeCalendar(User user, Long workplaceId, Integer year, Integer month) {
         Workplace workplace = findByIdUtil.getWorkplaceById(workplaceId);
 
         LocalDate startDate = LocalDate.of(year, month, 1);
         LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
 
-        List<AttendanceCalendarDto> attendanceCalendarDtoList = attendanceRequestHistoryRepository
+        return attendanceRequestHistoryRepository
                 .findByUserAndWorkplaceAndDateBetween(user.getIdUser(), workplaceId, startDate, endDate);
-//                .orElseThrow(() -> new NoSuchElementException("조건에 맞는 근무요청이 없습니다."));
+    }
 
-        return attendanceCalendarDtoList;
+    @Override
+    public List<AttendanceCalendarDto> getManagerCalendar(User user, Long workplaceId, LocalDate todayDate) {
+        Workplace workplace = findByIdUtil.getWorkplaceById(workplaceId);
+
+        // 오늘 날짜 기준으로 일주일 구하기
+        LocalDate startDate = todayDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDate endDate = todayDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
+
+        return attendanceRequestHistoryRepository
+                .findByWorkplaceAndDateBetween(workplaceId, startDate, endDate);
     }
 
     /*
