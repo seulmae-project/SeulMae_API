@@ -2,6 +2,7 @@ package com.seulmae.seulmae.global.support;
 
 import com.seulmae.seulmae.announcement.repository.AnnouncementRepository;
 import com.seulmae.seulmae.announcement.service.AnnouncementService;
+import com.seulmae.seulmae.notification.listener.NotificationEventListener;
 import com.seulmae.seulmae.notification.repository.NotificationRepository;
 import com.seulmae.seulmae.notification.service.NotificationService;
 import com.seulmae.seulmae.user.repository.UserRepository;
@@ -11,9 +12,13 @@ import com.seulmae.seulmae.user.service.UserService;
 import com.seulmae.seulmae.user.service.UserWorkScheduleService;
 import com.seulmae.seulmae.user.service.UserWorkplaceService;
 import com.seulmae.seulmae.util.MockSetUpUtil;
+import com.seulmae.seulmae.workplace.repository.WorkplaceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +45,9 @@ public class ServiceTestSupport {
     protected UserRepository userRepository;
 
     @Autowired
+    protected WorkplaceRepository workplaceRepository;
+
+    @Autowired
     protected UserWorkplaceRepository userWorkplaceRepository;
 
     @Autowired
@@ -53,5 +61,11 @@ public class ServiceTestSupport {
 
     @Autowired
     protected MockSetUpUtil mockSetUpUtil;
+
+    @Autowired
+    protected ApplicationEventPublisher eventPublisher;
+
+    @Autowired
+    protected NotificationEventListener notificationEventListener;
 
 }

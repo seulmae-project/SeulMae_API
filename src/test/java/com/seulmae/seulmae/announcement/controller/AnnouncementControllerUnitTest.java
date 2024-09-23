@@ -21,7 +21,6 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -87,6 +86,22 @@ class AnnouncementControllerUnitTest extends ControllerUnitTestSupport {
     }
 
     @Test
+    @DisplayName("공지사항 수정: 권한 실패")
+    void updateAnnouncementFailNoAuth() throws Exception {
+        String requestBody = objectMapper.writeValueAsString(new UpdateAnnouncementRequest());
+        doThrow(new IllegalArgumentException("해당 근무지의 매니저가 아닙니다."))
+                .when(announcementService).updateAnnouncement(anyLong(), any(UpdateAnnouncementRequest.class), any(User.class));
+
+        mockMvc.perform(put(URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .param("announcementId", String.valueOf(1L))
+                        .content(requestBody)
+                        .with(user(mockUser))
+                )
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     @DisplayName("공지사항 상세 정보 조회한다")
     void getAnnouncement() throws Exception {
         Announcement announcement = Announcement.builder()
@@ -113,6 +128,21 @@ class AnnouncementControllerUnitTest extends ControllerUnitTestSupport {
         )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.title").value("title"));
+    }
+
+    @Test
+    @DisplayName("공지사항 조회: 권한 실패")
+    void getAnnouncementFailNoAuth() throws Exception {
+        doThrow(new IllegalArgumentException("해당 근무지 소속이 아닙니다."))
+                .when(announcementService).getAnnouncement(anyLong(), any(User.class));
+
+        mockMvc.perform(get(URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .param("announcementId", String.valueOf(1L))
+                        .with(user(mockUser))
+                )
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -157,6 +187,23 @@ class AnnouncementControllerUnitTest extends ControllerUnitTestSupport {
                 .andExpect(jsonPath("$.data.length()").value(2))
                 .andExpect(jsonPath("$.data[0].title").value("title"))
                 .andExpect(jsonPath("$.data[1].title").value("title2"));
+
+    }
+
+    @Test
+    @DisplayName("공지사항 전체 리스트 조회: 권한 실패")
+    void getAnnouncementsFailNoAuth() throws Exception {
+
+        doThrow(new IllegalArgumentException("해당 근무지 소속이 아닙니다."))
+                .when(announcementService).getAnnouncements(anyLong(), any(User.class), anyInt(), anyInt());
+
+        mockMvc.perform(get(URL + "/list")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .param("workplaceId", String.valueOf(mockWorkplace.getIdWorkPlace()))
+                        .with(user(mockUser))
+                )
+                .andExpect(status().isForbidden());
 
     }
 
