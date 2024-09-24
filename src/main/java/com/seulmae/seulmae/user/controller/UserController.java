@@ -204,17 +204,15 @@ public class UserController {
     /**
      * 휴대폰 번호 변경
      *
-     * @param id
      * @param request
      * @param user
      * @return
      */
     @PutMapping("/phone")
-    public ResponseEntity<?> changePhoneNumber(@RequestParam Long id,
-                                               @RequestBody ChangePhoneNumberRequest request,
+    public ResponseEntity<?> changePhoneNumber(@RequestBody ChangePhoneNumberRequest request,
                                                @AuthenticationPrincipal User user) {
         try {
-            userService.changePhoneNumber(id, request, user);
+            userService.changePhoneNumber(request, user);
             return ResponseUtil.createSuccessResponse(SuccessCode.UPDATE_SUCCESS);
         } catch (AccessDeniedException e) {
             return ResponseUtil.createErrorResponse(ErrorCode.UNAUTHORIZED, e.getMessage());

@@ -172,29 +172,25 @@ public class UserService {
     }
 
     @Transactional
-    public void changePhoneNumber(Long id, ChangePhoneNumberRequest request, User user) throws AccessDeniedException {
-        if (!id.equals(user.getIdUser())) {
-            throw new AccessDeniedException("프로필을 수정할 권한이 없습니다.");
-        }
+    public void changePhoneNumber(ChangePhoneNumberRequest request, User user) throws AccessDeniedException {
+        User me = findByIdUtil.getUserById(user.getIdUser());
+
         checkDuplicatedPhoneNumber(request.getPhoneNumber());
-        user.updatePhoneNumber(request.getPhoneNumber());
-        userRepository.save(user);
+        me.updatePhoneNumber(request.getPhoneNumber());
+
+        userRepository.save(me);
     }
 
     @Transactional
     public void deleteUser(User user) throws AccessDeniedException {
+        User me = findByIdUtil.getUserById(user.getIdUser());
 
-        Set<FcmToken> fcmTokens = user.getFcmTokens();
-        if (fcmTokens != null && !fcmTokens.isEmpty()) {
-            fcmTokenRepository.deleteAll(fcmTokens);
-        }
+        me.deleteUser();
 
-        user.deleteUser();
-
-        userImageRepository.findByUser(user)
+        userImageRepository.findByUser(me)
                 .ifPresent(UserImage::delete);
 
-        userRepository.save(user);
+        userRepository.save(me);
 
         /**
          * [TODO]
