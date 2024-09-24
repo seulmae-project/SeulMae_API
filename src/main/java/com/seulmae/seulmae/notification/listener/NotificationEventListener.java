@@ -21,7 +21,6 @@ import org.springframework.transaction.event.TransactionalEventListener;
 public class NotificationEventListener {
     private final NotificationService notificationService;
 
-    @EventListener
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void handleNotificationEvent(NotificationEvent event) {
@@ -47,6 +46,7 @@ public class NotificationEventListener {
                     throw new NotificationException("알림 실패: [" + multiDeviceNotificationEvent.getType() + "] '" + multiDeviceNotificationEvent.getTitle() + "', ErrorMessage: " + e.getMessage());
                 }
                 break;
+
             case NotificationType.NOTICE:
                 AnnouncementNotificationEvent announcementNotificationEvent = (AnnouncementNotificationEvent) event;
                 try {
@@ -58,8 +58,17 @@ public class NotificationEventListener {
                     throw new NotificationException("알림 실패: [" + announcementNotificationEvent.getType() + "] " + " ErrorMessage: " + e.getMessage());
                 }
                 break;
+
             default:
                 throw new IllegalArgumentException("Unknown Notification Event Type: " + event.getType());
         }
     }
+
+//
+//    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+////    @EventListener
+//    public void testListener(AnnouncementNotificationEvent event) {
+//        System.out.println("테스트 이벤트가 성공적으로 발생했습니다!!!!!!!");
+//        System.out.println("title!!!!!!!!!!!!!: " + event.getAnnouncement().getTitle());
+//    }
 }

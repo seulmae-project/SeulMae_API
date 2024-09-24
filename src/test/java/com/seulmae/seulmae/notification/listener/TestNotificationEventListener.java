@@ -4,6 +4,7 @@ import com.seulmae.seulmae.announcement.entity.Announcement;
 import com.seulmae.seulmae.announcement.repository.AnnouncementRepository;
 import com.seulmae.seulmae.notification.entity.Notification;
 import com.seulmae.seulmae.notification.event.AnnouncementNotificationEvent;
+import com.seulmae.seulmae.notification.event.NotificationEvent;
 import com.seulmae.seulmae.notification.repository.NotificationRepository;
 import com.seulmae.seulmae.notification.service.NotificationService;
 import com.seulmae.seulmae.user.entity.User;
@@ -19,15 +20,17 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.annotation.Commit;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @Transactional
@@ -56,7 +59,7 @@ public class TestNotificationEventListener {
     @Autowired
     protected UserWorkplaceRepository userWorkplaceRepository;
 
-    @MockBean
+    @Autowired
     private NotificationEventListener notificationEventListener;
 
     private User mockUser;
@@ -96,8 +99,9 @@ public class TestNotificationEventListener {
 
     @Test
     @DisplayName("Notification 이벤트가 발행되면 이벤트가 동작한다")
+    @Commit
     void whenNotificationEventPublished_thenTriggerEventListenerMethod() {
-                Announcement announcement = Announcement.builder()
+        Announcement announcement = Announcement.builder()
                 .user(mockUser)
                 .workplace(mockWorkplace)
                 .title("title")
@@ -106,18 +110,18 @@ public class TestNotificationEventListener {
                 .views(0)
                 .build();
 
-                announcementRepository.saveAndFlush(announcement);
+        announcementRepository.save(announcement);
 
-                AnnouncementNotificationEvent event = new AnnouncementNotificationEvent(announcement);
+        AnnouncementNotificationEvent event = new AnnouncementNotificationEvent(announcement);
 
-                eventPublisher.publishEvent(event);
+        eventPublisher.publishEvent(event);
 
-                verify(notificationEventListener).handleNotificationEvent(event);
+        List<Notification> notifications = notificationRepository.findAll();
+        System.out.println("테스트중: " + mockWorkplace.getWorkplaceTopic());
+
+        assertThat(notifications).hasSize(1);
+
     }
-
-
-
-
 
 
 //    @Test
