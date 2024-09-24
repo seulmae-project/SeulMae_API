@@ -39,6 +39,22 @@ public class UserWorkplaceController {
     }
 
     /**
+     * 로그인된 근무지 유저 상세조회
+     * @param user
+     * @param workplaceId
+     * @param request
+     */
+    @GetMapping("self")
+    public ResponseEntity<?> getUserInfoForCurrentUser(@AuthenticationPrincipal User user, @RequestParam Long workplaceId, HttpServletRequest request) {
+        try {
+            UserInfoWithWorkplaceResponse result = userWorkplaceService.getUserInfoForCurrentUser(user, workplaceId, request);
+            return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, result);
+        } catch (Exception e) {
+            return ResponseUtil.createErrorResponse(ErrorCode.BAD_REQUEST_ERROR, e.getMessage());
+        }
+    }
+
+    /**
      * 매니저 권한 위임
      * @param user
      * @param managerDelegationRequest
