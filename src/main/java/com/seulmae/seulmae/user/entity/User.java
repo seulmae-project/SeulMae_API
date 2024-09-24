@@ -174,6 +174,7 @@ public class User implements UserDetails {
     public void deleteUser() {
         this.isDelUser = true;
         this.delDateUser = LocalDateTime.now();
+        this.fcmTokens = new HashSet<>();
     }
 
     /** 암호화 **/

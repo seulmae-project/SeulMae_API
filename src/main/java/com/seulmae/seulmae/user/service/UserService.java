@@ -3,6 +3,8 @@ package com.seulmae.seulmae.user.service;
 import com.seulmae.seulmae.global.util.FindByIdUtil;
 import com.seulmae.seulmae.global.util.PasswordUtil;
 import com.seulmae.seulmae.global.util.UrlUtil;
+import com.seulmae.seulmae.notification.entity.FcmToken;
+import com.seulmae.seulmae.notification.repository.FcmTokenRepository;
 import com.seulmae.seulmae.user.enums.Role;
 import com.seulmae.seulmae.user.enums.SmsSendingType;
 import com.seulmae.seulmae.user.enums.SocialType;
@@ -27,9 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.AccessDeniedException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +37,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserImageRepository userImageRepository;
     private final UserWorkplaceRepository userWorkplaceRepository;
+    private final FcmTokenRepository fcmTokenRepository;
 
     private final PasswordEncoder passwordEncoder;
     private final FindByIdUtil findByIdUtil;
@@ -76,11 +77,7 @@ public class UserService {
     }
 
     @Transactional
-    public void updateUser(Long id, User user, UpdateUserRequest updateUserRequest, MultipartFile file) throws AccessDeniedException {
-        if (id != user.getIdUser()) {
-            throw new AccessDeniedException("프로필을 수정할 권한이 없습니다.");
-        }
-
+    public void updateUser(User user, UpdateUserRequest updateUserRequest, MultipartFile file) throws AccessDeniedException {
         User targetUser = findByIdUtil.getUserById(user.getIdUser());
         targetUser.updateName(updateUserRequest.getName());
 
@@ -185,15 +182,20 @@ public class UserService {
     }
 
     @Transactional
-    public void deleteUser(Long id, User user) throws AccessDeniedException {
-        if (!id.equals(user.getIdUser())) {
-            throw new AccessDeniedException("프로필을 수정할 권한이 없습니다.");
+    public void deleteUser(User user) throws AccessDeniedException {
+
+        Set<FcmToken> fcmTokens = user.getFcmTokens();
+        if (fcmTokens != null && !fcmTokens.isEmpty()) {
+            fcmTokenRepository.deleteAll(fcmTokens);
         }
+
         user.deleteUser();
+
         userImageRepository.findByUser(user)
                 .ifPresent(UserImage::delete);
 
         userRepository.save(user);
+
         /**
          * [TODO]
          * 1. 추후에 탈퇴할 경우, del처리 해야할 부분 있으면 추가해야 함.
@@ -210,27 +212,27 @@ public class UserService {
         return null;
     }
 
-    public UserProfileResponse getUserProfile(Long id, HttpServletRequest request) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("해당 UserId가 존재하지 않습니다."));
-        List<Workplace> workplaces = userWorkplaceRepository.findWorkplacesByUser(user);
+//    public UserProfileResponse getUserProfile(Long id, HttpServletRequest request) {
+//        User user = userRepository.findById(id)
+//                .orElseThrow(() -> new NoSuchElementException("해당 UserId가 존재하지 않습니다."));
+//        List<Workplace> workplaces = userWorkplaceRepository.findWorkplacesByUser(user);
+//
+//        List<UserWorkplaceInfoResponse> userWorkplaceInfoResponses = new ArrayList<>();
+//
+//        for (Workplace workplace : workplaces) {
+//            UserWorkplace userWorkplace = userWorkplaceRepository.findByUserAndWorkplaceAndIsDelUserWorkplaceFalse(user, workplace)
+//                    .orElseThrow(() -> new NoSuchElementException("해당 유저는 해당 근무지 소속이 아닙니다."));
+//
+//            User manger = userWorkplaceRepository.findUserByWorkplaceAndIsManager(workplace, true)
+//                    .orElseThrow(() -> new NoSuchElementException("해당 근무지에 매니저가 존재하지 않습니다."));
+//
+//            userWorkplaceInfoResponses.add(new UserWorkplaceInfoResponse(workplace.getIdWorkPlace(), workplace.getWorkplaceName(), workplace.getAddressVo(), workplace.getWorkplaceName(), manger.getName(), userWorkplace.getIsManager()));
+//        }
+//
+//        return new UserProfileResponse(user.getName(), getUserImageURL(user, request), user.getPhoneNumber(), user.getBirthday(), userWorkplaceInfoResponses);
+//    }
 
-        List<UserWorkplaceInfoResponse> userWorkplaceInfoResponses = new ArrayList<>();
-
-        for (Workplace workplace : workplaces) {
-            UserWorkplace userWorkplace = userWorkplaceRepository.findByUserAndWorkplaceAndIsDelUserWorkplaceFalse(user, workplace)
-                    .orElseThrow(() -> new NoSuchElementException("해당 유저는 해당 근무지 소속이 아닙니다."));
-
-            User manger = userWorkplaceRepository.findUserByWorkplaceAndIsManager(workplace, true)
-                    .orElseThrow(() -> new NoSuchElementException("해당 근무지에 매니저가 존재하지 않습니다."));
-
-            userWorkplaceInfoResponses.add(new UserWorkplaceInfoResponse(workplace.getIdWorkPlace(), workplace.getWorkplaceName(), workplace.getAddressVo(), workplace.getWorkplaceName(), manger.getName(), userWorkplace.getIsManager()));
-        }
-
-        return new UserProfileResponse(user.getName(), getUserImageURL(user, request), user.getPhoneNumber(), user.getBirthday(), userWorkplaceInfoResponses);
-    }
-
-    public UserProfileResponse getMyProfile(User user, HttpServletRequest request) {
+    public UserProfileResponse getUserProfile(User user, HttpServletRequest request) {
         User me = userRepository.findById(user.getIdUser())
                 .orElseThrow(() -> new NoSuchElementException("해당 User가 존재하지 않습니다."));
 
