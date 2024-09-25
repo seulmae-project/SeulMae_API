@@ -13,6 +13,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -24,10 +25,14 @@ public class LoginFailureHandler extends SimpleUrlAuthenticationFailureHandler {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setCharacterEncoding("UTF-8");
         response.setContentType("application/json;charset=UTF-8");
-        response.getWriter()
-                .write(
-                        objectMapper.writeValueAsString(ResponseUtil.createErrorResponse(ErrorCode.UNAUTHORIZED, exception.getMessage()))
-                );
+        response.getWriter().write(
+                objectMapper.writeValueAsString(
+                        ResponseUtil.createErrorResponse(ErrorCode.UNAUTHORIZED, exception.getMessage()).getBody()
+                )
+        );
+        response.getWriter().flush();
+        response.getWriter().close();
+
         log.info("로그인 실패: " + exception.getMessage());
     }
 

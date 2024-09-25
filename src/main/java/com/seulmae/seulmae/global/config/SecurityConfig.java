@@ -45,7 +45,6 @@ public class SecurityConfig {
     private final UserRepository userRepository;
     private final UserWorkplaceRepository userWorkplaceRepository;
     private final ObjectMapper objectMapper;
-//    private final CustomOAuth2UserService customOAuth2UserService;
     private final KakaoService kakaoService;
     private final AppleService appleService;
 
