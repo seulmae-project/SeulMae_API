@@ -31,6 +31,7 @@ public class WorkSchedule {
     private String workScheduleTitle;
 
     @OneToMany(mappedBy = "workSchedule", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<WorkScheduleDay> workScheduleDays = new ArrayList<>();
 
     @Column(name = "start_time")

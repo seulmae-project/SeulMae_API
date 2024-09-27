@@ -39,6 +39,7 @@ public class Workplace {
     private String workplaceTel;
 
     @OneToMany(mappedBy = "workplace", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<WorkplaceImage> workplaceImages = new ArrayList<>();
 
     @CreatedDate

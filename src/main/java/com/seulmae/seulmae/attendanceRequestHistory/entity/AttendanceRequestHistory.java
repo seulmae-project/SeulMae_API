@@ -35,6 +35,7 @@ public class AttendanceRequestHistory {
     private LocalDateTime workEndTime;
 
     @Column(name = "total_work_time")
+    @Builder.Default
     private BigDecimal totalWorkTime = BigDecimal.ZERO;
 
     @Column(name = "is_request_approve")

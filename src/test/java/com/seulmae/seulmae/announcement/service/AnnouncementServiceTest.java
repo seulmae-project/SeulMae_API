@@ -1,5 +1,7 @@
 package com.seulmae.seulmae.announcement.service;
 
+import com.seulmae.seulmae.announcement.dto.request.AddAnnouncementRequest;
+import com.seulmae.seulmae.announcement.dto.request.UpdateAnnouncementRequest;
 import com.seulmae.seulmae.announcement.dto.response.AnnouncementDetailResponse;
 import com.seulmae.seulmae.announcement.dto.response.AnnouncementListResponse;
 import com.seulmae.seulmae.announcement.dto.response.AnnouncementMainListResponse;
@@ -15,28 +17,27 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.verify;
 
 class AnnouncementServiceTest extends ServiceTestSupport {
     private User mockUser;
     private Workplace mockWorkplace;
-
     private UserWorkplace mockUserWorkplace;
 
     @BeforeEach
     void setUp() {
         mockUser = User.builder()
-                .idUser(1L)
                 .accountId("accountId")
                 .build();
         userRepository.save(mockUser);
 
         mockWorkplace = Workplace.builder()
-                .idWorkPlace(1L)
                 .workplaceName("workplaceName")
                 .build();
         workplaceRepository.save(mockWorkplace);
@@ -51,38 +52,40 @@ class AnnouncementServiceTest extends ServiceTestSupport {
 
     @AfterEach
     void clear() {
+        notificationRepository.deleteAll();
         announcementRepository.deleteAll();
         userWorkplaceRepository.deleteAll();
         workplaceRepository.deleteAll();
         userRepository.deleteAll();
     }
 
-//    @Test
-//    @DisplayName("공지사항을 생성한다")
-//    void createAnnouncement() {
-////        Announcement announcement = mockSetUpUtil.createAnnouncement(mockUser, mockWorkplace, "title1", "content1", true);
-////        announcementRepository.save(announcement);
-//        AddAnnouncementRequest request = new AddAnnouncementRequest(mockWorkplace.getIdWorkPlace(), "title", "content", true);
-//
-//        announcementService.createAnnouncement(request, mockUser);
-//
-//        Announcement announcement = announcementRepository.findAll().getFirst();
-//        assertThat(announcement.getContent()).isEqualTo("content");
-//
-//        // 2. 이벤트가 발행되었는지 확인
-//        verify(notificationService).sendMessageToUsersAboutAnnouncement(announcement);
-//
-//        // 3. Notification이 DB에 저장되었는지 확인
-//        Notification notification = notificationRepository.findAll().getFirst();
-//        assertThat(notification).isNotNull();
-//        assertThat(notification.getMessage()).contains("title");
-//        System.out.println("notification = " + notification);
-//    }
+    @Test
+    @DisplayName("공지사항을 생성한다")
+    void createAnnouncement() {
+        AddAnnouncementRequest request = new AddAnnouncementRequest(mockWorkplace.getIdWorkPlace(), "title", "content", true);
+
+        announcementService.createAnnouncement(request, mockUser);
+
+        Announcement announcement = announcementRepository.findAll().getFirst();
+        assertThat(announcement.getContent()).isEqualTo("content");
+
+        Notification notification = notificationRepository.findAll().getFirst();
+        assertThat(notification).isNotNull();
+        assertThat(notification.getMessage()).contains("title");
+    }
 
 
 
     @Test
+    @DisplayName("공지사항을 수정한다")
     void updateAnnouncement() {
+        Announcement announcement = mockSetUpUtil.createAnnouncement(mockUser, mockWorkplace, "title", "content", true);
+        UpdateAnnouncementRequest request = new UpdateAnnouncementRequest("updatedTitle", "updatedContent", true);
+
+        announcementService.updateAnnouncement(announcement.getIdAnnouncement(), request, mockUser);
+
+        Announcement updatedAnnouncement = announcementRepository.findById(announcement.getIdAnnouncement()).orElse(null);
+        assertThat(updatedAnnouncement.getTitle()).isEqualTo("updatedTitle");
     }
 
     @Test
@@ -94,9 +97,6 @@ class AnnouncementServiceTest extends ServiceTestSupport {
         assertThat(response.getTitle()).isEqualTo("title");
     }
 
-    @Test
-    void countViews() {
-    }
 
     @Test
     @DisplayName("특정 근무지의 전체 공지사항을 조회한다")
@@ -146,7 +146,9 @@ class AnnouncementServiceTest extends ServiceTestSupport {
 
         announcementService.deleteAnnouncement(announcement.getIdAnnouncement(), mockUser);
 
-        assertThat(announcement.getIsDelAnnouncement()).isTrue();
+        Announcement deletedAnnouncement = announcementRepository.findById(announcement.getIdAnnouncement()).orElse(null);
+
+        assertThat(deletedAnnouncement.getIsDelAnnouncement()).isTrue();
     }
 
     @Test

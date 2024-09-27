@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.AccessDeniedException;
@@ -28,6 +29,7 @@ import static org.mockito.Mockito.*;
 
 
 
+@Transactional
 class UserServiceTest extends ServiceTestSupport {
     @MockBean
     private SmsService smsService;

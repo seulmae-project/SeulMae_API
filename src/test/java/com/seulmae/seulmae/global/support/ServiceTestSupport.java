@@ -23,7 +23,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
-@Transactional // 각 테스트 이후 롤백을 통해 DB 상태를 초기화
 //@ActiveProfiles("test")
 public class ServiceTestSupport {
     @Autowired
