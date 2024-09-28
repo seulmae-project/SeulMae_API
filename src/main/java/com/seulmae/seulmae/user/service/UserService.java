@@ -54,7 +54,8 @@ public class UserService {
     public void createUser(UserSignUpDto userSignUpDto, MultipartFile file) {
 
         checkDuplicatedAccountId(userSignUpDto.getAccountId());
-        checkDuplicatedPhoneNumber(userSignUpDto.getPhoneNumber());
+//        checkDuplicatedPhoneNumber(userSignUpDto.getPhoneNumber());
+        checkDuplicatedNameAndPhoneNumber(userSignUpDto.getName(), userSignUpDto.getPhoneNumber());
         checkPasswordValidation(userSignUpDto.getPassword());
         checkAccountIdValidation(userSignUpDto.getAccountId());
 
@@ -131,9 +132,17 @@ public class UserService {
         }
     }
 
+
+    @Deprecated
     public void checkDuplicatedPhoneNumber(String phoneNumber) {
         if (isDuplicatedPhoneNumber(phoneNumber)) {
             throw new IllegalArgumentException("이미 존재하는 휴대폰번호입니다.");
+        }
+    }
+
+    public void checkDuplicatedNameAndPhoneNumber(String name, String phoneNumber) {
+        if (isDuplicatedNameAndPhoneNumber(name, phoneNumber)) {
+            throw new IllegalArgumentException("가입한 계정이 존재합니다.");
         }
     }
 
@@ -157,6 +166,10 @@ public class UserService {
         return userRepository.existsByPhoneNumber(phoneNumber);
     }
 
+    public boolean isDuplicatedNameAndPhoneNumber(String name, String phoneNumber) {
+        return userRepository.existsByNameAndPhoneNumber(name, phoneNumber);
+    }
+
     public boolean isCorrectAccountId(String accountId) {
         // 길이 체크
         if (accountId.length() < 5) {
@@ -175,7 +188,8 @@ public class UserService {
     public void changePhoneNumber(ChangePhoneNumberRequest request, User user) throws AccessDeniedException {
         User me = findByIdUtil.getUserById(user.getIdUser());
 
-        checkDuplicatedPhoneNumber(request.getPhoneNumber());
+//        checkDuplicatedPhoneNumber(request.getPhoneNumber());
+        checkDuplicatedNameAndPhoneNumber(me.getName(), request.getPhoneNumber());
         me.updatePhoneNumber(request.getPhoneNumber());
 
         userRepository.save(me);
@@ -273,7 +287,8 @@ public class UserService {
          */
         if (request.getSendingType().equals(SmsSendingType.SIGNUP) || request.getSendingType().equals(SmsSendingType.CHANGE_PHONE_NUM)) {
 
-            checkDuplicatedPhoneNumber(request.getPhoneNumber());
+//            checkDuplicatedPhoneNumber(request.getPhoneNumber());
+            checkDuplicatedNameAndPhoneNumber(request.getName(), request.getPhoneNumber());
 
             smsService.sendSMS(request.getPhoneNumber());
 
@@ -284,8 +299,12 @@ public class UserService {
          * 아이디 찾기
          */
         if (request.getSendingType().equals(SmsSendingType.FIND_ACCOUNT_ID)) {
-            if (!isDuplicatedPhoneNumber(request.getPhoneNumber())) {
-                throw new IllegalArgumentException("가입된 휴대폰 번호가 아닙니다.");
+//            if (!isDuplicatedPhoneNumber(request.getPhoneNumber())) {
+//                throw new IllegalArgumentException("가입된 휴대폰 번호가 아닙니다.");
+//            }
+
+            if (!isDuplicatedNameAndPhoneNumber(request.getName(), request.getPhoneNumber())) {
+                throw new IllegalArgumentException("해당 이름과 휴대폰 번호와 일치하는 계정이 존재하지 않습니다.");
             }
 
             smsService.sendSMS(request.getPhoneNumber());

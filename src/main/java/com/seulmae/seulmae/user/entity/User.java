@@ -20,7 +20,9 @@ import java.util.*;
 
 @Entity
 @Getter
-@Table(name = "users")
+@Table(name = "users", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"phone_number", "name"})
+})
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
 @AllArgsConstructor
@@ -34,7 +36,7 @@ public class User implements UserDetails {
     @Column(name = "account_id", unique = true)
     private String accountId;
 
-    @Column(name = "phone_number", unique = true)
+    @Column(name = "phone_number")
     private String phoneNumber;
 
     @Column(name = "password")
