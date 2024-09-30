@@ -42,25 +42,35 @@ public class UserImageService {
 
     @Transactional
     public void updateUserImage(MultipartFile profileImage, User user) {
-        try {
-            String fileName = profileImage.getOriginalFilename();
-            String filePath = userFilePath + user.getIdUser();
+        if (profileImage != null && !profileImage.isEmpty()) {
+            try {
+                String fileName = profileImage.getOriginalFilename();
+                String filePath = userFilePath + user.getIdUser();
+                userImageRepository.findByUser(user)
+                        .ifPresentOrElse(userImage -> {
+
+                                    FileUtil.deleteImage(userImage.getUserImagePath(), userImage.getUserImageName());
+
+                                    userImage.update(fileName, filePath, FileUtil.getFileExtension(profileImage));
+                                },
+                                () -> {
+                                    UserImage newUserImage = new UserImage(user, fileName, filePath, FileUtil.getFileExtension(profileImage));
+                                    user.updateUserImage(newUserImage);
+                                });
+
+                FileUtil.uploadFile(filePath, fileName, profileImage);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
             userImageRepository.findByUser(user)
-                    .ifPresentOrElse(userImage -> {
-
+                    .ifPresent(userImage -> {
                         FileUtil.deleteImage(userImage.getUserImagePath(), userImage.getUserImageName());
-
-                        userImage.update(fileName, filePath, FileUtil.getFileExtension(profileImage));
-                    },
-                            () -> {
-                                UserImage newUserImage = new UserImage(user, fileName, filePath, FileUtil.getFileExtension(profileImage));
-                                user.updateUserImage(newUserImage);
-                            });
-
-            FileUtil.uploadFile(filePath, fileName, profileImage);
-        } catch (Exception e) {
-            e.printStackTrace();
+                        userImageRepository.delete(userImage);
+                        user.updateUserImage(null);
+                    });
         }
+
     }
 
     @Transactional

@@ -35,9 +35,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
-    private final UserImageRepository userImageRepository;
     private final UserWorkplaceRepository userWorkplaceRepository;
-    private final FcmTokenRepository fcmTokenRepository;
 
     private final PasswordEncoder passwordEncoder;
     private final FindByIdUtil findByIdUtil;
@@ -46,9 +44,6 @@ public class UserService {
     private final SmsService smsService;
 
     private final String FILE_ENDPOINT = "/api/users/file";
-//    private final String SIGNUP = "signUp";
-//    private final String FIND_ACCOUNT_ID = "findAccountId";
-//    private final String FIND_PW = "findPassword";
 
     @Transactional
     public void createUser(UserSignUpDto userSignUpDto, MultipartFile file) {
@@ -82,9 +77,7 @@ public class UserService {
         User targetUser = findByIdUtil.getUserById(user.getIdUser());
         targetUser.updateName(updateUserRequest.getName());
 
-        if (file != null && !file.isEmpty()) {
-            userImageService.updateUserImage(file, targetUser);
-        }
+        userImageService.updateUserImage(file, targetUser);
 
         userRepository.save(targetUser);
     }
@@ -201,8 +194,8 @@ public class UserService {
 
         me.deleteUser();
 
-        userImageRepository.findByUser(me)
-                .ifPresent(UserImage::delete);
+//        userImageRepository.findByUser(me)
+//                .ifPresent(UserImage::delete);
 
         userRepository.save(me);
 
@@ -221,26 +214,6 @@ public class UserService {
         }
         return null;
     }
-
-//    public UserProfileResponse getUserProfile(Long id, HttpServletRequest request) {
-//        User user = userRepository.findById(id)
-//                .orElseThrow(() -> new NoSuchElementException("해당 UserId가 존재하지 않습니다."));
-//        List<Workplace> workplaces = userWorkplaceRepository.findWorkplacesByUser(user);
-//
-//        List<UserWorkplaceInfoResponse> userWorkplaceInfoResponses = new ArrayList<>();
-//
-//        for (Workplace workplace : workplaces) {
-//            UserWorkplace userWorkplace = userWorkplaceRepository.findByUserAndWorkplaceAndIsDelUserWorkplaceFalse(user, workplace)
-//                    .orElseThrow(() -> new NoSuchElementException("해당 유저는 해당 근무지 소속이 아닙니다."));
-//
-//            User manger = userWorkplaceRepository.findUserByWorkplaceAndIsManager(workplace, true)
-//                    .orElseThrow(() -> new NoSuchElementException("해당 근무지에 매니저가 존재하지 않습니다."));
-//
-//            userWorkplaceInfoResponses.add(new UserWorkplaceInfoResponse(workplace.getIdWorkPlace(), workplace.getWorkplaceName(), workplace.getAddressVo(), workplace.getWorkplaceName(), manger.getName(), userWorkplace.getIsManager()));
-//        }
-//
-//        return new UserProfileResponse(user.getName(), getUserImageURL(user, request), user.getPhoneNumber(), user.getBirthday(), userWorkplaceInfoResponses);
-//    }
 
     public UserProfileResponse getUserProfile(User user, HttpServletRequest request) {
         User me = userRepository.findById(user.getIdUser())
@@ -267,19 +240,16 @@ public class UserService {
      * sms 보내기 서비스 (보내기 여부를 판단하는 서비스)
      * 0. 보내는 상황
      * - 회원가입
-     * - 기존 db에 유저가 존재해서는 안된다.
-     * - 기존 db에 유저가 존재하는 경우, '해당 휴대폰번호로 가입한 이력이 있습니다. 아이디 찾기를 이용하시기 바랍니다.'
+     *  - 기존 db에 유저가 존재해서는 안된다.
+     *  - 기존 db에 유저가 존재하는 경우, '해당 휴대폰번호로 가입한 이력이 있습니다. 아이디 찾기를 이용하시기 바랍니다.'
      * - 아이디 찾기
-     * - 기존 db에 유저가 존재해야 한다.
-     * - 기존 db에 휴대폰 번호에 대한 유저가 존재하지 않을 경우, sms를 보내면 안된다.
+     *  - 기존 db에 유저가 존재해야 한다.
+     *  - 기존 db에 휴대폰 번호에 대한 유저가 존재하지 않을 경우, sms를 보내면 안된다.
      * - 비밀번호 찾기
-     * - 아이디와 휴대폰번호가 동시에 존재하는 유저가 db에 존재해야 한다.
-     * - 만약 일치하는 데이터가 없을 경우, sms를 보내면 안된다.
+     *  - 아이디와 휴대폰번호가 동시에 존재하는 유저가 db에 존재해야 한다.
+     *  - 만약 일치하는 데이터가 없을 경우, sms를 보내면 안된다.
      * - 휴대폰 번호 변경
-     * - 새로운 휴대폰 번호로 변경하는 거니까, 새로운 휴대폰 번호를 입력할테고, ....
-     * - 그 휴대폰 번호가 기존 db에 존재하는지 확인하고, 없으면
-     * - auth 코드를 보내고,
-     * - 확인되면,
+     *  - 이름 + 새로운 휴대폰번호에 해당하는 게 존재하는지 확인만 하면됨.
      */
     public FindAuthResponse sendSMSCertification(SmsSendingRequest request) {
         /**
