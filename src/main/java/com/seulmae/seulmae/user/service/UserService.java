@@ -93,88 +93,38 @@ public class UserService {
         user.updateAdditionalInfo(request.getName(), request.getIsMale(), request.getBirthday());
         user.authorizeUser();
 
-        if (file != null && !file.isEmpty()) {
-            userImageService.updateUserImage(file, user);
-        }
+        userImageService.updateUserImage(file, user);
 
         userRepository.save(user);
     }
 
-    public FindAuthResponse getAccountId(String phoneNumber) {
-        String rePhoneNumber = phoneNumber.replace("-", "");
-        User user = userRepository.findByPhoneNumber(rePhoneNumber)
-                .orElseThrow(() -> new NoSuchElementException("해당 휴대폰번호로 가입한 이력이 없습니다."));
-        return new FindAuthResponse(true, user.getAccountId());
-    }
-
-    @Transactional
-    public void changePassword(ChangePasswordRequest request) {
-        checkPasswordValidation(request.getPassword());
-
-        User user = userRepository.findByAccountId(request.getAccountId())
-                .orElseThrow(() -> new NoSuchElementException("해당 아이디와 일치하는 유저가 존재하지 않습니다."));
-
-        user.changePassword(passwordEncoder, request.getPassword());
-        userRepository.save(user);
-    }
-
-
-    public void checkDuplicatedAccountId(String accountId) {
-        if (isDuplicatedAccountId(accountId)) {
-            throw new IllegalArgumentException("이미 존재하는 아이디입니다.");
+    public String getUserImageURL(User user, HttpServletRequest request) {
+        if (user.getUserImage() != null) {
+            Long userImageId = user.getUserImage().getIdUserImage();
+            return userImageId != null ? UrlUtil.getBaseUrl(request) + FILE_ENDPOINT + "?userImageId=" + userImageId : null;
         }
+        return null;
     }
 
+    public UserProfileResponse getUserProfile(User user, HttpServletRequest request) {
+        User me = userRepository.findById(user.getIdUser())
+                .orElseThrow(() -> new NoSuchElementException("해당 User가 존재하지 않습니다."));
 
-    @Deprecated
-    public void checkDuplicatedPhoneNumber(String phoneNumber) {
-        if (isDuplicatedPhoneNumber(phoneNumber)) {
-            throw new IllegalArgumentException("이미 존재하는 휴대폰번호입니다.");
-        }
-    }
+        List<Workplace> workplaces = userWorkplaceRepository.findWorkplacesByUser(me);
 
-    public void checkDuplicatedNameAndPhoneNumber(String name, String phoneNumber) {
-        if (isDuplicatedNameAndPhoneNumber(name, phoneNumber)) {
-            throw new IllegalArgumentException("가입한 계정이 존재합니다.");
-        }
-    }
+        List<UserWorkplaceInfoResponse> userWorkplaceInfoResponses = new ArrayList<>();
 
-    public void checkPasswordValidation(String password) {
-        if (!PasswordUtil.isValidPassword(password)) {
-            throw new InvalidPasswordException("비밀번호로 영문, 숫자, 특수문자 포함 8자 이상을 입력해주세요.");
-        }
-    }
+        for (Workplace workplace : workplaces) {
+            UserWorkplace userWorkplace = userWorkplaceRepository.findByUserAndWorkplaceAndIsDelUserWorkplaceFalse(user, workplace)
+                    .orElseThrow(() -> new NoSuchElementException("해당 유저는 해당 근무지 소속이 아닙니다."));
 
-    public void checkAccountIdValidation(String accountId) {
-        if (!isCorrectAccountId(accountId)) {
-            throw new InvalidAccountIdException("아이디로 영문 또는 숫자 5자 이상을 입력해주세요.");
-        }
-    }
+            User manger = userWorkplaceRepository.findUserByWorkplaceAndIsManager(workplace, true)
+                    .orElseThrow(() -> new NoSuchElementException("해당 근무지에 매니저가 존재하지 않습니다."));
 
-    public boolean isDuplicatedAccountId(String accountId) {
-        return userRepository.existsByAccountId(accountId);
-    }
-
-    public boolean isDuplicatedPhoneNumber(String phoneNumber) {
-        return userRepository.existsByPhoneNumber(phoneNumber);
-    }
-
-    public boolean isDuplicatedNameAndPhoneNumber(String name, String phoneNumber) {
-        return userRepository.existsByNameAndPhoneNumber(name, phoneNumber);
-    }
-
-    public boolean isCorrectAccountId(String accountId) {
-        // 길이 체크
-        if (accountId.length() < 5) {
-            return false;
+            userWorkplaceInfoResponses.add(new UserWorkplaceInfoResponse(workplace.getIdWorkPlace(), workplace.getWorkplaceName(), workplace.getAddressVo(), workplace.getWorkplaceName(), manger.getName(), userWorkplace.getIsManager()));
         }
 
-        // 영어와 숫자로만 이루어져 있는지 체크 (^[a-zA-Z0-9]*$)
-        if (!accountId.matches("^[a-zA-Z0-9]*$")) {
-            return false;
-        }
-
-        return true;
+        return new UserProfileResponse(me.getName(), getUserImageURL(me, request), me.getPhoneNumber(), me.getBirthday(), userWorkplaceInfoResponses);
     }
 
     @Transactional
@@ -207,49 +157,21 @@ public class UserService {
 
     }
 
-    public String getUserImageURL(User user, HttpServletRequest request) {
-        if (user.getUserImage() != null) {
-            Long userImageId = user.getUserImage().getIdUserImage();
-            return userImageId != null ? UrlUtil.getBaseUrl(request) + FILE_ENDPOINT + "?userImageId=" + userImageId : null;
-        }
-        return null;
-    }
-
-    public UserProfileResponse getUserProfile(User user, HttpServletRequest request) {
-        User me = userRepository.findById(user.getIdUser())
-                .orElseThrow(() -> new NoSuchElementException("해당 User가 존재하지 않습니다."));
-
-        List<Workplace> workplaces = userWorkplaceRepository.findWorkplacesByUser(me);
-
-        List<UserWorkplaceInfoResponse> userWorkplaceInfoResponses = new ArrayList<>();
-
-        for (Workplace workplace : workplaces) {
-            UserWorkplace userWorkplace = userWorkplaceRepository.findByUserAndWorkplaceAndIsDelUserWorkplaceFalse(user, workplace)
-                    .orElseThrow(() -> new NoSuchElementException("해당 유저는 해당 근무지 소속이 아닙니다."));
-
-            User manger = userWorkplaceRepository.findUserByWorkplaceAndIsManager(workplace, true)
-                    .orElseThrow(() -> new NoSuchElementException("해당 근무지에 매니저가 존재하지 않습니다."));
-
-            userWorkplaceInfoResponses.add(new UserWorkplaceInfoResponse(workplace.getIdWorkPlace(), workplace.getWorkplaceName(), workplace.getAddressVo(), workplace.getWorkplaceName(), manger.getName(), userWorkplace.getIsManager()));
-        }
-
-        return new UserProfileResponse(me.getName(), getUserImageURL(me, request), me.getPhoneNumber(), me.getBirthday(), userWorkplaceInfoResponses);
-    }
 
     /**
      * sms 보내기 서비스 (보내기 여부를 판단하는 서비스)
      * 0. 보내는 상황
      * - 회원가입
-     *  - 기존 db에 유저가 존재해서는 안된다.
-     *  - 기존 db에 유저가 존재하는 경우, '해당 휴대폰번호로 가입한 이력이 있습니다. 아이디 찾기를 이용하시기 바랍니다.'
+     * - 기존 db에 유저가 존재해서는 안된다.
+     * - 기존 db에 유저가 존재하는 경우, '해당 휴대폰번호로 가입한 이력이 있습니다. 아이디 찾기를 이용하시기 바랍니다.'
      * - 아이디 찾기
-     *  - 기존 db에 유저가 존재해야 한다.
-     *  - 기존 db에 휴대폰 번호에 대한 유저가 존재하지 않을 경우, sms를 보내면 안된다.
+     * - 기존 db에 유저가 존재해야 한다.
+     * - 기존 db에 휴대폰 번호에 대한 유저가 존재하지 않을 경우, sms를 보내면 안된다.
      * - 비밀번호 찾기
-     *  - 아이디와 휴대폰번호가 동시에 존재하는 유저가 db에 존재해야 한다.
-     *  - 만약 일치하는 데이터가 없을 경우, sms를 보내면 안된다.
+     * - 아이디와 휴대폰번호가 동시에 존재하는 유저가 db에 존재해야 한다.
+     * - 만약 일치하는 데이터가 없을 경우, sms를 보내면 안된다.
      * - 휴대폰 번호 변경
-     *  - 이름 + 새로운 휴대폰번호에 해당하는 게 존재하는지 확인만 하면됨.
+     * - 이름 + 새로운 휴대폰번호에 해당하는 게 존재하는지 확인만 하면됨.
      */
     public FindAuthResponse sendSMSCertification(SmsSendingRequest request) {
         /**
@@ -339,4 +261,83 @@ public class UserService {
         throw new IllegalArgumentException(request.getSendingType() + " 타입은 존재하지 않는 타입입니다.");
 
     }
+
+    public FindAuthResponse getAccountId(String phoneNumber) {
+        String rePhoneNumber = phoneNumber.replace("-", "");
+        User user = userRepository.findByPhoneNumber(rePhoneNumber)
+                .orElseThrow(() -> new NoSuchElementException("해당 휴대폰번호로 가입한 이력이 없습니다."));
+        return new FindAuthResponse(true, user.getAccountId());
+    }
+
+    @Transactional
+    public void changePassword(ChangePasswordRequest request) {
+        checkPasswordValidation(request.getPassword());
+
+        User user = userRepository.findByAccountId(request.getAccountId())
+                .orElseThrow(() -> new NoSuchElementException("해당 아이디와 일치하는 유저가 존재하지 않습니다."));
+
+        user.changePassword(passwordEncoder, request.getPassword());
+        userRepository.save(user);
+    }
+
+
+    public void checkDuplicatedAccountId(String accountId) {
+        if (isDuplicatedAccountId(accountId)) {
+            throw new IllegalArgumentException("이미 존재하는 아이디입니다.");
+        }
+    }
+
+
+    @Deprecated
+    public void checkDuplicatedPhoneNumber(String phoneNumber) {
+        if (isDuplicatedPhoneNumber(phoneNumber)) {
+            throw new IllegalArgumentException("이미 존재하는 휴대폰번호입니다.");
+        }
+    }
+
+    public void checkDuplicatedNameAndPhoneNumber(String name, String phoneNumber) {
+        if (isDuplicatedNameAndPhoneNumber(name, phoneNumber)) {
+            throw new IllegalArgumentException("가입한 계정이 존재합니다.");
+        }
+    }
+
+    public void checkPasswordValidation(String password) {
+        if (!PasswordUtil.isValidPassword(password)) {
+            throw new InvalidPasswordException("비밀번호로 영문, 숫자, 특수문자 포함 8자 이상을 입력해주세요.");
+        }
+    }
+
+    public void checkAccountIdValidation(String accountId) {
+        if (!isCorrectAccountId(accountId)) {
+            throw new InvalidAccountIdException("아이디로 영문 또는 숫자 5자 이상을 입력해주세요.");
+        }
+    }
+
+    public boolean isDuplicatedAccountId(String accountId) {
+        return userRepository.existsByAccountId(accountId);
+    }
+
+    public boolean isDuplicatedPhoneNumber(String phoneNumber) {
+        return userRepository.existsByPhoneNumber(phoneNumber);
+    }
+
+    public boolean isDuplicatedNameAndPhoneNumber(String name, String phoneNumber) {
+        return userRepository.existsByNameAndPhoneNumber(name, phoneNumber);
+    }
+
+    public boolean isCorrectAccountId(String accountId) {
+        // 길이 체크
+        if (accountId.length() < 5) {
+            return false;
+        }
+
+        // 영어와 숫자로만 이루어져 있는지 체크 (^[a-zA-Z0-9]*$)
+        if (!accountId.matches("^[a-zA-Z0-9]*$")) {
+            return false;
+        }
+
+        return true;
+    }
+
+
 }
