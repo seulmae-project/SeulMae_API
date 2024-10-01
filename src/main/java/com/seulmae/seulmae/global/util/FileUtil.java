@@ -124,12 +124,33 @@ public class FileUtil {
         try {
             URL urlObj = new URL(url);
             String path = urlObj.getPath();
+            /** 수정한 부분 **/
+            String query = urlObj.getQuery();
+
+            if (query != null && query.contains("fname=")) {
+                String fname = extractFname(query);
+                System.out.println("fname = " + fname);
+                return fname.substring(fname.lastIndexOf('/') + 1);
+            }
+
+            /** 수정 마지막 부분 **/
+
             return path.substring(path.lastIndexOf('/') + 1);
         } catch (MalformedURLException e) {
             throw new RuntimeException("Invalid URL: " + url, e);
         }
     }
 
+    private static String extractFname(String url) {
+        String keyword = "fname=";
+        int startIndex = url.indexOf(keyword);
+
+        if (startIndex != -1) { // fname=이 존재하는 경우
+            return url.substring(startIndex + keyword.length());
+        } else {
+            throw new RuntimeException("URL에 fname 파라미터가 없습니다.");
+        }
+    }
 
     private static String checkMimeType(File file, String path) {
         String mimeType = getMimeType(file);

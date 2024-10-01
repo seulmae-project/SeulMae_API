@@ -45,7 +45,7 @@ public class AppleService {
         PublicKeysFromOauth applePublicKeys = appleClient.getApplePublicKeys();
         // 임시 주석 처리(클라이언트 id를 받을 수 없는 상태)
 //        idTokenValidator.validatePayloadClaims(idToken, APPLE_ISS, APPLE_AUD);
-        Map<String, Object> claims = new HashMap<>(idTokenValidator.extractClaims(idToken, applePublicKeys));
+        Map<String, Object> claims = new HashMap<>(idTokenValidator.extractClaims(idToken, APPLE_AUD, APPLE_ISS, applePublicKeys));
 
         SocialType socialType = socialLoginService.getSocialType(provider);
         OAuthAttributesDto extractAttributes = OAuthAttributesDto.of(socialType, claims.get(CLAIM_ID).toString(), claims);

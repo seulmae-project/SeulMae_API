@@ -1,35 +1,18 @@
 package com.seulmae.seulmae.user.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.seulmae.seulmae.global.config.oauth2.OICDPublicKey;
-import com.seulmae.seulmae.global.config.oauth2.kakao.KakaoOICDPublicKey;
 import com.seulmae.seulmae.global.config.oauth2.util.IdTokenValidator;
 import com.seulmae.seulmae.user.controller.KakaoClient;
-import com.seulmae.seulmae.user.dto.request.KakaoPublicKeysFromKaKao;
 import com.seulmae.seulmae.user.dto.request.OAuthAttributesDto;
 import com.seulmae.seulmae.user.dto.request.PublicKeysFromOauth;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.user.enums.SocialType;
-import io.jsonwebtoken.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
-import java.math.BigInteger;
-import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.RSAPublicKeySpec;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.apache.http.message.BasicLineParser.parseHeader;
 
 @Service
 @RequiredArgsConstructor
@@ -61,8 +44,7 @@ public class KakaoService {
      */
     public User getUserInfo(String idToken, String provider) {
         PublicKeysFromOauth kakaoPublicKeys = kakaoClient.getKakaoOICDOpenKeys();
-        idTokenValidator.validatePayloadClaims(idToken, KAKAO_ISS, KAKAO_AUD);
-        Map<String, Object> claims = new HashMap<>(idTokenValidator.extractClaims(idToken, kakaoPublicKeys));
+        Map<String, Object> claims = new HashMap<>(idTokenValidator.extractClaims(idToken, KAKAO_AUD, KAKAO_ISS, kakaoPublicKeys));
         SocialType socialType = socialLoginService.getSocialType(provider);
         OAuthAttributesDto extractAttributes = OAuthAttributesDto.of(socialType, claims.get(CLAIM_ID).toString(), claims);
 

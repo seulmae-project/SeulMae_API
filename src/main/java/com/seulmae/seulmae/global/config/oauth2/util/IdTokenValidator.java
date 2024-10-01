@@ -4,15 +4,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.seulmae.seulmae.global.config.oauth2.OICDPublicKey;
-import com.seulmae.seulmae.user.controller.KakaoClient;
 import com.seulmae.seulmae.user.dto.request.PublicKeysFromOauth;
-import com.seulmae.seulmae.user.service.SocialLoginService;
 import io.jsonwebtoken.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.Base64;
 import java.util.Map;
@@ -24,9 +20,6 @@ public class IdTokenValidator {
     private static final String IDENTITY_TOKEN_VALUE_DELIMITER = "\\.";
     private static final int HEADER_INDEX = 0;
     private static final int PAYLOAD_INDEX = 1;
-    private static final String KEY_ID_HEADER = "kid";
-    private static final int POSITIVE_SIGN_NUMBER = 1;
-
 
 
     private final ObjectMapper objectMapper;
@@ -41,32 +34,6 @@ public class IdTokenValidator {
      * 3-3. exp: 현재 UNIX 타임스탬프보다 큰 값 필요(ID 토큰 만료 여부 확인)
      * 3-4. nonce: 카카오 로그인 요청시 전달한 값과 일치해야 함
      */
-    private Map<String, String> parsePayload(final String idToken) {
-        try {
-            final String encodedPayload = idToken.split(IDENTITY_TOKEN_VALUE_DELIMITER)[PAYLOAD_INDEX];
-            final String decodedPayload = new String(Base64.getUrlDecoder().decode(encodedPayload));
-            return objectMapper.readValue(decodedPayload, Map.class);
-        } catch (JsonMappingException e) {
-            throw new RuntimeException("idToken 값이 jwt 형식인지, 값이 정상적인지 확인해주세요.");
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("디코딩된 페이로드를 Map 형태로 분류할 수 없습니다. 페이로드를 확인해주세요.");
-        }
-    }
-
-    public Jwt<Header, Claims> validatePayloadClaims(String idToken, String iss, String aud) {
-        try {
-            return Jwts.parser()
-                    .requireAudience(aud)
-                    .requireIssuer(iss)
-                    .build()
-                    .parseUnsecuredClaims(parsePayload(idToken).get("decodedPayload"));
-        } catch (ExpiredJwtException e) {
-            throw new RuntimeException("ID 토큰이 만료됐습니다");
-        } catch (Exception e) {
-            log.error(e.toString());
-            throw new RuntimeException("유효하지 않는 ID 토큰입니다");
-        }
-    }
 
     /**
      * 서명 검증
@@ -90,19 +57,45 @@ public class IdTokenValidator {
     }
 
     // 공개키로 토큰 검증을 시도하고 클레임을 추출한다.
-    public Claims extractClaims(String idToken, PublicKeysFromOauth<OICDPublicKey> publicKeys) {
+    public Claims extractClaims(String idToken, String aud, String iss, PublicKeysFromOauth<OICDPublicKey> publicKeys) {
         try {
             return Jwts.parser()
                     .verifyWith(PublicKeyProvider.generate(parseHeader(idToken), publicKeys))
+                    .requireAudience(aud)
+                    .requireIssuer(iss)
                     .build()
                     .parseSignedClaims(idToken)
                     .getPayload();
         } catch (UnsupportedJwtException e) {
-            throw new UnsupportedJwtException("지원되지 않는 jwt 타입");
+            throw new UnsupportedJwtException("지원되지 않는 JWT 타입입니다");
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("비어있는 jwt");
+            throw new IllegalArgumentException("비어있는 JWT 입니다");
+        } catch (ExpiredJwtException e) {
+            throw new RuntimeException("ID 토큰이 만료됐습니다");
         } catch (JwtException e) {
-            throw new JwtException("jwt 검증 or 분석 오류");
+            throw new JwtException("JWT 검증 또는 분석 오류입니다");
         }
     }
+
+    @Deprecated
+    private String parsePayload(final String idToken) {
+        final String encodedPayload = idToken.split(IDENTITY_TOKEN_VALUE_DELIMITER)[PAYLOAD_INDEX];
+        final String decodedPayload = new String(Base64.getUrlDecoder().decode(encodedPayload));
+        return decodedPayload;
+    }
+
+    //    public void validatePayloadClaims(String idToken, String iss, String aud) {
+//        try {
+//            Jwts.parser()
+//                    .requireAudience(aud)
+//                    .requireIssuer(iss)
+//                    .build()
+//                    .parseSignedClaims(getUnsignedToken(idToken));
+//        } catch (ExpiredJwtException e) {
+//            throw new RuntimeException("ID 토큰이 만료됐습니다");
+//        } catch (Exception e) {
+//            log.error(e.toString());
+//            throw new RuntimeException("유효하지 않는 ID 토큰입니다");
+//        }
+//    }
 }
