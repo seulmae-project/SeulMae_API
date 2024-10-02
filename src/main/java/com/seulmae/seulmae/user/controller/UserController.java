@@ -2,15 +2,19 @@ package com.seulmae.seulmae.user.controller;
 
 import com.seulmae.seulmae.global.util.ResponseUtil;
 import com.seulmae.seulmae.global.util.enums.ErrorCode;
+import com.seulmae.seulmae.global.util.enums.ErrorResponse;
 import com.seulmae.seulmae.global.util.enums.SuccessCode;
+import com.seulmae.seulmae.global.util.enums.SuccessResponse;
 import com.seulmae.seulmae.user.dto.request.*;
 import com.seulmae.seulmae.user.dto.response.AccountDuplicatedResponse;
 import com.seulmae.seulmae.user.dto.response.FindAuthResponse;
 import com.seulmae.seulmae.user.dto.response.UserProfileResponse;
 import com.seulmae.seulmae.user.entity.User;
+import com.seulmae.seulmae.user.service.SmsService;
 import com.seulmae.seulmae.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -47,20 +51,18 @@ public class UserController {
     /**
      * 프로필 수정
      *
-     * @param id
      * @param updateUserRequest
      * @param file
      * @param user
      * @return
      */
     @PutMapping("")
-    public ResponseEntity<?> updateProfile(@RequestParam Long id,
-                                           @RequestPart UpdateUserRequest updateUserRequest,
+    public ResponseEntity<?> updateProfile(@RequestPart UpdateUserRequest updateUserRequest,
                                            @RequestPart(required = false, name = "file") MultipartFile file,
                                            @AuthenticationPrincipal User user) {
 
         try {
-            userService.updateUser(id, user, updateUserRequest, file);
+            userService.updateUser(user, updateUserRequest, file);
             return ResponseUtil.createSuccessResponse(SuccessCode.UPDATE_SUCCESS);
         } catch (AccessDeniedException e) {
             return ResponseUtil.createErrorResponse(ErrorCode.FORBIDDEN_ERROR, e.getMessage());
@@ -71,28 +73,43 @@ public class UserController {
 
     /**
      * 유저 프로필 단일 조회
-     *
-     * @param id
-     * @param request
-     * @return
      */
     @GetMapping("")
-    public ResponseEntity<?> getUserProfile(@RequestParam Long id,
+    public ResponseEntity<?> getUserProfile(@AuthenticationPrincipal User user,
                                             HttpServletRequest request) {
         try {
-            UserProfileResponse result = userService.getUserProfile(id, request);
+            UserProfileResponse result = userService.getUserProfile(user, request);
             return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, result);
         } catch (Exception e) {
             return ResponseUtil.handleException(e);
         }
     }
 
-    @GetMapping("my-profile")
-    public ResponseEntity<?> getMyProfile(@AuthenticationPrincipal User user,
-                                            HttpServletRequest request) {
+//    @GetMapping("")
+//    public ResponseEntity<?> getUserProfile(@RequestParam Long id,
+//                                            HttpServletRequest request) {
+//        try {
+//            UserProfileResponse result = userService.getUserProfile(id, request);
+//            return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, result);
+//        } catch (Exception e) {
+//            return ResponseUtil.handleException(e);
+//        }
+//    }
+
+
+
+    /**
+     * 회원탈퇴
+     * @param user
+     * @return
+     */
+    @DeleteMapping("")
+    public ResponseEntity<?> deleteUser(@AuthenticationPrincipal User user) {
         try {
-            UserProfileResponse result = userService.getMyProfile(user, request);
-            return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, result);
+            userService.deleteUser(user);
+            return ResponseUtil.createSuccessResponse(SuccessCode.DELETE_SUCCESS);
+        } catch (AccessDeniedException e) {
+            return ResponseUtil.createErrorResponse(ErrorCode.UNAUTHORIZED, e.getMessage());
         } catch (Exception e) {
             return ResponseUtil.handleException(e);
         }
@@ -116,6 +133,21 @@ public class UserController {
     }
 
     /**
+     * 휴대폰 번호 변경 관련 인증번호 신청
+     */
+
+    @PostMapping("/sms-certification/send/phone")
+    public ResponseEntity<?> sendSMS(@RequestBody SmsSendingRequest request,
+                                     @AuthenticationPrincipal User user) {
+        try {
+            FindAuthResponse result = userService.sendSMSCertification(request, user);
+            return ResponseUtil.createSuccessResponse(SuccessCode.SEND_SMS_SUCCESS, result);
+        } catch (Exception e) {
+            return ResponseUtil.handleException(e);
+        }
+    }
+
+    /**
      * 휴대폰 인증번호 확인
      *
      * @param request
@@ -130,6 +162,21 @@ public class UserController {
             return ResponseUtil.handleException(e);
         }
     }
+
+    /**
+     * 휴대폰 번호 변경 관련 인증번호 확인
+     */
+    @PostMapping("/sms-certification/confirm/phone")
+    public ResponseEntity<?> verifySMS(@RequestBody SmsCertificationRequest request,
+                                       @AuthenticationPrincipal User user) {
+        try {
+            FindAuthResponse result = userService.confirmSMSCertification(request, user);
+            return ResponseUtil.createSuccessResponse(SuccessCode.VERIFY_SMS_SUCCESS, result);
+        } catch (Exception e) {
+            return ResponseUtil.handleException(e);
+        }
+    }
+
 
     /**
      * 소셜로그인 추가 정보 업데이트
@@ -185,39 +232,17 @@ public class UserController {
     }
 
     /**
-     * 회원탈퇴
-     *
-     * @param id
-     * @param user
-     * @return
-     */
-    @DeleteMapping("")
-    public ResponseEntity<?> deleteUser(@RequestParam Long id,
-                                        @AuthenticationPrincipal User user) {
-        try {
-            userService.deleteUser(id, user);
-            return ResponseUtil.createSuccessResponse(SuccessCode.DELETE_SUCCESS);
-        } catch (AccessDeniedException e) {
-            return ResponseUtil.createErrorResponse(ErrorCode.FORBIDDEN_ERROR, e.getMessage());
-        } catch (Exception e) {
-            return ResponseUtil.handleException(e);
-        }
-    }
-
-    /**
      * 휴대폰 번호 변경
      *
-     * @param id
      * @param request
      * @param user
      * @return
      */
     @PutMapping("/phone")
-    public ResponseEntity<?> changePhoneNumber(@RequestParam Long id,
-                                               @RequestBody ChangePhoneNumberRequest request,
+    public ResponseEntity<?> changePhoneNumber(@RequestBody ChangePhoneNumberRequest request,
                                                @AuthenticationPrincipal User user) {
         try {
-            userService.changePhoneNumber(id, request, user);
+            userService.changePhoneNumber(request, user);
             return ResponseUtil.createSuccessResponse(SuccessCode.UPDATE_SUCCESS);
         } catch (AccessDeniedException e) {
             return ResponseUtil.createErrorResponse(ErrorCode.UNAUTHORIZED, e.getMessage());

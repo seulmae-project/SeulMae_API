@@ -33,7 +33,7 @@ jobs:
           mkdir -p ./src/main/resources/yml
           cd ./src/main/resources/yml
           touch ./application-secret.yml
-          echo "${{ secrets.SECRET_FILE }}"> ./application-secret.yml
+          echo "${{ secrets.SECRET_FILE }}" | base64 --decode > ./application-secret.yml
 
       - name: Make firebase.json
         run: |

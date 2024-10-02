@@ -1,6 +1,6 @@
 package com.seulmae.seulmae.user.repository;
 
-import com.seulmae.seulmae.user.SocialType;
+import com.seulmae.seulmae.user.enums.SocialType;
 import com.seulmae.seulmae.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -11,7 +11,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     boolean existsByPhoneNumber(String phoneNumber);
 
+    boolean existsByNameAndPhoneNumber(String name, String phoneNumber);
+
     boolean existsByAccountIdAndPhoneNumber(String accountId, String phoneNumber);
+
+    boolean existsByAccountIdAndIsDelUserTrue(String accountId);
 
     Optional<User> findByAccountId(String accountId);
 

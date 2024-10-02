@@ -1,6 +1,6 @@
 package com.seulmae.seulmae.user.dto.request;
 
-import lombok.AllArgsConstructor;
+import com.seulmae.seulmae.user.enums.SmsSendingType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -8,9 +8,9 @@ import lombok.Setter;
 @Getter
 @NoArgsConstructor
 public class SmsSendingRequest {
-    private String sendingType;
+    private SmsSendingType sendingType;
+    private String name;
     private String phoneNumber;
-    private String accountId;
 
     public SmsSendingRequest(String sendingType, String phoneNumber) {
         this.sendingType = sendingType;

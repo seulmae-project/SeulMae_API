@@ -87,6 +87,7 @@ public class SocialLoginAuthenticationFilter extends AbstractAuthenticationProce
 
         Map<String, Object> additionalDetails = new HashMap<>();
         additionalDetails.put(FCM_TOKEN_KEY, fcmToken);
+        additionalDetails.put(PROVIDER_KEY, provider);
         authRequest.setDetails(additionalDetails);
 
         return this.getAuthenticationManager().authenticate(authRequest);

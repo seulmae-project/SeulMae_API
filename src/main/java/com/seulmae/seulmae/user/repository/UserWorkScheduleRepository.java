@@ -18,4 +18,9 @@ public interface UserWorkScheduleRepository extends JpaRepository<UserWorkSchedu
             "WHERE uws.user = :user " +
             "AND uws.workSchedule.workplace = :workplace ")
     Optional<UserWorkSchedule> findByUserAndWorkplace(User user, Workplace workplace);
+
+    @Query("SELECT uws FROM UserWorkSchedule uws " +
+            "WHERE uws.user = :user " +
+            "AND uws.workSchedule.workplace = :workplace")
+    List<UserWorkSchedule> findAllByUserAndWorkplace(User user, Workplace workplace);
 }

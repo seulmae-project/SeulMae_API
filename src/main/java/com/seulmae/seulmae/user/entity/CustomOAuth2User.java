@@ -1,6 +1,6 @@
 //package com.seulmae.seulmae.user.entity;
 //
-//import com.seulmae.seulmae.user.Role;
+//import com.seulmae.seulmae.user.enums.Role;
 //import lombok.Getter;
 //import org.springframework.security.core.GrantedAuthority;
 //import org.springframework.security.oauth2.core.user.DefaultOAuth2User;

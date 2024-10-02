@@ -1,9 +1,8 @@
 package com.seulmae.seulmae.global.config.oauth2.handler;
 
 import com.seulmae.seulmae.notification.entity.FcmToken;
-import com.seulmae.seulmae.user.Role;
+import com.seulmae.seulmae.user.enums.Role;
 import com.seulmae.seulmae.user.entity.User;
-import com.seulmae.seulmae.user.entity.UserWorkplace;
 import com.seulmae.seulmae.user.repository.UserRepository;
 import com.seulmae.seulmae.user.repository.UserWorkplaceRepository;
 import com.seulmae.seulmae.user.service.JwtService;
@@ -19,7 +18,6 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationSu
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 @Slf4j

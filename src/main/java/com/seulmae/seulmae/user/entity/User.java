@@ -1,8 +1,8 @@
 package com.seulmae.seulmae.user.entity;
 
 import com.seulmae.seulmae.notification.entity.FcmToken;
-import com.seulmae.seulmae.user.Role;
-import com.seulmae.seulmae.user.SocialType;
+import com.seulmae.seulmae.user.enums.Role;
+import com.seulmae.seulmae.user.enums.SocialType;
 import com.seulmae.seulmae.global.exception.MatchPasswordException;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Pattern;
@@ -20,8 +20,9 @@ import java.util.*;
 
 @Entity
 @Getter
-@Setter
-@Table(name = "users")
+@Table(name = "users", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"phone_number", "name"})
+})
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
 @AllArgsConstructor
@@ -35,7 +36,7 @@ public class User implements UserDetails {
     @Column(name = "account_id", unique = true)
     private String accountId;
 
-    @Column(name = "phone_number", unique = true)
+    @Column(name = "phone_number")
     private String phoneNumber;
 
     @Column(name = "password")
@@ -68,6 +69,7 @@ public class User implements UserDetails {
     @Column(name = "refresh_token")
     private String refreshToken;
 
+    @Builder.Default
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<FcmToken> fcmTokens = new HashSet<>();
 
@@ -199,11 +201,9 @@ public class User implements UserDetails {
     }
 
     /** 유효성 검사 **/
-
-
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("user"));
+    public Collection<GrantedAuthority> getAuthorities() {
+        return Collections.singleton(new SimpleGrantedAuthority("ROLE_" + this.authorityRole.name()));
     }
 
     @Override

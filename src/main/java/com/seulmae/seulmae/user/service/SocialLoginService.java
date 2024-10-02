@@ -3,11 +3,10 @@ package com.seulmae.seulmae.user.service;
 import com.seulmae.seulmae.global.config.oauth2.userInfo.OAuth2UserInfo;
 import com.seulmae.seulmae.global.util.FileUtil;
 import com.seulmae.seulmae.global.util.PasswordUtil;
-import com.seulmae.seulmae.user.SocialType;
+import com.seulmae.seulmae.user.enums.SocialType;
 import com.seulmae.seulmae.user.dto.request.OAuthAttributesDto;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.user.entity.UserImage;
-import com.seulmae.seulmae.user.repository.UserImageRepository;
 import com.seulmae.seulmae.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +15,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+
+import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +35,10 @@ public class SocialLoginService implements UserDetailsService {
     public UserDetails loadUserByUsername(String accountId) throws UsernameNotFoundException {
         User user = userRepository.findByAccountId(accountId)
                 .orElseThrow(() -> new UsernameNotFoundException("해당 아이디가 존재하지 않습니다."));
+
+        if (isDeletedUser(accountId)) {
+            throw new NoSuchElementException("탈퇴한 유저입니다");
+        }
 
         return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getAccountId())
@@ -81,5 +86,7 @@ public class SocialLoginService implements UserDetailsService {
         }
     }
 
-
+    private boolean isDeletedUser(String accountId) {
+        return userRepository.existsByAccountIdAndIsDelUserTrue(accountId);
+    }
 }

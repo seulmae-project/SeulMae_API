@@ -25,7 +25,9 @@ public class SocialLoginFailureHandler extends SimpleUrlAuthenticationFailureHan
         response.setContentType("application/json;charset=UTF-8");
         response.getWriter()
                 .write(
-                        objectMapper.writeValueAsString(ResponseUtil.createErrorResponse(ErrorCode.UNAUTHORIZED, exception.getMessage()))
+                        objectMapper.writeValueAsString(
+                                ResponseUtil.createErrorResponse(ErrorCode.UNAUTHORIZED, exception.getMessage()).getBody()
+                        )
                 );
         log.info("소셜 로그인 실패: " + exception.getMessage());
     }

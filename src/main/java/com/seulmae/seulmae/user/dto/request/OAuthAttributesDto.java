@@ -3,15 +3,13 @@ package com.seulmae.seulmae.user.dto.request;
 import com.seulmae.seulmae.global.config.oauth2.userInfo.AppleOAuth2UserInfo;
 import com.seulmae.seulmae.global.config.oauth2.userInfo.KakaoOAuth2UserInfo;
 import com.seulmae.seulmae.global.config.oauth2.userInfo.OAuth2UserInfo;
-import com.seulmae.seulmae.user.Role;
-import com.seulmae.seulmae.user.SocialType;
+import com.seulmae.seulmae.user.enums.Role;
+import com.seulmae.seulmae.user.enums.SocialType;
 import com.seulmae.seulmae.user.entity.User;
-import com.seulmae.seulmae.user.entity.UserImage;
 import lombok.Builder;
 import lombok.Getter;
 
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * 추후 소셜 종류가 추가될 경우, 소셜별로 데이터를 받는 객체를 분기처리하는 DTO 클래스

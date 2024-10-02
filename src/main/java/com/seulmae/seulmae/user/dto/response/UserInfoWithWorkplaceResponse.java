@@ -20,6 +20,7 @@ public class UserInfoWithWorkplaceResponse {
     private String joinDate;
 
     private WorkScheduleDto workScheduleDto;
+    private List<WorkScheduleDto> workScheduleDtoList;
 
     private Integer payDay;
     private Integer baseWage;
@@ -38,4 +39,16 @@ public class UserInfoWithWorkplaceResponse {
         this.memo = userWorkplace.getMemo();
     }
 
+    public UserInfoWithWorkplaceResponse(UserWorkplace userWorkplace, List<UserWorkSchedule> userWorkScheduleList, Wage wage, WorkplaceJoinHistory workplaceJoinHistory, String imageURL) {
+        this.name = userWorkplace.getUser().getName();
+        this.phoneNumber = userWorkplace.getUser().getPhoneNumber();
+        this.imageURL = imageURL;
+        this.joinDate = workplaceJoinHistory.getDecisionDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+
+        this.workScheduleDtoList = WorkScheduleDto.createWorkScheduleDtoList(userWorkScheduleList);
+
+        this.payDay = wage.getPayday();
+        this.baseWage = wage.getBaseWage();
+        this.memo = userWorkplace.getMemo();
+    }
 }

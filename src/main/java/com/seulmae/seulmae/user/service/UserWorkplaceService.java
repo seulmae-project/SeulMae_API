@@ -21,11 +21,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.Arrays;
 
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -44,19 +44,16 @@ public class UserWorkplaceService {
 
     public UserInfoWithWorkplaceResponse getUserInfoByUserWorkplace(Long userWorkplaceId, HttpServletRequest request) {
         UserWorkplace userWorkplace = findByIdUtil.getUserWorkplaceById(userWorkplaceId);
-        Wage wage = wageRepository.findByUserAndWorkplace(userWorkplace.getUser(), userWorkplace.getWorkplace())
-                .orElseThrow(() -> new NoSuchElementException("해당 유저 ID와 근무지 ID와 관련된 Wage가 존재하지 않습니다."));
-        UserWorkSchedule userWorkSchedule = userWorkScheduleRepository.findByUserAndWorkplace(userWorkplace.getUser(), userWorkplace.getWorkplace())
-                .orElse(null);
-//        UserWorkSchedule userWorkSchedule = userWorkScheduleRepository.findByUserAndWorkplace(userWorkplace.getUser(), userWorkplace.getWorkplace())
-//                .orElseThrow(() -> new NoSuchElementException("해당 유저 ID와 근무지 ID와 관련된 UserWorkSchedule이 존재하지 않습니다."));
-        WorkplaceJoinHistory workplaceJoinHistory = workplaceJoinHistoryRepository.findByUserAndWorkplaceAndIsApproveTrue(userWorkplace.getUser(), userWorkplace.getWorkplace())
-                .orElseThrow(() -> new NoSuchElementException("해당 유저 ID와 근무지 ID와 관련된 WorkplaceJoinHistory가 존재하지 않습니다."));
+        return buildUserInfoResponse(userWorkplace, request);
+    }
 
+    @Transactional
+    public UserInfoWithWorkplaceResponse getUserInfoForCurrentUser(User user, Long workplaceId, HttpServletRequest request) {
+        Workplace workplace = findByIdUtil.getWorkplaceById(workplaceId);
+        UserWorkplace userWorkplace = userWorkplaceRepository.findByUserAndWorkplaceAndIsDelUserWorkplaceFalse(user, workplace)
+                .orElseThrow(() -> new NullPointerException("해당 User 또는 workplaceId와 일치하는 UserWorkplace가 존재하지 않습니다."));
 
-        String userImageURL = userService.getUserImageURL(userWorkplace.getUser(), request);
-
-        return new UserInfoWithWorkplaceResponse(userWorkplace, userWorkSchedule, wage, workplaceJoinHistory,userImageURL);
+        return buildUserInfoResponse(userWorkplace, request);
     }
 
     @Transactional
@@ -140,5 +137,17 @@ public class UserWorkplaceService {
         userWorkplace.deleteUserWorkplace();
         userWorkplaceRepository.save(userWorkplace);
 
+    }
+
+    private UserInfoWithWorkplaceResponse buildUserInfoResponse(UserWorkplace userWorkplace, HttpServletRequest request) {
+        List<UserWorkSchedule> userWorkScheduleList = userWorkScheduleRepository.findAllByUserAndWorkplace(userWorkplace.getUser(), userWorkplace.getWorkplace());
+        WorkplaceJoinHistory workplaceJoinHistory = workplaceJoinHistoryRepository.findByUserAndWorkplaceAndIsApproveTrue(userWorkplace.getUser(), userWorkplace.getWorkplace())
+                .orElseThrow(() -> new NoSuchElementException("해당 유저 ID와 근무지 ID와 관련된 WorkplaceJoinHistory가 존재하지 않습니다."));
+        String userImageURL = userService.getUserImageURL(userWorkplace.getUser(), request);
+
+        Wage wage = wageRepository.findByUserAndWorkplace(userWorkplace.getUser(), userWorkplace.getWorkplace())
+                .orElseThrow(() -> new NoSuchElementException("해당 유저 ID와 근무지 ID와 관련된 Wage가 존재하지 않습니다."));
+
+        return new UserInfoWithWorkplaceResponse(userWorkplace, userWorkScheduleList, wage, workplaceJoinHistory, userImageURL);
     }
 }

@@ -1,10 +1,10 @@
 package com.seulmae.seulmae.workplace.dto;
 
+import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Getter
-@NoArgsConstructor
+@Builder
 public class WorkplaceAddDto {
 
     private String workplaceName;

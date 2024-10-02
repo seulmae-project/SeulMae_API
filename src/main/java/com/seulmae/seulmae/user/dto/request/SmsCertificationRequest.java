@@ -1,12 +1,13 @@
 package com.seulmae.seulmae.user.dto.request;
 
+import com.seulmae.seulmae.user.enums.SmsSendingType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
 public class SmsCertificationRequest {
-    private String sendingType;
+    private SmsSendingType sendingType;
     private String phoneNumber;
     private String authCode;
 

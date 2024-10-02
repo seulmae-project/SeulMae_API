@@ -1,7 +1,7 @@
 package com.seulmae.seulmae.user.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.seulmae.seulmae.user.Role;
+import com.seulmae.seulmae.user.enums.Role;
 import com.seulmae.seulmae.user.dto.request.UserWorkScheduleAddRequest;
 import com.seulmae.seulmae.user.dto.request.UserWorkScheduleUpdateRequest;
 import com.seulmae.seulmae.user.entity.User;

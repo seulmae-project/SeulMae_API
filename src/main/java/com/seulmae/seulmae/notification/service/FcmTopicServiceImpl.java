@@ -4,7 +4,6 @@ import com.google.firebase.messaging.*;
 import com.seulmae.seulmae.notification.NotificationType;
 import com.seulmae.seulmae.notification.entity.FcmToken;
 import com.seulmae.seulmae.user.entity.User;
-import com.seulmae.seulmae.workplace.entity.Workplace;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -41,12 +40,15 @@ public class FcmTopicServiceImpl implements FcmService {
 
     // 구독 요청
     public void subscribeToTopic(User user, String topic) throws FirebaseMessagingException {
-        // 등록 토큰 뽑아내기
-        List<String> registrationTokens = user.getFcmTokens().stream()
-                .map(FcmToken::getFcmToken).toList();
 
-        TopicManagementResponse response = FirebaseMessaging.getInstance().subscribeToTopic(registrationTokens, topic);
-        log.info(response.getSuccessCount() + " tokens were subscribed successfully");
+        if (user.getFcmTokens() != null && !user.getFcmTokens().isEmpty()) {
+            // 등록 토큰 뽑아내기
+            List<String> registrationTokens = user.getFcmTokens().stream()
+                    .map(FcmToken::getFcmToken).toList();
+
+            TopicManagementResponse response = FirebaseMessaging.getInstance().subscribeToTopic(registrationTokens, topic);
+            log.info(response.getSuccessCount() + " tokens were subscribed successfully");
+        }
 
     }
 
@@ -54,12 +56,14 @@ public class FcmTopicServiceImpl implements FcmService {
     // 구독 취소
     public void unsubscribeFromTopic(User user, String topic) throws FirebaseMessagingException {
 
-        List<String> registrationTokens = user.getFcmTokens().stream()
-                .map(FcmToken::getFcmToken).toList();
-        TopicManagementResponse response = FirebaseMessaging.getInstance().unsubscribeFromTopic(
-                registrationTokens, topic);
+        if (user.getFcmTokens() != null && !user.getFcmTokens().isEmpty()) {
+            List<String> registrationTokens = user.getFcmTokens().stream()
+                    .map(FcmToken::getFcmToken).toList();
+            TopicManagementResponse response = FirebaseMessaging.getInstance().unsubscribeFromTopic(
+                    registrationTokens, topic);
+            log.info(response.getSuccessCount() + " tokens were unsubscribed successfully");
+        }
 
-        log.info(response.getSuccessCount() + " tokens were unsubscribed successfully");
     }
 
     // 구독 전체 취소

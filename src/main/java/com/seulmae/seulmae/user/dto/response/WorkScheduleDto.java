@@ -24,4 +24,9 @@ public class WorkScheduleDto {
                 .map(workScheduleDay -> Day.fromDay(workScheduleDay.getDay()))
                 .toList();
     }
+    public static List<WorkScheduleDto> createWorkScheduleDtoList(List<UserWorkSchedule> userWorkScheduleList) {
+        return userWorkScheduleList.stream()
+                .map(userWorkSchedule -> new WorkScheduleDto(userWorkSchedule))
+                .toList();
+    }
 }
