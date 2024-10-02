@@ -167,7 +167,7 @@ public class UserService {
      * - 아이디 찾기
      * - 기존 db에 유저가 존재해야 한다.
      * - 기존 db에 휴대폰 번호에 대한 유저가 존재하지 않을 경우, sms를 보내면 안된다.
-     * - 비밀번호 찾기
+     * - 비밀번호 재설정
      * - 아이디와 휴대폰번호가 동시에 존재하는 유저가 db에 존재해야 한다.
      * - 만약 일치하는 데이터가 없을 경우, sms를 보내면 안된다.
      * - 휴대폰 번호 변경
@@ -175,11 +175,10 @@ public class UserService {
      */
     public FindAuthResponse sendSMSCertification(SmsSendingRequest request) {
         /**
-         * 회원가입 & 휴대폰번호 변경
+         * 회원가입
          */
-        if (request.getSendingType().equals(SmsSendingType.SIGNUP) || request.getSendingType().equals(SmsSendingType.CHANGE_PHONE_NUM)) {
+        if (request.getSendingType().equals(SmsSendingType.SIGNUP)) {
 
-//            checkDuplicatedPhoneNumber(request.getPhoneNumber());
             checkDuplicatedNameAndPhoneNumber(request.getName(), request.getPhoneNumber());
 
             smsService.sendSMS(request.getPhoneNumber());
@@ -188,12 +187,9 @@ public class UserService {
         }
 
         /**
-         * 아이디 찾기
+         * 아이디 찾기 & 비밀번호 재설정
          */
-        if (request.getSendingType().equals(SmsSendingType.FIND_ACCOUNT_ID)) {
-//            if (!isDuplicatedPhoneNumber(request.getPhoneNumber())) {
-//                throw new IllegalArgumentException("가입된 휴대폰 번호가 아닙니다.");
-//            }
+        if (request.getSendingType().equals(SmsSendingType.FIND_ACCOUNT_ID) || request.getSendingType().equals(SmsSendingType.CHANGE_PW)) {
 
             if (!isDuplicatedNameAndPhoneNumber(request.getName(), request.getPhoneNumber())) {
                 throw new IllegalArgumentException("해당 이름과 휴대폰 번호와 일치하는 계정이 존재하지 않습니다.");
@@ -204,21 +200,30 @@ public class UserService {
             return new FindAuthResponse(true);
         }
 
-        /**
-         * 비밀번호 찾기
-         */
-        if (request.getSendingType().equals(SmsSendingType.FIND_PW)) {
-            if (!userRepository.existsByAccountIdAndPhoneNumber(request.getAccountId(), request.getPhoneNumber())) {
-                throw new IllegalArgumentException("해당 아이디와 휴대폰번호가 매칭되는 계정이 존재하지 않습니다.");
-            }
-
-            smsService.sendSMS(request.getPhoneNumber());
-
-            return new FindAuthResponse(true);
-        }
 
         throw new IllegalArgumentException(request.getSendingType() + " 타입은 존재하지 않는 타입입니다.");
     }
+
+
+    /**
+     *  휴대폰번호 변경 sms 보내기 서비스
+     *  request.getSendingType().equals(SmsSendingType.CHANGE_PHONE_NUM)
+     */
+    public FindAuthResponse sendSMSCertification(SmsSendingRequest request, User user) {
+        User me = findByIdUtil.getUserById(user.getIdUser());
+
+        if (!me.getName().equals(request.getName())) {
+            throw new IllegalStateException("로그인한 유저의 이름과 일치하지 않습니다");
+        }
+
+        checkDuplicatedNameAndPhoneNumber(request.getName(), request.getPhoneNumber());
+
+        smsService.sendSMS(request.getPhoneNumber());
+
+        return new FindAuthResponse(true);
+
+    }
+
 
     /**
      * sms 인증 서비스 (종류에 따라 제공하는 리스폰스가 달라진다.)
@@ -229,20 +234,16 @@ public class UserService {
      * - 성공/실패 리스폰스
      * - 아이디(accountId)
      * <p>
-     * 3. 비밀번호 찾기
-     * - 성공/실패 리스폰스
-     * <p>
-     * 4. 휴대폰번호 변경
+     * 3. 비밀번호 재설정
      * - 성공/실패 리스폰스
      */
 
     public FindAuthResponse confirmSMSCertification(SmsCertificationRequest request) {
         /**
-         * 회원가입 & 비밀번호 찾기 & 휴대폰번호 변경
+         * 회원가입 & 비밀번호 재설정
          */
         if (request.getSendingType().equals(SmsSendingType.SIGNUP)
-                || request.getSendingType().equals(SmsSendingType.FIND_PW)
-                || request.getSendingType().equals(SmsSendingType.CHANGE_PHONE_NUM)) {
+                || request.getSendingType().equals(SmsSendingType.CHANGE_PW)) {
 
             smsService.verifySMS(request);
 
@@ -261,6 +262,23 @@ public class UserService {
         throw new IllegalArgumentException(request.getSendingType() + " 타입은 존재하지 않는 타입입니다.");
 
     }
+
+    /**
+     * sms 인증 서비스 (종류에 따라 제공하는 리스폰스가 달라진다.)
+     * - 휴대폰번호 변경
+     *   - 휴대폰번호 업데이트
+     *   - 성공/실패 리스폰스
+     */
+    @Transactional
+    public FindAuthResponse confirmSMSCertification(SmsCertificationRequest request, User user) throws AccessDeniedException {
+            smsService.verifySMS(request);
+
+            changePhoneNumber(new ChangePhoneNumberRequest(request.getPhoneNumber()), user);
+
+            return new FindAuthResponse(true);
+
+    }
+
 
     public FindAuthResponse getAccountId(String phoneNumber) {
         String rePhoneNumber = phoneNumber.replace("-", "");

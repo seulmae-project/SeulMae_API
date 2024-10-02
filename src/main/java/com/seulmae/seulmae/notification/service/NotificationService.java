@@ -93,11 +93,11 @@ public class NotificationService {
             fcmIndividualServiceImpl.sendMultiMessageTo(fcmTokens, title, body, type, id, workplaceId);
 
         } catch (FirebaseMessagingException e) {
-            log.error("Failed to send FCM message to user {} with title '{}'", receiver.getUsername(), title, e);
+            log.error("Failed to send FCM message to user {} with title '{}'", receiver.getAccountId(), title, e);
 
             throw new RuntimeException("Failed to send FCM message", e);
         } catch (Exception e) {
-            log.error("An error occurred while sending message to user {} with title '{}'", receiver.getUsername(), title, e);
+            log.error("An error occurred while sending message to user {} with title '{}'", receiver.getAccountId(), title, e);
             throw new RuntimeException("Failed to send message", e);
         }
     }

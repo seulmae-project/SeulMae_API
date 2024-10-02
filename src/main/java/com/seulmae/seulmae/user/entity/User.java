@@ -201,11 +201,9 @@ public class User implements UserDetails {
     }
 
     /** 유효성 검사 **/
-
-
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("user"));
+    public Collection<GrantedAuthority> getAuthorities() {
+        return Collections.singleton(new SimpleGrantedAuthority("ROLE_" + this.authorityRole.name()));
     }
 
     @Override
