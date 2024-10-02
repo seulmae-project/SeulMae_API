@@ -28,7 +28,7 @@ public class ResponseUtil {
             return createErrorResponse(ErrorCode.FORBIDDEN_ERROR, e.getMessage());
         } else if (e instanceof AuthenticationException) {
             return createErrorResponse(ErrorCode.UNAUTHORIZED, e.getMessage());
-        } else if (e instanceof IllegalArgumentException) {
+        } else if (e instanceof IllegalArgumentException || e instanceof IllegalStateException) {
             return createErrorResponse(ErrorCode.BAD_REQUEST_ERROR, e.getMessage());
         } else if (e instanceof NoSuchElementException) {
             return createErrorResponse(ErrorCode.NOT_FOUND_ERROR, e.getMessage());

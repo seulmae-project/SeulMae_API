@@ -8,8 +8,8 @@ import lombok.Setter;
 @Setter
 public class SmsSendingRequest {
     private SmsSendingType sendingType;
+    private String name;
     private String phoneNumber;
-    private String accountId;
 
     public String setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber.replaceAll("-", "");

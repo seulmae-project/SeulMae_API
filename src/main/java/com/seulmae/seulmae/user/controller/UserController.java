@@ -133,6 +133,21 @@ public class UserController {
     }
 
     /**
+     * 휴대폰 번호 변경 관련 인증번호 신청
+     */
+
+    @PostMapping("/sms-certification/send/phone")
+    public ResponseEntity<?> sendSMS(@RequestBody SmsSendingRequest request,
+                                     @AuthenticationPrincipal User user) {
+        try {
+            FindAuthResponse result = userService.sendSMSCertification(request, user);
+            return ResponseUtil.createSuccessResponse(SuccessCode.SEND_SMS_SUCCESS, result);
+        } catch (Exception e) {
+            return ResponseUtil.handleException(e);
+        }
+    }
+
+    /**
      * 휴대폰 인증번호 확인
      *
      * @param request
@@ -147,6 +162,21 @@ public class UserController {
             return ResponseUtil.handleException(e);
         }
     }
+
+    /**
+     * 휴대폰 번호 변경 관련 인증번호 확인
+     */
+    @PostMapping("/sms-certification/confirm/phone")
+    public ResponseEntity<?> verifySMS(@RequestBody SmsCertificationRequest request,
+                                       @AuthenticationPrincipal User user) {
+        try {
+            FindAuthResponse result = userService.confirmSMSCertification(request, user);
+            return ResponseUtil.createSuccessResponse(SuccessCode.VERIFY_SMS_SUCCESS, result);
+        } catch (Exception e) {
+            return ResponseUtil.handleException(e);
+        }
+    }
+
 
     /**
      * 소셜로그인 추가 정보 업데이트
