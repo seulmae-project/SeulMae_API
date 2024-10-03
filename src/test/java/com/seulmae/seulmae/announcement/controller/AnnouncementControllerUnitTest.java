@@ -8,6 +8,7 @@ import com.seulmae.seulmae.announcement.dto.response.AnnouncementMainListRespons
 import com.seulmae.seulmae.announcement.entity.Announcement;
 import com.seulmae.seulmae.global.support.ControllerUnitTestSupport;
 import com.seulmae.seulmae.user.entity.User;
+import com.seulmae.seulmae.user.enums.Role;
 import com.seulmae.seulmae.workplace.entity.Workplace;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -34,6 +35,7 @@ class AnnouncementControllerUnitTest extends ControllerUnitTestSupport {
         mockUser = User.builder()
                 .idUser(1L)
                 .accountId("accountId")
+                .authorityRole(Role.USER)
                 .build();
 
         mockWorkplace = Workplace.builder()

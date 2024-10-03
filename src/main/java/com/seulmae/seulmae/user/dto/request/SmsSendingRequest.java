@@ -12,16 +12,12 @@ public class SmsSendingRequest {
     private String name;
     private String phoneNumber;
 
-    public SmsSendingRequest(String sendingType, String phoneNumber) {
+    public SmsSendingRequest(SmsSendingType sendingType, String name, String phoneNumber) {
         this.sendingType = sendingType;
+        this.name = name;
         this.phoneNumber = phoneNumber;
     }
 
-    public SmsSendingRequest(String sendingType, String phoneNumber, String accountId) {
-        this.sendingType = sendingType;
-        this.phoneNumber = phoneNumber;
-        this.accountId = accountId;
-    }
 
     public String setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber.replaceAll("-", "");

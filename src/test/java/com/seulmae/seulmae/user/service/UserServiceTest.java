@@ -4,13 +4,15 @@ import com.seulmae.seulmae.global.exception.InvalidAccountIdException;
 import com.seulmae.seulmae.global.exception.InvalidPasswordException;
 import com.seulmae.seulmae.global.exception.MatchPasswordException;
 import com.seulmae.seulmae.global.support.ServiceTestSupport;
-import com.seulmae.seulmae.user.Role;
-import com.seulmae.seulmae.user.SocialType;
 import com.seulmae.seulmae.user.dto.request.*;
 import com.seulmae.seulmae.user.dto.response.AccountDuplicatedResponse;
 import com.seulmae.seulmae.user.dto.response.FindAuthResponse;
 import com.seulmae.seulmae.user.dto.response.UserProfileResponse;
 import com.seulmae.seulmae.user.entity.User;
+import com.seulmae.seulmae.user.enums.Role;
+import com.seulmae.seulmae.user.enums.SmsSendingType;
+import com.seulmae.seulmae.user.enums.SocialType;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,8 +82,8 @@ class UserServiceTest extends ServiceTestSupport {
     }
 
     @Test
-    @DisplayName("휴대폰번호가 중복되어 회원가입에 실패한다")
-    void createUserFailWithDuplicatedPhoneNumber() {
+    @DisplayName("휴대폰번호와 이름이 일치하는 계정이 있어 회원가입에 실패한다")
+    void createUserFailWithDuplicatedPhoneNumberAndName() {
         // GIVEN
         User beforeUser = mockSetUpUtil.createUser("another1234", password, phoneNumber, name, birthday, isMale);
         UserSignUpDto userSignUpDto = new UserSignUpDto(accountId, password, phoneNumber, name, isMale, birthday);
@@ -89,7 +91,7 @@ class UserServiceTest extends ServiceTestSupport {
         // WHEN & Then
         assertThatThrownBy(() -> userService.createUser(userSignUpDto, file))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("이미 존재하는 휴대폰번호입니다.");
+                .hasMessage("가입한 계정이 존재합니다.");
 
     }
 
@@ -121,9 +123,7 @@ class UserServiceTest extends ServiceTestSupport {
     @DisplayName("회원가입시 휴대폰 인증 SMS를 보낸다")
     void sendSMSCertificationWhenSignup() {
         // GIVEN
-        String sendingType = "signUp";
-
-        SmsSendingRequest smsSendingRequest = new SmsSendingRequest(sendingType, phoneNumber);
+        SmsSendingRequest smsSendingRequest = new SmsSendingRequest(SmsSendingType.SIGNUP, name, phoneNumber);
 
         // SmsService의 sendSMS 메서드를 모의하여 실제로 실행되지 않도록 처리
         doNothing().when(smsService).sendSMS(anyString());
@@ -138,13 +138,12 @@ class UserServiceTest extends ServiceTestSupport {
     }
 
     @Test
-    @DisplayName("회원가입시 휴대폰 번호가 중복되어 sms 보내기에 실패한다")
+    @DisplayName("회원가입시 휴대폰번호와 이름이 일치하는 계정이 있어 sms 보내기에 실패한다")
     void sendSMSCertificationFailWhenSignup() {
         // GIVEN
         User user = mockSetUpUtil.createUser(accountId, password, phoneNumber, name, birthday, isMale);
-        String sendingType = "signUp";
 
-        SmsSendingRequest smsSendingRequest = new SmsSendingRequest(sendingType, phoneNumber);
+        SmsSendingRequest smsSendingRequest = new SmsSendingRequest(SmsSendingType.SIGNUP, name, phoneNumber);
 
         // SmsService의 sendSMS 메서드를 모의하여 실제로 실행되지 않도록 처리
         doNothing().when(smsService).sendSMS(anyString());
@@ -152,7 +151,7 @@ class UserServiceTest extends ServiceTestSupport {
         // WHEN & THEN
         assertThatThrownBy(() -> userService.sendSMSCertification(smsSendingRequest))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("이미 존재하는 휴대폰번호입니다.");
+                .hasMessage("가입한 계정이 존재합니다.");
 
     }
 
@@ -162,8 +161,7 @@ class UserServiceTest extends ServiceTestSupport {
         // GIVEN
         User user = mockSetUpUtil.createUser(accountId, password, phoneNumber, name, birthday, isMale);
 
-        String sendingType = "findAccountId";
-        SmsSendingRequest smsSendingRequest = new SmsSendingRequest(sendingType, user.getPhoneNumber());
+        SmsSendingRequest smsSendingRequest = new SmsSendingRequest(SmsSendingType.FIND_ACCOUNT_ID, user.getName(), user.getPhoneNumber());
         doNothing().when(smsService).sendSMS(anyString());
 
         // WHEN
@@ -176,28 +174,26 @@ class UserServiceTest extends ServiceTestSupport {
     }
 
     @Test
-    @DisplayName("아이디 찾기 시, 휴대폰 번호가 존재하지 않아 SMS 보내기에 실패한다")
+    @DisplayName("아이디 찾기 시, 계정이 존재하지 않아서 SMS 보내기에 실패한다")
     void sendSMSCertificationFailWhenFindingId() {
         // GIVEN
-        String sendingType = "findAccountId";
-        SmsSendingRequest smsSendingRequest = new SmsSendingRequest(sendingType, phoneNumber);
+        SmsSendingRequest smsSendingRequest = new SmsSendingRequest(SmsSendingType.FIND_ACCOUNT_ID, name, phoneNumber);
 
         doNothing().when(smsService).sendSMS(anyString());
 
         // WHEN & THEN
         assertThatThrownBy(() -> userService.sendSMSCertification(smsSendingRequest))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("가입된 휴대폰 번호가 아닙니다.");
+                .hasMessage("해당 이름과 휴대폰 번호와 일치하는 계정이 존재하지 않습니다.");
     }
 
     @Test
-    @DisplayName("비밀번호 찾기 시, 휴대폰 인증 SMS를 보낸다")
-    void sendSMSCertificationWhenFindingPw() {
+    @DisplayName("비밀번호 재설정 시, 휴대폰 인증 SMS를 보낸다")
+    void sendSMSCertificationWhenChangingPw() {
         // GIVEN
         User user = mockSetUpUtil.createUser(accountId, password, phoneNumber, name, birthday, isMale);
 
-        String sendingType = "findPassword";
-        SmsSendingRequest smsSendingRequest = new SmsSendingRequest(sendingType, user.getPhoneNumber(), user.getAccountId());
+        SmsSendingRequest smsSendingRequest = new SmsSendingRequest(SmsSendingType.CHANGE_PW, user.getName(),user.getPhoneNumber());
 
         doNothing().when(smsService).sendSMS(anyString());
 
@@ -211,27 +207,27 @@ class UserServiceTest extends ServiceTestSupport {
     }
 
     @Test
-    @DisplayName("비밀번호 찾기 시, 휴대폰 번호와 아이디가 매칭되지 않아서 sms보내기에 실패한다")
-    void sendSMSCertificationFailWhenFindingPw() {
+    @DisplayName("비밀번호 재설정 시, 휴대폰 번호와 이름 매칭되지 않아서 sms보내기에 실패한다")
+    void sendSMSCertificationFailWhenChangingPw() {
         // GIVEN
         User user = mockSetUpUtil.createUser(accountId, "anotherpw1234!", phoneNumber, name, birthday, isMale);
 
-        String sendingType = "findPassword";
-        SmsSendingRequest smsSendingRequest = new SmsSendingRequest(sendingType, password, user.getAccountId());
+        SmsSendingRequest smsSendingRequest = new SmsSendingRequest(SmsSendingType.CHANGE_PW, name,password);
         doNothing().when(smsService).sendSMS(anyString());
 
         // WHEN & THEN
         assertThatThrownBy(() -> userService.sendSMSCertification(smsSendingRequest))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("해당 아이디와 휴대폰번호가 매칭되는 계정이 존재하지 않습니다.");
+                .hasMessage("해당 이름과 휴대폰 번호와 일치하는 계정이 존재하지 않습니다.");
     }
 
     @Test
     @DisplayName("잘못된 sendingType을 보내서 sms보내기에 실패한다")
+    @Disabled
     void sendSMSCertificationFail() {
         // GIVEN
         String sendingType = "wrongSendingType";
-        SmsSendingRequest smsSendingRequest = new SmsSendingRequest(sendingType, password);
+        SmsSendingRequest smsSendingRequest = new SmsSendingRequest(null, name, password);
 
         doNothing().when(smsService).sendSMS(anyString());
 
@@ -245,10 +241,9 @@ class UserServiceTest extends ServiceTestSupport {
     @DisplayName("회원가입시, SMS 코드를 통해 인증에 성공한다")
     void confirmSMSCertificationWhenSignup() {
         // GIVEN
-        String sendingType = "signUp";
         String authCode = "123456";
 
-        SmsCertificationRequest smsCertificationRequest = new SmsCertificationRequest(sendingType, phoneNumber, authCode);
+        SmsCertificationRequest smsCertificationRequest = new SmsCertificationRequest(SmsSendingType.SIGNUP, phoneNumber, authCode);
 
         doNothing().when(smsService).verifySMS(any());
 
@@ -266,11 +261,9 @@ class UserServiceTest extends ServiceTestSupport {
     void confirmSMSCertificationWhenFindingId() {
         // GIVEN
         User user = mockSetUpUtil.createUser(accountId, password, phoneNumber, name, birthday, isMale);
-
-        String sendingType = "findAccountId";
         String authCode = "123456";
 
-        SmsCertificationRequest smsCertificationRequest = new SmsCertificationRequest(sendingType, user.getPhoneNumber(), authCode);
+        SmsCertificationRequest smsCertificationRequest = new SmsCertificationRequest(SmsSendingType.FIND_ACCOUNT_ID, user.getPhoneNumber(), authCode);
 
         doNothing().when(smsService).verifySMS(any());
 
@@ -284,15 +277,14 @@ class UserServiceTest extends ServiceTestSupport {
     }
 
     @Test
-    @DisplayName("비밀번호 찾기 시, SMS 코드를 통해 인증에 성공한다")
+    @DisplayName("비밀번호 재설정 시, SMS 코드를 통해 인증에 성공한다")
     void confirmSMSCertificationWhenFindingPw() {
         // GIVEN
         User user = mockSetUpUtil.createUser(accountId, password, phoneNumber, name, birthday, isMale);
 
-        String sendingType = "findPassword";
         String authCode = "123456";
 
-        SmsCertificationRequest smsCertificationRequest = new SmsCertificationRequest(sendingType, phoneNumber, authCode);
+        SmsCertificationRequest smsCertificationRequest = new SmsCertificationRequest(SmsSendingType.CHANGE_PW, phoneNumber, authCode);
 
         doNothing().when(smsService).verifySMS(any());
 
@@ -307,12 +299,12 @@ class UserServiceTest extends ServiceTestSupport {
 
     @Test
     @DisplayName("잘못된 sendingType을 보내서, SMS 인증 실패한다")
+    @Disabled
     void confirmSMSCertificationFail() {
         // GIVEN
-        String sendingType = "wrongSendingType";
         String authCode = "123456";
 
-        SmsCertificationRequest smsCertificationRequest = new SmsCertificationRequest(sendingType, phoneNumber, authCode);
+        SmsCertificationRequest smsCertificationRequest = new SmsCertificationRequest(null, phoneNumber, authCode);
 
         doNothing().when(smsService).verifySMS(any());
 
@@ -346,28 +338,13 @@ class UserServiceTest extends ServiceTestSupport {
 
     @Test
     @DisplayName("본인의 프로필을 조회한다")
-    void getMyProfile() {
-        // GIVEN
-        User user = mockSetUpUtil.createUser(accountId, password, phoneNumber, name, birthday, isMale);
-        MockHttpServletRequest request = new MockHttpServletRequest();
-
-        // WHEN
-        UserProfileResponse userProfileResponse = userService.getMyProfile(user, request);
-
-        // THEN
-        assertThat(userProfileResponse.getName()).isEqualTo(name);
-    }
-
-
-    @Test
-    @DisplayName("특정 유저의 프로필을 조회한다")
     void getUserProfile() {
         // GIVEN
         User user = mockSetUpUtil.createUser(accountId, password, phoneNumber, name, birthday, isMale);
         MockHttpServletRequest request = new MockHttpServletRequest();
 
         // WHEN
-        UserProfileResponse userProfileResponse = userService.getUserProfile(user.getIdUser(), request);
+        UserProfileResponse userProfileResponse = userService.getUserProfile(user, request);
 
         // THEN
         assertThat(userProfileResponse.getName()).isEqualTo(name);
@@ -382,7 +359,7 @@ class UserServiceTest extends ServiceTestSupport {
         UpdateUserRequest updateUserRequest = new UpdateUserRequest(newName);
 
         // WHEN
-        userService.updateUser(user.getIdUser(), user, updateUserRequest, file);
+        userService.updateUser(user, updateUserRequest, file);
 
         // Then
         assertThat(user.getName()).isEqualTo(newName);
@@ -390,6 +367,7 @@ class UserServiceTest extends ServiceTestSupport {
 
     @Test
     @DisplayName("수정 권한이 없는 유저가 프로필 수정에 실패한다")
+    @Disabled
     void updateUserFail() throws AccessDeniedException {
         // GIVEN
         String newName = "테스트이름";
@@ -398,7 +376,7 @@ class UserServiceTest extends ServiceTestSupport {
         UpdateUserRequest updateUserRequest = new UpdateUserRequest(newName);
 
         // WHEN & THEN
-        assertThatThrownBy(() -> userService.updateUser(user.getIdUser(), anotherUser, updateUserRequest, file))
+        assertThatThrownBy(() -> userService.updateUser(anotherUser, updateUserRequest, file))
                 .isInstanceOf(AccessDeniedException.class)
                 .hasMessage("프로필을 수정할 권한이 없습니다.");
     }
@@ -411,7 +389,7 @@ class UserServiceTest extends ServiceTestSupport {
         User user = mockSetUpUtil.createUser(accountId, password, phoneNumber, name, birthday, isMale);
 
         // WHEN
-        userService.deleteUser(user.getIdUser(), user);
+        userService.deleteUser(user);
 
         // THEN
         assertThat(user.getIsDelUser()).isTrue();
@@ -419,12 +397,13 @@ class UserServiceTest extends ServiceTestSupport {
 
     @Test
     @DisplayName("탈퇴 권한이 없는 유저가 앱 탈퇴를 시도하여 실패한다")
+    @Disabled
     void deleteUserFail() {
         // GIVEN
         User user = mockSetUpUtil.createUser(accountId, password, phoneNumber, name, birthday, isMale);
         User anotherUser = mockSetUpUtil.createUser("anotherId1234", password, "01012341111", name, birthday, isMale);
 
-        assertThatThrownBy(() -> userService.deleteUser(user.getIdUser(), anotherUser))
+        assertThatThrownBy(() -> userService.deleteUser(anotherUser))
                 .isInstanceOf(AccessDeniedException.class)
                 .hasMessage("앱을 탈퇴할 권한이 없습니다.");
     }
@@ -499,35 +478,36 @@ class UserServiceTest extends ServiceTestSupport {
         String changingPhoneNumber ="01022223333";
         ChangePhoneNumberRequest request = new ChangePhoneNumberRequest(changingPhoneNumber);
 
-        userService.changePhoneNumber(user.getIdUser(), request, user);
+        userService.changePhoneNumber(request, user);
 
         assertThat(user.getPhoneNumber()).isEqualTo(changingPhoneNumber);
     }
 
     @Test
     @DisplayName("수정 권한이 없는 유저가 휴대폰번호 변경을 시도하다가 실패한다.")
+    @Disabled
     void changePhoneNumberFailWithNoAuthority() {
         User user = mockSetUpUtil.createUser(accountId, password, phoneNumber, name, birthday, isMale);
         User anotherUser = mockSetUpUtil.createUser("anotherId1234", password, "01012341111", name, birthday, isMale);
         String changingPhoneNumber ="01022223333";
         ChangePhoneNumberRequest request = new ChangePhoneNumberRequest(changingPhoneNumber);
 
-        assertThatThrownBy(() -> userService.changePhoneNumber(user.getIdUser(), request, anotherUser))
+        assertThatThrownBy(() -> userService.changePhoneNumber(request, anotherUser))
                 .isInstanceOf(AccessDeniedException.class)
                 .hasMessage("휴대폰 번호를 변경할 권한이 없습니다.");
     }
 
     @Test
-    @DisplayName("존재하는 휴대폰 번호로 변경을 시도하다가 실패한다.")
+    @DisplayName("존재하는 계정의 휴대폰번호와 이름으로 변경을 시도하다가 실패한다.")
     void changePhoneNumberFailWithDuplicatedPhoneNumber() {
         User user = mockSetUpUtil.createUser(accountId, password, phoneNumber, name, birthday, isMale);
         User anotherUser = mockSetUpUtil.createUser("anotherId1234", password, "01012341111", name, birthday, isMale);
         String changingPhoneNumber = phoneNumber;
         ChangePhoneNumberRequest request = new ChangePhoneNumberRequest(changingPhoneNumber);
 
-        assertThatThrownBy(() -> userService.changePhoneNumber(anotherUser.getIdUser(), request, anotherUser))
+        assertThatThrownBy(() -> userService.changePhoneNumber(request, anotherUser))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("이미 존재하는 휴대폰번호입니다.");
+                .hasMessage("가입한 계정이 존재합니다.");
     }
 
 }

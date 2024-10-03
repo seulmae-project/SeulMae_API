@@ -1,8 +1,8 @@
 package com.seulmae.seulmae.user.repository;
 
 import com.seulmae.seulmae.global.support.RepositoryUnitTestSupport;
-import com.seulmae.seulmae.user.SocialType;
 import com.seulmae.seulmae.user.entity.User;
+import com.seulmae.seulmae.user.enums.SocialType;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
