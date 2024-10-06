@@ -118,10 +118,10 @@ public class UserService {
             UserWorkplace userWorkplace = userWorkplaceRepository.findByUserAndWorkplaceAndIsDelUserWorkplaceFalse(user, workplace)
                     .orElseThrow(() -> new NoSuchElementException("해당 유저는 해당 근무지 소속이 아닙니다."));
 
-            User manger = userWorkplaceRepository.findUserByWorkplaceAndIsManager(workplace, true)
+            User manager = userWorkplaceRepository.findUserByWorkplaceAndIsManager(workplace, true)
                     .orElseThrow(() -> new NoSuchElementException("해당 근무지에 매니저가 존재하지 않습니다."));
 
-            userWorkplaceInfoResponses.add(new UserWorkplaceInfoResponse(workplace.getIdWorkPlace(), workplace.getWorkplaceName(), workplace.getAddressVo(), workplace.getWorkplaceName(), manger.getName(), userWorkplace.getIsManager()));
+            userWorkplaceInfoResponses.add(new UserWorkplaceInfoResponse(workplace.getIdWorkPlace(), workplace.getWorkplaceName(), workplace.getAddressVo(), workplace.getWorkplaceName(), manager.getName(), userWorkplace.getIsManager()));
         }
 
         return new UserProfileResponse(me.getName(), getUserImageURL(me, request), me.getPhoneNumber(), me.getBirthday(), userWorkplaceInfoResponses);

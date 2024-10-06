@@ -61,12 +61,12 @@ public class NotificationService {
         }
 
         String title = "[공지사항]";
-        String body = "'" + announcement.getTitle() + "'이 등록되었습니다.";
+        String body = "'" + announcement.getTitle() + "'이(가) 등록되었습니다.";
 
         for (User user : users) {
             UserWorkplace userWorkplace = userWorkplaceRepository.findByUserAndWorkplaceAndIsDelUserWorkplaceFalse(user, workplace)
                             .orElseThrow(() -> new NoSuchElementException("해당 User 및 Workplace와 관련된 UserWorkplace가 존재하지 않습니다."));
-            storeNotification(title, body, userWorkplace, NotificationType.NOTICE);
+            storeNotification(title, body, userWorkplace, NotificationType.NOTICE, announcement.getIdAnnouncement());
         }
 
         fcmTopicServiceImpl.sendMessageTo(topic, title, body, NotificationType.NOTICE, announcement.getIdAnnouncement());
@@ -88,7 +88,7 @@ public class NotificationService {
             UserWorkplace userWorkplace = userWorkplaceRepository.findByUserAndWorkplaceAndIsDelUserWorkplaceFalse(receiver, workplace)
                     .orElseThrow(() -> new NoSuchElementException("해당 User 및 Workplace와 관련된 UserWorkplace가 존재하지 않습니다."));
 
-            storeNotification(title, body, userWorkplace, type);
+            storeNotification(title, body, userWorkplace, type, id);
 
             fcmIndividualServiceImpl.sendMultiMessageTo(fcmTokens, title, body, type, id, workplaceId);
 
@@ -104,12 +104,13 @@ public class NotificationService {
 
 
 
-    public void storeNotification(String title, String message, UserWorkplace userWorkplace, NotificationType notificationType) {
+    public void storeNotification(String title, String message, UserWorkplace userWorkplace, NotificationType notificationType, Long linkedId) {
         Notification notification = Notification.builder()
                 .title(title)
                 .message(message)
                 .userWorkplace(userWorkplace)
                 .notificationType(notificationType)
+                .linkedId(linkedId)
                 .build();
         notificationRepository.save(notification);
     }

@@ -13,6 +13,7 @@ public class NotificationResponse {
     private String title;
     private String message;
     private String notificationType;
+    private Long linkedId;
     private String imageURL;
     private LocalDateTime regDateNotification;
 
@@ -21,6 +22,7 @@ public class NotificationResponse {
         this.title = n.getTitle();
         this.message = n.getMessage();
         this.notificationType = n.getNotificationType().name();
+        this.linkedId = n.getLinkedId();
         this.regDateNotification = n.getRegDateNotification();
     }
 
