@@ -10,20 +10,17 @@ import com.seulmae.seulmae.announcement.repository.AnnouncementRepository;
 import com.seulmae.seulmae.global.dao.RedisBasicDao;
 import com.seulmae.seulmae.global.util.JsonPagination;
 import com.seulmae.seulmae.notification.event.AnnouncementNotificationEvent;
-import com.seulmae.seulmae.notification.service.NotificationService;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.user.service.UserWorkplaceService;
 import com.seulmae.seulmae.workplace.entity.Workplace;
 import com.seulmae.seulmae.workplace.repository.WorkplaceRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -46,7 +43,7 @@ public class AnnouncementService {
         // 매니저 권한이 있는 유저여야 한다.
         Workplace workplace = workplaceRepository.findById(request.getWorkplaceId())
                 .orElseThrow(() -> new NoSuchElementException("해당 근무지 ID가 존재하지 않습니다."));
-        userWorkplaceService.checkMangerAuthority(workplace, user);
+        userWorkplaceService.checkManagerAuthority(workplace, user);
 
         // 생성한다.
         Announcement announcement = new Announcement(user, workplace, request.getTitle(), request.getContent(), request.getIsImportant());
@@ -62,7 +59,7 @@ public class AnnouncementService {
     public void updateAnnouncement(Long announcementId, UpdateAnnouncementRequest request, User user) {
         Announcement announcement = announcementRepository.findById(announcementId)
                 .orElseThrow(() -> new NoSuchElementException("해당 공지사항 ID가 존재하지 않습니다."));
-        userWorkplaceService.checkMangerAuthority(announcement.getWorkplace(), user);
+        userWorkplaceService.checkManagerAuthority(announcement.getWorkplace(), user);
 
         announcement.update(request.getTitle(), request.getContent(), request.getIsImportant());
     }
@@ -148,7 +145,7 @@ public class AnnouncementService {
         // 매니저 권한이 있어야 함.
         Announcement announcement = announcementRepository.findById(announcementId)
                 .orElseThrow(() -> new NoSuchElementException("해당 공지사항 ID가 존재하지 않습니다."));
-        userWorkplaceService.checkMangerAuthority(announcement.getWorkplace(), user);
+        userWorkplaceService.checkManagerAuthority(announcement.getWorkplace(), user);
 
 
         // 삭제한다.

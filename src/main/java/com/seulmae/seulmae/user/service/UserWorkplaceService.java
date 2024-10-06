@@ -97,7 +97,7 @@ public class UserWorkplaceService {
         return userWorkplaceUserResponseList;
     }
 
-    public void checkMangerAuthority(Workplace workplace, User user) {
+    public void checkManagerAuthority(Workplace workplace, User user) {
         if (!isManager(workplace, user)) {
             throw new IllegalArgumentException("해당 근무지의 매니저가 아닙니다.");
         }
