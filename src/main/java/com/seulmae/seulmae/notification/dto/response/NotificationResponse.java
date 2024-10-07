@@ -1,5 +1,6 @@
 package com.seulmae.seulmae.notification.dto.response;
 
+import com.seulmae.seulmae.global.util.DateFormatUtil;
 import com.seulmae.seulmae.notification.entity.Notification;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,7 +16,7 @@ public class NotificationResponse {
     private String notificationType;
     private Long linkedId;
     private String imageURL;
-    private LocalDateTime regDateNotification;
+    private String regDateNotification;
 
     public NotificationResponse(Notification n) {
         this.notificationId = n.getIdNotification();
@@ -23,7 +24,7 @@ public class NotificationResponse {
         this.message = n.getMessage();
         this.notificationType = n.getNotificationType().name();
         this.linkedId = n.getLinkedId();
-        this.regDateNotification = n.getRegDateNotification();
+        this.regDateNotification = DateFormatUtil.formatToDateTimeString(n.getRegDateNotification());
     }
 
 }
