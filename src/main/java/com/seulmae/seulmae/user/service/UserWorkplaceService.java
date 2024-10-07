@@ -13,6 +13,7 @@ import com.seulmae.seulmae.user.repository.UserWorkScheduleRepository;
 import com.seulmae.seulmae.user.repository.UserWorkplaceRepository;
 import com.seulmae.seulmae.wage.entity.Wage;
 import com.seulmae.seulmae.wage.repository.WageRepository;
+import com.seulmae.seulmae.workplace.dto.EmployeeDismissDto;
 import com.seulmae.seulmae.workplace.entity.Workplace;
 import com.seulmae.seulmae.workplace.entity.WorkplaceJoinHistory;
 import com.seulmae.seulmae.workplace.repository.WorkplaceJoinHistoryRepository;
@@ -95,6 +96,18 @@ public class UserWorkplaceService {
                 .toList();
 
         return userWorkplaceUserResponseList;
+    }
+
+    @Transactional
+    public void dismissEmployee(EmployeeDismissDto employeeDismissDto) {
+        UserWorkplace userWorkplace = findByIdUtil.getUserWorkplaceById(employeeDismissDto.getUserWorkplaceId());
+
+        if (userWorkplace.getIsDelUserWorkplace()) {
+            throw new IllegalStateException("이미 탈퇴한 근무자입니다.");
+        }
+
+        userWorkplace.deleteUserWorkplace();
+        userWorkplaceRepository.save(userWorkplace);
     }
 
     public void checkManagerAuthority(Workplace workplace, User user) {

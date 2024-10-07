@@ -2,14 +2,13 @@ package com.seulmae.seulmae.workplace.controller;
 
 import com.seulmae.seulmae.global.util.ResponseUtil;
 import com.seulmae.seulmae.global.util.enums.SuccessCode;
-import com.seulmae.seulmae.global.util.enums.SuccessResponse;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.workplace.dto.JoinApprovalDto;
 import com.seulmae.seulmae.workplace.dto.WorkplaceJoinDto;
+import com.seulmae.seulmae.workplace.dto.WorkplaceJoinHistoryDto;
 import com.seulmae.seulmae.workplace.dto.WorkplaceJoinRequestDto;
 import com.seulmae.seulmae.workplace.service.WorkplaceJoinService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -69,7 +68,7 @@ public class WorkplaceJoinController {
     }
 
     /**
-     * 근무지 입장 요청 리스트
+     * 근무지 입장 요청 전체 리스트
      * @param workplaceId
      */
     @GetMapping("request/list")
@@ -78,6 +77,21 @@ public class WorkplaceJoinController {
             List<WorkplaceJoinRequestDto> workplaceJoinRequestDtoList = workplaceJoinService.getWorkplaceRequestList(workplaceId);
 
             return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, workplaceJoinRequestDtoList);
+        } catch (Exception e) {
+            return ResponseUtil.handleException(e);
+        }
+    }
+
+    /**
+     * 근무지 입장 요청 내역 리스트
+     * @param user
+     */
+    @GetMapping("request/history/list")
+    public ResponseEntity<?> getJoinRequestList(@AuthenticationPrincipal User user) {
+        try {
+            List<WorkplaceJoinHistoryDto> workplaceJoinHistoryList = workplaceJoinService.getJoinRequestList(user);
+
+            return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, workplaceJoinHistoryList);
         } catch (Exception e) {
             return ResponseUtil.handleException(e);
         }
