@@ -30,7 +30,7 @@ public class WorkScheduleService {
     public WorkScheduleInfoDto getWorkSchedule(Long workScheduleId, User user) {
         WorkSchedule workSchedule = workScheduleRepository.findById(workScheduleId)
                 .orElseThrow(() -> new NoSuchElementException("해당 근무일정 ID가 존재하지 않습니다."));
-        userWorkplaceService.checkManagerAuthority(workSchedule.getWorkplace(), user);
+        userWorkplaceService.checkWorkplaceAuthority(workSchedule.getWorkplace(), user);
 
         return new WorkScheduleInfoDto(workSchedule);
     }
@@ -38,7 +38,7 @@ public class WorkScheduleService {
     public List<WorkScheduleInfoDto> getWorkSchedules(Long workplaceId, User user) {
         Workplace workplace = workplaceRepository.findById(workplaceId)
                 .orElseThrow(() -> new NoSuchElementException("해당 근무지 ID가 존재하지 않습니다."));
-        userWorkplaceService.checkManagerAuthority(workplace, user);
+        userWorkplaceService.checkWorkplaceAuthority(workplace, user);
 
         return workScheduleRepository.findAllByWorkplace(workplace).stream()
                 .sorted((ws1, ws2) -> ws2.getRegDateWorkSchedule().compareTo(ws1.getRegDateWorkSchedule()))

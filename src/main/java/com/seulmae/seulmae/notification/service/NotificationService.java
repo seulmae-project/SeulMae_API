@@ -117,11 +117,12 @@ public class NotificationService {
 
     public List<NotificationResponse> getNotifications(Long userWorkplaceId, HttpServletRequest request) {
         UserWorkplace userWorkplace = findByIdUtil.getUserWorkplaceById(userWorkplaceId);
+        System.out.println("userWorkplace = " + userWorkplace);
         return notificationRepository.findAllByUserWorkplace(userWorkplace).stream()
                 .map(notification -> {
                     String imageURL = switch (notification.getNotificationType()) {
-                        case NOTICE ->
-                                workplaceService.getWorkplaceImageUrlList(userWorkplace.getWorkplace(), request).getFirst();
+                        case NOTICE -> workplaceService.getWorkplaceImageUrlList(userWorkplace.getWorkplace(), request).isEmpty() ?
+                                null : workplaceService.getWorkplaceImageUrlList(userWorkplace.getWorkplace(), request).getFirst();
                         case ATTENDANCE_REQUEST, ATTENDANCE_RESPONSE, JOIN_REQUEST, JOIN_RESPONSE ->
                                 userService.getUserImageURL(userWorkplace.getUser(), request);
                         default -> throw new NoSuchElementException("관련 로직이 아직 존재하지 않음.");
