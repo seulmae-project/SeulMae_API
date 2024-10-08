@@ -8,7 +8,7 @@ import com.seulmae.seulmae.user.dto.response.UserInfoWithWorkplaceResponse;
 import com.seulmae.seulmae.user.dto.response.UserWorkplaceUserResponse;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.user.service.UserWorkplaceService;
-import com.seulmae.seulmae.workplace.entity.Workplace;
+import com.seulmae.seulmae.workplace.dto.EmployeeDismissDto;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -94,6 +94,20 @@ public class UserWorkplaceController {
         try {
             List<UserWorkplaceUserResponse> userWorkplaceUserResponseList = userWorkplaceService.getAllUserFromWorkplace(workplaceId, httpServletRequest);
             return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, userWorkplaceUserResponseList);
+        } catch (Exception e) {
+            return ResponseUtil.createErrorResponse(ErrorCode.BAD_REQUEST_ERROR, e.getMessage());
+        }
+    }
+
+    /**
+     * 근무자 추방
+     * @param employeeDismissDto
+     */
+    @PostMapping("dismiss")
+    public ResponseEntity<?> dismissEmployee(@RequestBody EmployeeDismissDto employeeDismissDto) {
+        try {
+            userWorkplaceService.dismissEmployee(employeeDismissDto);
+            return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS);
         } catch (Exception e) {
             return ResponseUtil.createErrorResponse(ErrorCode.BAD_REQUEST_ERROR, e.getMessage());
         }

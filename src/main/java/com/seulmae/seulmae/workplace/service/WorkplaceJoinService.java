@@ -1,6 +1,7 @@
 package com.seulmae.seulmae.workplace.service;
 
 import com.google.firebase.messaging.FirebaseMessagingException;
+import com.seulmae.seulmae.global.util.DateFormatUtil;
 import com.seulmae.seulmae.global.util.FindByIdUtil;
 import com.seulmae.seulmae.notification.NotificationType;
 import com.seulmae.seulmae.notification.event.MultiDeviceNotificationEvent;
@@ -15,6 +16,7 @@ import com.seulmae.seulmae.wage.entity.Wage;
 import com.seulmae.seulmae.wage.repository.WageRepository;
 import com.seulmae.seulmae.workplace.dto.JoinApprovalDto;
 import com.seulmae.seulmae.workplace.dto.WorkplaceJoinDto;
+import com.seulmae.seulmae.workplace.dto.WorkplaceJoinHistoryDto;
 import com.seulmae.seulmae.workplace.dto.WorkplaceJoinRequestDto;
 import com.seulmae.seulmae.workplace.entity.WorkSchedule;
 import com.seulmae.seulmae.workplace.entity.Workplace;
@@ -178,6 +180,20 @@ public class WorkplaceJoinService {
         List<WorkplaceJoinRequestDto> workplaceJoinRequestDtoList = workplaceApproveRepository.findByWorkplaceId(workplaceId);
 
         return workplaceJoinRequestDtoList;
+    }
+
+    @Transactional
+    public List<WorkplaceJoinHistoryDto> getJoinRequestList(User user) {
+        List<WorkplaceJoinHistoryDto> workplaceJoinHistoryList = workplaceJoinHistoryRepository.findAllByUser(user);
+
+        workplaceJoinHistoryList = workplaceJoinHistoryList.stream()
+                .map(workplaceJoinHistoryDto -> {
+                    workplaceJoinHistoryDto.setStringDecisionDate(DateFormatUtil.formatToDateTimeString(workplaceJoinHistoryDto.getDecisionDate()));
+                    workplaceJoinHistoryDto.setStringRegDateWorkplaceJoinHistory(DateFormatUtil.formatToDateTimeString(workplaceJoinHistoryDto.getRegDateWorkplaceJoinHistory()));
+                    return workplaceJoinHistoryDto;
+                }).toList();
+
+        return workplaceJoinHistoryList;
     }
 
     public void deleteWorkplaceApproveById(Long workplaceApproveId) {

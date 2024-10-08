@@ -1,5 +1,6 @@
 package com.seulmae.seulmae.workplace.dto;
 
+import com.seulmae.seulmae.user.entity.UserWorkSchedule;
 import com.seulmae.seulmae.workplace.Day;
 import com.seulmae.seulmae.workplace.entity.WorkSchedule;
 import com.seulmae.seulmae.workplace.entity.WorkScheduleDay;
@@ -7,7 +8,6 @@ import lombok.Getter;
 
 import java.time.LocalTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Getter
 public class WorkScheduleInfoDto {
@@ -30,6 +30,12 @@ public class WorkScheduleInfoDto {
     private List<Integer> makeIntegerFromWorkScheduleDay(List<WorkScheduleDay> workScheduleDays) {
         return workScheduleDays.stream()
                 .map(workScheduleDay -> Day.fromDay(workScheduleDay.getDay()))
+                .toList();
+    }
+
+    public static List<WorkScheduleInfoDto> createWorkScheduleInfoDtoList(List<UserWorkSchedule> userWorkScheduleList) {
+        return userWorkScheduleList.stream()
+                .map(userWorkSchedule -> new WorkScheduleInfoDto(userWorkSchedule.getWorkSchedule()))
                 .toList();
     }
 }
