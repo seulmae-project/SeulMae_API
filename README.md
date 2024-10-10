@@ -32,10 +32,10 @@
 <img src="https://img.shields.io/badge/Spring%20JPA-6DB33F.svg?style=for-the-badge&logo=SpringBoot&logoColor=white">
 
 #### CI/CD & DevOps
-<img src="https://img.shields.io/badge/nginx-%23009639.svg?style=for-the-badge&logo=nginx&logoColor=white">
-<img src="https://img.shields.io/badge/apache%20tomcat-%23F8DC75.svg?style=for-the-badge&logo=apache-tomcat&logoColor=black">
-<img src="https://img.shields.io/badge/oracle%20cloud-orange.svg?style=for-the-badge&logo=oracle&logoColor=white">
-<img src="https://img.shields.io/badge/github%20actions-blue.svg?style=for-the-badge&logo=githubactions&logoColor=white">
+<img src="https://img.shields.io/badge/nginx-009639.svg?style=for-the-badge&logo=nginx&logoColor=white">
+<img src="https://img.shields.io/badge/apache%20tomcat-F8DC75.svg?style=for-the-badge&logo=apache-tomcat&logoColor=black">
+<img src="https://img.shields.io/badge/oracle%20cloud-F80000.svg?style=for-the-badge&logo=oracle&logoColor=white">
+<img src="https://img.shields.io/badge/github%20actions-2088FF.svg?style=for-the-badge&logo=githubactions&logoColor=white">
 <img src="https://img.shields.io/badge/docker-white.svg?style=for-the-badge&logo=docker&logoColor=2496ED">
 <img src="https://img.shields.io/badge/docker%20compose-white.svg?style=for-the-badge&logo=docker&logoColor=2496ED">
 
@@ -52,6 +52,7 @@
 #### TEST
 <img src="https://img.shields.io/badge/Junit5-white.svg?style=for-the-badge&logo=Junit5&logoColor=#25A162">
 <img src="https://img.shields.io/badge/Mockito-25A162.svg?style=for-the-badge&logo=&logoColor=white">
+<img src="https://img.shields.io/badge/JMeter-D22128.svg?style=for-the-badge&logo=ApacheJmeter">
 
 #### Version Control / etc
 <img src="https://img.shields.io/badge/Notion-%23000000.svg?style=for-the-badge&logo=notion&logoColor=white">
@@ -66,16 +67,18 @@
 ![seulmae.drawio.png](seulmae.drawio.png)
 ---
 ## 🕹️ 04 - 성능 개선
-- **입력필요**
----
+- [JMeter 성능 테스트를 통한 개선](https://velog.io/@jin-young/JMeter-성능-테스트를-통한-개선)
+
 ## 🎯 05 - 트러블 슈팅
 - [알림 서비스 분리의 필요성](https://velog.io/@heager/TEAM-PJT-Spring-Event)
-    - [SpringEvent transaction 문제](https://velog.io/@heager/TEAM-PJT-Spring-Event-%EC%A3%BC%EC%9D%98%ED%95%A0-%EC%A0%90)
+    - [SpringEvent transaction 문제](https://velog.io/@heager/TEAM-PJT-Spring-Event-주의할-점)
 
 - [Spring Security와 JWT를 활용한 일반 및 소셜 로그인 통합 인증 시스템 구현]
   - [소셜로그인 OICD 적용기]
 
 - [빌드할 때, 환경이 달라서 발생한 문제](https://velog.io/@heager/TEAM-PJT-FileInputStreamClassPathResource)
+
+- [통합 테스트 과정에서의 더미데이터](https://velog.io/@jin-young/통합-테스트-과정에서의-더미데이터)
 
 ---
 
@@ -94,7 +97,4 @@
 </a>
 <a href="https://github.com/seulmae-project/SeulMae_ios">
     <img src="https://img.shields.io/badge/Seulmae%20IOS-181717.svg?style=for-the-badge&logo=github" alt="SeulmaeIosGitHub">
-</a>
-<a href="https://documenter.getpostman.com/view/36219904/2sA3drHufv">
-  <img src="https://img.shields.io/badge/postman-%23FF6C37.svg?style=for-the-badge&logo=postman&logoColor=white">
 </a>
