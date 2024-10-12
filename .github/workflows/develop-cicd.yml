@@ -24,6 +24,7 @@ jobs:
         with:
           java-version: '21'
           distribution: 'corretto'
+          cache: gradle
 
       - name: Set executable permissions for gradlew
         run: chmod +x ./gradlew
@@ -43,14 +44,14 @@ jobs:
           echo "${{ secrets.FIREBASE_FILE }}" | base64 --decode > "${{ secrets.FIREBASE_NAME }}"
 
       - name: Wait for Redis to be ready
-        run: sleep 10
+        run: sleep 5
         
       - name: Run tests
         run: ./gradlew test
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4.4.3
         with:
           name: test-results
           path: build/reports/tests/test/
@@ -72,6 +73,27 @@ jobs:
       - name: Push Docker image
         run: docker push hanui/seulmae-api:latest
 
+
+      - name: Send Slack notification for build
+        if: always()  # 성공 또는 실패 시 항상 실행
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            if [ "${{ github.event_name }}" == "push" ]; then
+              MESSAGE="✅ Build succeeded! Commit: ${{ github.event.head_commit.message }} (Commit ID: ${{ github.event.head_commit.id }}) on branch: ${{ github.ref_name }}!"
+            elif [ "${{ github.event_name }}" == "pull_request" ]; then
+              MESSAGE="✅ Build succeeded! PR: #${{ github.event.pull_request.number }} - ${{ github.event.pull_request.title }} on branch: ${{ github.ref_name }}!"
+            fi
+          else
+            if [ "${{ github.event_name }}" == "push" ]; then
+              MESSAGE="❌ Build failed! Commit: ${{ github.event.head_commit.message }} (Commit ID: ${{ github.event.head_commit.id }}) on branch: ${{ github.ref_name }}!"
+            elif [ "${{ github.event_name }}" == "pull_request" ]; then
+              MESSAGE="❌ Build failed! PR: #${{ github.event.pull_request.number }} - ${{ github.event.pull_request.title }} on branch: ${{ github.ref_name }}!"
+            fi
+          fi
+          curl -X POST -H 'Content-type: application/json' \
+          --data "{\"text\":\"$MESSAGE\"}" \
+          ${{ secrets.SLACK_TEST_CICD_WEBHOOK_URL }}
+
   deploy:
     needs: build
     runs-on: ubuntu-latest
@@ -85,8 +107,18 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            whoami
-            ls -al
             cd ~/seulmae
             docker pull hanui/seulmae-api:latest
             docker compose up -d --build
+
+      - name: Send Slack notification for deploy
+        if: always()  # 성공 또는 실패 시 항상 실행
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            MESSAGE="✅ Deploy succeeded!"
+          else
+            MESSAGE="❌ Deploy failed!"
+          fi
+          curl -X POST -H 'Content-type: application/json' \
+          --data "{\"text\":\"$MESSAGE\"}" \
+          ${{ secrets.SLACK_WEBHOOK_URL }}
