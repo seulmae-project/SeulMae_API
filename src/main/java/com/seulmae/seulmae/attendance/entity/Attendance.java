@@ -10,7 +10,7 @@ import java.time.LocalDate;
 
 @Entity
 @Getter
-@Builder
+@Builder(toBuilder = true)
 @AllArgsConstructor
 @Table(name = "attendance")
 @EntityListeners(AuditingEntityListener.class)
@@ -31,6 +31,9 @@ public class Attendance {
 
     @Column(name = "work_date")
     private LocalDate workDate;
+
+    @Column(name = "changed_work_date")
+    private LocalDate changedWorkDate;
 
     @Column(name = "confirmed_wage")
     private Integer confirmedWage;

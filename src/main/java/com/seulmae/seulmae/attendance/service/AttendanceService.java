@@ -1,14 +1,12 @@
 package com.seulmae.seulmae.attendance.service;
 
-import com.seulmae.seulmae.attendance.dto.AttendanceApprovalDto;
-import com.seulmae.seulmae.attendance.dto.AttendanceManagerMainListDto;
-import com.seulmae.seulmae.attendance.dto.AttendanceRequestDto;
-import com.seulmae.seulmae.attendance.dto.AttendanceRequestListDto;
+import com.seulmae.seulmae.attendance.dto.*;
 import com.seulmae.seulmae.attendance.entity.Attendance;
 import com.seulmae.seulmae.attendance.repository.AttendanceRepository;
 import com.seulmae.seulmae.attendanceRequestHistory.entity.AttendanceRequestHistory;
 import com.seulmae.seulmae.attendanceRequestHistory.repository.AttendanceRequestHistoryRepository;
 import com.seulmae.seulmae.global.exception.AttendanceRequestConflictException;
+import com.seulmae.seulmae.global.util.DateFormatUtil;
 import com.seulmae.seulmae.global.util.FindByIdUtil;
 import com.seulmae.seulmae.global.util.UrlUtil;
 import com.seulmae.seulmae.notification.NotificationType;
@@ -20,7 +18,6 @@ import com.seulmae.seulmae.user.repository.UserImageRepository;
 import com.seulmae.seulmae.user.repository.UserWorkplaceRepository;
 import com.seulmae.seulmae.user.service.UserWorkplaceService;
 import com.seulmae.seulmae.workplace.Day;
-import com.seulmae.seulmae.workplace.entity.WorkSchedule;
 import com.seulmae.seulmae.workplace.entity.Workplace;
 import com.seulmae.seulmae.workplace.repository.WorkScheduleRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -87,15 +84,15 @@ public class AttendanceService {
 
         userWorkplaceService.checkWorkplaceAuthority(workplace, user);
         /** 출퇴근 요청 중복 유효성 추가 **/
-        LocalTime workStartTime = attendanceRequestDto.getWorkStartTime().toLocalTime();
-        LocalTime workEndTime = attendanceRequestDto.getWorkEndTime().toLocalTime();
+        LocalDateTime workStartTime = attendanceRequestDto.getWorkStartTime();
+        LocalDateTime workEndTime = attendanceRequestDto.getWorkEndTime();
         Day day = Day.fromInt(attendanceRequestDto.getDay());
 
-        if (checkIfWithinTimeRange(user, workplace, day, attendanceRequestDto.getDay(), workStartTime, workEndTime)) {
+        if (checkIfWithinTimeRange(user, workplace, day, workStartTime, workEndTime)) {
             autoApprove(user, workplace, attendanceRequestDto);
         } else {
             checkDuplicateAttendanceRequest(user, attendanceRequestDto);
-          
+
             sendRequestToManager(user, workplace, attendanceRequestDto);
         }
 
@@ -106,16 +103,23 @@ public class AttendanceService {
         AttendanceRequestHistory attendanceRequestHistory = findByIdUtil.getAttendanceRequestHistoryById(attendanceApprovalDto.getAttendanceRequestHistoryId());
         Attendance attendance = attendanceRequestHistory.getAttendance();
 
-        attendance.setConfirmedWage(attendanceApprovalDto.getConfirmedWage());
-        attendance.setUnconfirmedWage(0);
+        Attendance changedAttendance = attendance.toBuilder()
+                .changedWorkDate(attendanceApprovalDto.getChangedWorkStartTime().toLocalDate())
+                .confirmedWage(attendanceApprovalDto.getConfirmedWage())
+                .build();
 
-        attendanceRepository.save(attendance);
+        attendanceRepository.save(changedAttendance);
 
-        attendanceRequestHistory.setAttendance(attendance);
-        attendanceRequestHistory.setIsManagerCheckTrueAndCheckDate();
-        attendanceRequestHistory.setIsRequestApproveTrue();
+        AttendanceRequestHistory changedAttendanceRequestHistory = attendanceRequestHistory.toBuilder()
+                .attendance(changedAttendance)
+                .changedWorkStartTime(attendanceApprovalDto.getChangedWorkStartTime())
+                .changedWorkEndTime(attendanceApprovalDto.getChangedWorkEndTime())
+                .isManagerCheck(true)
+                .isRequestApprove(true)
+                .checkDate(LocalDateTime.now())
+                .build();
 
-        attendanceRequestHistoryRepository.save(attendanceRequestHistory);
+        attendanceRequestHistoryRepository.save(changedAttendanceRequestHistory);
         
         /** 승인 알림 **/
         String title = "[출퇴근 승인 알림]";
@@ -129,11 +133,6 @@ public class AttendanceService {
         AttendanceRequestHistory attendanceRequestHistory = findByIdUtil.getAttendanceRequestHistoryById(attendanceRequestHistoryId);
         Attendance attendance = attendanceRequestHistory.getAttendance();
 
-        attendance.setUnconfirmedWage(0);
-
-        attendanceRepository.save(attendance);
-
-        attendanceRequestHistory.setAttendance(attendance);
         attendanceRequestHistory.setIsManagerCheckTrueAndCheckDate();
 
         attendanceRequestHistoryRepository.save(attendanceRequestHistory);
@@ -165,21 +164,33 @@ public class AttendanceService {
     }
 
     @Transactional
-    public List<AttendanceManagerMainListDto> getDailyEmployeeAttendanceList(Workplace workplace, LocalDate localDate, HttpServletRequest httpServletRequest) {
+    public List<AttendanceManagerMainListResponse> getDailyEmployeeAttendanceList(Workplace workplace, LocalDate localDate, HttpServletRequest httpServletRequest) {
         List<AttendanceManagerMainListDto> attendanceManagerMainListDtoList = attendanceRequestHistoryRepository.findByWorkplaceAndDate(workplace, localDate);
 
-        attendanceManagerMainListDtoList = attendanceManagerMainListDtoList.stream()
+        List<AttendanceManagerMainListResponse> attendanceManagerMainListResponseList = attendanceManagerMainListDtoList.stream()
                 .map(attendanceManagerMainListDto -> {
                     UserImage userImage = userImageRepository.findByUserId(attendanceManagerMainListDto.getUserId());
                     String userImageUrl = userImage != null ? UrlUtil.getBaseUrl(httpServletRequest) + userImageEndPoint + "?userImageId=" + userImage.getIdUserImage() : null;
 
-                    attendanceManagerMainListDto.setUserImageUrl(userImageUrl);
-                    return attendanceManagerMainListDto;
+                    AttendanceManagerMainListResponse attendanceManagerMainListResponse = AttendanceManagerMainListResponse.builder()
+                            .attendanceRequestHistoryId(attendanceManagerMainListDto.getAttendanceRequestHistoryId())
+                            .userName(attendanceManagerMainListDto.getUserName())
+                            .userId(attendanceManagerMainListDto.getUserId())
+                            .userImageUrl(userImageUrl)
+                            .workStartTime(DateFormatUtil.formatToDateTimeString(attendanceManagerMainListDto.getWorkStartTime()))
+                            .workEndTime(DateFormatUtil.formatToDateTimeString(attendanceManagerMainListDto.getWorkEndTime()))
+                            .changedWorkStartTime(DateFormatUtil.formatToDateTimeString(attendanceManagerMainListDto.getChangedWorkStartTime()))
+                            .changedWorkEndTime(DateFormatUtil.formatToDateTimeString(attendanceManagerMainListDto.getChangedWorkEndTime()))
+                            .totalWorkTime(attendanceManagerMainListDto.getTotalWorkTime())
+                            .isRequestApprove(attendanceManagerMainListDto.getIsRequestApprove())
+                            .isManagerCheck(attendanceManagerMainListDto.getIsManagerCheck())
+                            .build();
+                    return attendanceManagerMainListResponse;
                 })
                 .collect(Collectors.toList());
 
 
-        return attendanceManagerMainListDtoList;
+        return attendanceManagerMainListResponseList;
     }
 
     public void autoApprove(User user, Workplace workplace, AttendanceRequestDto attendanceRequestDto) {
@@ -248,16 +259,35 @@ public class AttendanceService {
 //        notificationService.sendMessageToUserWithMultiDevice(title, body, manager, NotificationType.ATTENDANCE_REQUEST, attendanceRequestHistory.getIdAttendanceRequestHistory(), workplace.getIdWorkPlace());
     }
 
-    public boolean checkIfWithinTimeRange(User user, Workplace workplace, Day day, Integer workDay, LocalTime startTime, LocalTime endTime) {
-        List<WorkSchedule> schedules = workScheduleRepository.findWorkSchedulesByUserAndWorkplace(user, workplace, day);
+    public boolean checkIfWithinTimeRange(User user, Workplace workplace, Day day, LocalDateTime workStartTime, LocalDateTime workEndTime) {
+        List<Object[]> userWorkScheduleDtoList = workScheduleRepository.findWorkSchedulesByUserAndWorkplace(user, workplace);
 
-        return schedules.stream()
-                .anyMatch(schedule -> {
-                    LocalTime scheduleStart = schedule.getStartTime();
-                    LocalTime scheduleEnd = schedule.getEndTime();
+        return userWorkScheduleDtoList.stream()
+                .anyMatch(userWorkScheduleDto -> {
+                    LocalTime scheduleStartTime = (LocalTime) userWorkScheduleDto[0];
+                    LocalTime scheduleEndTime = (LocalTime) userWorkScheduleDto[1];
+                    Day scheduleDay = (Day) userWorkScheduleDto[2];
+                    int workDay = Day.fromDay(day);
+                    int scheduleDayValue = Day.fromDay(scheduleDay);
 
-                    return !startTime.isBefore(scheduleStart.minusMinutes(10)) && !startTime.isAfter(scheduleStart.plusMinutes(10)) &&
-                            !endTime.isBefore(scheduleEnd.minusMinutes(10)) && !endTime.isAfter(scheduleEnd.plusMinutes(10));
+                    // 현재 날짜에서 scheduleDay가 언제인지 확인
+                    LocalDate scheduleStartDate = workStartTime.toLocalDate();
+
+                    // 같은 주 내에서 해당 요일 찾기
+                    scheduleStartDate = scheduleStartDate.plusDays(scheduleDayValue - workDay);
+                    LocalDate scheduleEndDate = scheduleStartTime.isAfter(scheduleEndTime) ? scheduleStartDate.plusDays(1) : scheduleStartDate;
+
+                    // scheduleStartTime과 scheduleEndTime을 결합하여 LocalDateTime 생성
+                    LocalDateTime scheduleStartDateTime = LocalDateTime.of(scheduleStartDate, scheduleStartTime);
+                    LocalDateTime scheduleEndDateTime = LocalDateTime.of(scheduleEndDate, scheduleEndTime);
+
+                    LocalDateTime startLowerBound = scheduleStartDateTime.minusMinutes(10);
+                    LocalDateTime startUpperBound = scheduleStartDateTime.plusMinutes(10);
+                    LocalDateTime endLowerBound = scheduleEndDateTime.minusMinutes(10);
+                    LocalDateTime endUpperBound = scheduleEndDateTime.plusMinutes(10);
+
+                    return (workStartTime.isAfter(startLowerBound) && workStartTime.isBefore(startUpperBound))
+                            && (workEndTime.isAfter(endLowerBound) && workEndTime.isBefore(endUpperBound));
                 });
     }
 

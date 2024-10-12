@@ -232,8 +232,8 @@ public class AttendanceControllerIntegrationTest {
         return AttendanceApprovalDto.builder()
                 .attendanceRequestHistoryId(attendanceRequestHistory.getIdAttendanceRequestHistory())
                 .confirmedWage(60000)
-                .workStartTime(LocalDateTime.parse("2024-09-21T08:49:07.328938"))
-                .workEndTime(LocalDateTime.parse("2024-09-21T15:02:34.284727"))
+                .changedWorkStartTime(LocalDateTime.parse("2024-09-21T08:49:07.328938"))
+                .changedWorkEndTime(LocalDateTime.parse("2024-09-21T15:02:34.284727"))
                 .build();
     }
 }
