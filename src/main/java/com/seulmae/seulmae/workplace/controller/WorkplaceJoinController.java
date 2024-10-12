@@ -3,10 +3,7 @@ package com.seulmae.seulmae.workplace.controller;
 import com.seulmae.seulmae.global.util.ResponseUtil;
 import com.seulmae.seulmae.global.util.enums.SuccessCode;
 import com.seulmae.seulmae.user.entity.User;
-import com.seulmae.seulmae.workplace.dto.JoinApprovalDto;
-import com.seulmae.seulmae.workplace.dto.WorkplaceJoinDto;
-import com.seulmae.seulmae.workplace.dto.WorkplaceJoinHistoryDto;
-import com.seulmae.seulmae.workplace.dto.WorkplaceJoinRequestDto;
+import com.seulmae.seulmae.workplace.dto.*;
 import com.seulmae.seulmae.workplace.service.WorkplaceJoinService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -89,9 +86,9 @@ public class WorkplaceJoinController {
     @GetMapping("request/history/list")
     public ResponseEntity<?> getJoinRequestList(@AuthenticationPrincipal User user) {
         try {
-            List<WorkplaceJoinHistoryDto> workplaceJoinHistoryList = workplaceJoinService.getJoinRequestList(user);
+            List<WorkplaceJoinHistoryResponse> workplaceJoinHistoryResponseList = workplaceJoinService.getJoinRequestList(user);
 
-            return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, workplaceJoinHistoryList);
+            return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, workplaceJoinHistoryResponseList);
         } catch (Exception e) {
             return ResponseUtil.handleException(e);
         }

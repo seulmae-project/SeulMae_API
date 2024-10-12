@@ -14,10 +14,7 @@ import com.seulmae.seulmae.user.repository.UserWorkScheduleRepository;
 import com.seulmae.seulmae.user.repository.UserWorkplaceRepository;
 import com.seulmae.seulmae.wage.entity.Wage;
 import com.seulmae.seulmae.wage.repository.WageRepository;
-import com.seulmae.seulmae.workplace.dto.JoinApprovalDto;
-import com.seulmae.seulmae.workplace.dto.WorkplaceJoinDto;
-import com.seulmae.seulmae.workplace.dto.WorkplaceJoinHistoryDto;
-import com.seulmae.seulmae.workplace.dto.WorkplaceJoinRequestDto;
+import com.seulmae.seulmae.workplace.dto.*;
 import com.seulmae.seulmae.workplace.entity.WorkSchedule;
 import com.seulmae.seulmae.workplace.entity.Workplace;
 import com.seulmae.seulmae.workplace.entity.WorkplaceApprove;
@@ -183,17 +180,19 @@ public class WorkplaceJoinService {
     }
 
     @Transactional
-    public List<WorkplaceJoinHistoryDto> getJoinRequestList(User user) {
+    public List<WorkplaceJoinHistoryResponse> getJoinRequestList(User user) {
         List<WorkplaceJoinHistoryDto> workplaceJoinHistoryList = workplaceJoinHistoryRepository.findAllByUser(user);
 
-        workplaceJoinHistoryList = workplaceJoinHistoryList.stream()
-                .map(workplaceJoinHistoryDto -> {
-                    workplaceJoinHistoryDto.setStringDecisionDate(DateFormatUtil.formatToDateTimeString(workplaceJoinHistoryDto.getDecisionDate()));
-                    workplaceJoinHistoryDto.setStringRegDateWorkplaceJoinHistory(DateFormatUtil.formatToDateTimeString(workplaceJoinHistoryDto.getRegDateWorkplaceJoinHistory()));
-                    return workplaceJoinHistoryDto;
-                }).toList();
+        List<WorkplaceJoinHistoryResponse> workplaceJoinHistoryResponseList = workplaceJoinHistoryList.stream()
+                .map(workplaceJoinHistoryDto -> WorkplaceJoinHistoryResponse.builder()
+                        .workplaceId(workplaceJoinHistoryDto.getWorkplace().getIdWorkPlace())
+                        .workplaceName(workplaceJoinHistoryDto.getWorkplace().getWorkplaceName())
+                        .isApprove(workplaceJoinHistoryDto.getIsApprove())
+                        .decisionDate(DateFormatUtil.formatToDateTimeString(workplaceJoinHistoryDto.getDecisionDate()))
+                        .regDateWorkplaceJoinHistory(DateFormatUtil.formatToDateTimeString(workplaceJoinHistoryDto.getRegDateWorkplaceJoinHistory()))
+                        .build()).toList();
 
-        return workplaceJoinHistoryList;
+        return workplaceJoinHistoryResponseList;
     }
 
     public void deleteWorkplaceApproveById(Long workplaceApproveId) {
