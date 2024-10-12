@@ -1,0 +1,123 @@
+name: CI/CD Pipeline For Develop
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    services:
+      redis:
+        image: redis:7.0
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.1.7
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4.2.2
+        with:
+          java-version: '21'
+          distribution: 'corretto'
+          cache: gradle
+
+      - name: Set executable permissions for gradlew
+        run: chmod +x ./gradlew
+
+      - name: Make application-secret.yml
+        run: |
+          mkdir -p ./src/main/resources/yml
+          cd ./src/main/resources/yml
+          touch ./application-secret.yml
+          echo "${{ secrets.SECRET_FILE }}" | base64 --decode > ./application-secret.yml
+
+      - name: Make firebase.json
+        run: |
+          mkdir -p ./src/main/resources/firebase
+          cd ./src/main/resources/firebase
+          touch "${{ secrets.FIREBASE_NAME }}"
+          echo "${{ secrets.FIREBASE_FILE }}" | base64 --decode > "${{ secrets.FIREBASE_NAME }}"
+
+      - name: Wait for Redis to be ready
+        run: sleep 5
+        
+      - name: Run tests
+        run: ./gradlew test
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4.4.3
+        with:
+          name: test-results
+          path: build/reports/tests/test/
+
+      - name: Build JAR
+        run: ./gradlew bootJar
+
+      - name: Build Docker image
+        run: docker build -t hanui/seulmae-api:latest .
+        env:
+          DOCKER_BUILDKIT: 1
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3.3.0
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+
+      - name: Push Docker image
+        run: docker push hanui/seulmae-api:latest
+
+      - name: Send Slack notification for build
+        if: always()  # 성공 또는 실패 시 항상 실행
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            if [ "${{ github.event_name }}" == "push" ]; then
+              MESSAGE="✅ Build succeeded! Commit: ${{ github.event.head_commit.message }} (Commit ID: ${{ github.event.head_commit.id }}) on branch: ${{ github.ref_name }}!"
+            elif [ "${{ github.event_name }}" == "pull_request" ]; then
+              MESSAGE="✅ Build succeeded! PR: #${{ github.event.pull_request.number }} - ${{ github.event.pull_request.title }} on branch: ${{ github.ref_name }}!"
+            fi
+          else
+            if [ "${{ github.event_name }}" == "push" ]; then
+              MESSAGE="❌ Build failed! Commit: ${{ github.event.head_commit.message }} (Commit ID: ${{ github.event.head_commit.id }}) on branch: ${{ github.ref_name }}!"
+            elif [ "${{ github.event_name }}" == "pull_request" ]; then
+              MESSAGE="❌ Build failed! PR: #${{ github.event.pull_request.number }} - ${{ github.event.pull_request.title }} on branch: ${{ github.ref_name }}!"
+            fi
+          fi
+          curl -X POST -H 'Content-type: application/json' \
+          --data "{\"text\":\"$MESSAGE\"}" \
+          ${{ secrets.SLACK_TEST_CICD_WEBHOOK_URL }}
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: SSH to Server and Deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            cd ~/seulmae
+            docker pull hanui/seulmae-api:latest
+            docker compose up -d --build
+
+      - name: Send Slack notification for deploy
+        if: always()  # 성공 또는 실패 시 항상 실행
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            MESSAGE="✅ Deploy succeeded!"
+          else
+            MESSAGE="❌ Deploy failed!"
+          fi
+          curl -X POST -H 'Content-type: application/json' \
+          --data "{\"text\":\"$MESSAGE\"}" \
+          ${{ secrets.SLACK_TEST_CICD_WEBHOOK_URL }}

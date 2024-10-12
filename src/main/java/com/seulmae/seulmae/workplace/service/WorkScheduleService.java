@@ -30,7 +30,7 @@ public class WorkScheduleService {
     public WorkScheduleInfoDto getWorkSchedule(Long workScheduleId, User user) {
         WorkSchedule workSchedule = workScheduleRepository.findById(workScheduleId)
                 .orElseThrow(() -> new NoSuchElementException("해당 근무일정 ID가 존재하지 않습니다."));
-        userWorkplaceService.checkMangerAuthority(workSchedule.getWorkplace(), user);
+        userWorkplaceService.checkWorkplaceAuthority(workSchedule.getWorkplace(), user);
 
         return new WorkScheduleInfoDto(workSchedule);
     }
@@ -38,7 +38,7 @@ public class WorkScheduleService {
     public List<WorkScheduleInfoDto> getWorkSchedules(Long workplaceId, User user) {
         Workplace workplace = workplaceRepository.findById(workplaceId)
                 .orElseThrow(() -> new NoSuchElementException("해당 근무지 ID가 존재하지 않습니다."));
-        userWorkplaceService.checkMangerAuthority(workplace, user);
+        userWorkplaceService.checkWorkplaceAuthority(workplace, user);
 
         return workScheduleRepository.findAllByWorkplace(workplace).stream()
                 .sorted((ws1, ws2) -> ws2.getRegDateWorkSchedule().compareTo(ws1.getRegDateWorkSchedule()))
@@ -51,7 +51,7 @@ public class WorkScheduleService {
         // 매니저 권한이 있는가?
         Workplace workplace = workplaceRepository.findById(request.getWorkplaceId())
                 .orElseThrow(() -> new NoSuchElementException("해당 근무지 ID가 존재하지 않습니다."));
-        userWorkplaceService.checkMangerAuthority(workplace, user);
+        userWorkplaceService.checkManagerAuthority(workplace, user);
 
         // workSchedule 생성
         WorkSchedule workSchedule = WorkSchedule.builder()
@@ -79,7 +79,7 @@ public class WorkScheduleService {
     public void updateWorkSchedule(Long workScheduleId, WorkScheduleUpdateDto request, User user) {
         WorkSchedule workSchedule = workScheduleRepository.findById(workScheduleId)
                 .orElseThrow(() -> new NoSuchElementException("해당 근무일정 ID가 존재하지 않습니다."));
-        userWorkplaceService.checkMangerAuthority(workSchedule.getWorkplace(), user);
+        userWorkplaceService.checkManagerAuthority(workSchedule.getWorkplace(), user);
 
         WorkSchedule updatedWorkSchedule = workSchedule.toBuilder()
                 .workScheduleTitle(request.getWorkScheduleTitle())
@@ -105,7 +105,7 @@ public class WorkScheduleService {
     public void deleteWorkSchedule(Long workScheduleId, User user) {
         WorkSchedule workSchedule = workScheduleRepository.findById(workScheduleId)
                 .orElseThrow(() -> new NoSuchElementException("해당 근무일정 ID가 존재하지 않습니다."));
-        userWorkplaceService.checkMangerAuthority(workSchedule.getWorkplace(), user);
+        userWorkplaceService.checkManagerAuthority(workSchedule.getWorkplace(), user);
 
         workScheduleRepository.deleteById(workScheduleId);
     }

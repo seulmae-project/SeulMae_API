@@ -6,16 +6,19 @@ import com.seulmae.seulmae.user.entity.UserImage;
 import com.seulmae.seulmae.user.repository.UserImageRepository;
 import com.seulmae.seulmae.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserImageService {
     private final UserRepository userRepository;
     private final UserImageRepository userImageRepository;
@@ -39,21 +42,35 @@ public class UserImageService {
 
     @Transactional
     public void updateUserImage(MultipartFile profileImage, User user) {
-        try {
-            String fileName = profileImage.getOriginalFilename();
-            String filePath = userFilePath + user.getIdUser();
-            userImageRepository.findByUser(user)
-                    .ifPresentOrElse(userImage -> userImage.update(fileName, filePath, FileUtil.getFileExtension(profileImage)),
-                            () -> {
-                                UserImage newUserImage = new UserImage(user, fileName, filePath, FileUtil.getFileExtension(profileImage));
-                                user.updateUserImage(newUserImage);
-                            });
+        if (profileImage != null && !profileImage.isEmpty()) {
+            try {
+                String fileName = profileImage.getOriginalFilename();
+                String filePath = userFilePath + user.getIdUser();
+                userImageRepository.findByUser(user)
+                        .ifPresentOrElse(userImage -> {
 
-            // TODO: 서버에 저장된 기존 사진은 어떻게 할 것인가? 지우기 VS 남겨두기
-            FileUtil.uploadFile(filePath, fileName, profileImage);
-        } catch (Exception e) {
-            e.printStackTrace();
+                                    FileUtil.deleteImage(userImage.getUserImagePath(), userImage.getUserImageName());
+
+                                    userImage.update(fileName, filePath, FileUtil.getFileExtension(profileImage));
+                                },
+                                () -> {
+                                    UserImage newUserImage = new UserImage(user, fileName, filePath, FileUtil.getFileExtension(profileImage));
+                                    user.updateUserImage(newUserImage);
+                                });
+
+                FileUtil.uploadFile(filePath, fileName, profileImage);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            userImageRepository.findByUser(user)
+                    .ifPresent(userImage -> {
+                        FileUtil.deleteImage(userImage.getUserImagePath(), userImage.getUserImageName());
+                        userImageRepository.delete(userImage);
+                        user.updateUserImage(null);
+                    });
         }
+
     }
 
     @Transactional

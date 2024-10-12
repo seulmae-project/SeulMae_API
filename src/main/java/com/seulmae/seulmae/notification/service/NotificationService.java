@@ -12,10 +12,15 @@ import com.seulmae.seulmae.notification.repository.NotificationRepository;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.user.entity.UserWorkplace;
 import com.seulmae.seulmae.user.repository.UserWorkplaceRepository;
+import com.seulmae.seulmae.user.service.UserService;
 import com.seulmae.seulmae.workplace.entity.Workplace;
 import com.seulmae.seulmae.workplace.repository.WorkplaceRepository;
+import com.seulmae.seulmae.workplace.service.WorkplaceService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,13 +34,14 @@ import java.util.stream.Collectors;
 @Slf4j
 public class NotificationService {
     private final NotificationRepository notificationRepository;
-    private final FcmTokenRepository fcmTokenRepository;
     private final WorkplaceRepository workplaceRepository;
     private final UserWorkplaceRepository userWorkplaceRepository;
 
     private final FcmIndividualServiceImpl fcmIndividualServiceImpl;
     private final FcmTopicServiceImpl fcmTopicServiceImpl;
     private final FindByIdUtil findByIdUtil;
+    private final UserService userService;
+    private final WorkplaceService workplaceService;
 
     private static final String TOPIC_PREFIX = "workplace";
 
@@ -55,17 +61,17 @@ public class NotificationService {
         }
 
         String title = "[공지사항]";
-        String body = "'" + announcement.getTitle() + "'이 등록되었습니다.";
+        String body = "'" + announcement.getTitle() + "'이(가) 등록되었습니다.";
 
-        log.info("Sending announcement notification to topic: {}", topic);
+        for (User user : users) {
+            UserWorkplace userWorkplace = userWorkplaceRepository.findByUserAndWorkplaceAndIsDelUserWorkplaceFalse(user, workplace)
+                            .orElseThrow(() -> new NoSuchElementException("해당 User 및 Workplace와 관련된 UserWorkplace가 존재하지 않습니다."));
+            storeNotification(title, body, userWorkplace, NotificationType.NOTICE, announcement.getIdAnnouncement());
+        }
 
         fcmTopicServiceImpl.sendMessageTo(topic, title, body, NotificationType.NOTICE, announcement.getIdAnnouncement());
 
-        for (User user : users) {
-            UserWorkplace userWorkplace = userWorkplaceRepository.findByUserAndWorkplace(user, workplace)
-                            .orElseThrow(() -> new NoSuchElementException("해당 User 및 Workplace와 관련된 UserWorkplace가 존재하지 않습니다."));
-            storeNotification(title, body, userWorkplace, NotificationType.NOTICE);
-        }
+        log.info("Sending announcement notification to topic: {}", topic);
     }
 
 
@@ -79,39 +85,52 @@ public class NotificationService {
                     .map(FcmToken::getFcmToken)
                     .toList();
             Workplace workplace = findByIdUtil.getWorkplaceById(workplaceId);
-            UserWorkplace userWorkplace = userWorkplaceRepository.findByUserAndWorkplace(receiver, workplace)
+            UserWorkplace userWorkplace = userWorkplaceRepository.findByUserAndWorkplaceAndIsDelUserWorkplaceFalse(receiver, workplace)
                     .orElseThrow(() -> new NoSuchElementException("해당 User 및 Workplace와 관련된 UserWorkplace가 존재하지 않습니다."));
+
+            storeNotification(title, body, userWorkplace, type, id);
 
             fcmIndividualServiceImpl.sendMultiMessageTo(fcmTokens, title, body, type, id, workplaceId);
 
-            storeNotification(title, body, userWorkplace, type);
-
         } catch (FirebaseMessagingException e) {
-            log.error("Failed to send FCM message to user {} with title '{}'", receiver.getUsername(), title, e);
+            log.error("Failed to send FCM message to user {} with title '{}'", receiver.getAccountId(), title, e);
 
             throw new RuntimeException("Failed to send FCM message", e);
         } catch (Exception e) {
-            log.error("An error occurred while sending message to user {} with title '{}'", receiver.getUsername(), title, e);
+            log.error("An error occurred while sending message to user {} with title '{}'", receiver.getAccountId(), title, e);
             throw new RuntimeException("Failed to send message", e);
         }
     }
 
 
 
-    public Notification storeNotification(String title, String message, UserWorkplace userWorkplace, NotificationType notificationType) {
+    public void storeNotification(String title, String message, UserWorkplace userWorkplace, NotificationType notificationType, Long linkedId) {
         Notification notification = Notification.builder()
                 .title(title)
                 .message(message)
                 .userWorkplace(userWorkplace)
                 .notificationType(notificationType)
+                .linkedId(linkedId)
                 .build();
-        return notificationRepository.save(notification);
+        notificationRepository.save(notification);
     }
 
-    public List<NotificationResponse> getNotifications(Long userWorkplaceId) {
+    public List<NotificationResponse> getNotifications(Long userWorkplaceId, HttpServletRequest request) {
         UserWorkplace userWorkplace = findByIdUtil.getUserWorkplaceById(userWorkplaceId);
+        System.out.println("userWorkplace = " + userWorkplace);
         return notificationRepository.findAllByUserWorkplace(userWorkplace).stream()
-                .map(NotificationResponse::new)
+                .map(notification -> {
+                    String imageURL = switch (notification.getNotificationType()) {
+                        case NOTICE -> workplaceService.getWorkplaceImageUrlList(userWorkplace.getWorkplace(), request).isEmpty() ?
+                                null : workplaceService.getWorkplaceImageUrlList(userWorkplace.getWorkplace(), request).getFirst();
+                        case ATTENDANCE_REQUEST, ATTENDANCE_RESPONSE, JOIN_REQUEST, JOIN_RESPONSE ->
+                                userService.getUserImageURL(userWorkplace.getUser(), request);
+                        default -> throw new NoSuchElementException("관련 로직이 아직 존재하지 않음.");
+                    };
+                    NotificationResponse notificationResponse = new NotificationResponse(notification);
+                    notificationResponse.setImageURL(imageURL);
+                    return notificationResponse;
+                })
                 .collect(Collectors.toList());
     }
 }

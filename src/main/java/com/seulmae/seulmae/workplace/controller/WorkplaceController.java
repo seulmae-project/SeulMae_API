@@ -2,7 +2,7 @@ package com.seulmae.seulmae.workplace.controller;
 
 import com.seulmae.seulmae.global.util.ResponseUtil;
 import com.seulmae.seulmae.global.util.enums.SuccessCode;
-import com.seulmae.seulmae.global.util.enums.SuccessResponse;
+import com.seulmae.seulmae.user.dto.response.UserWorkplaceInfoResponse;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.workplace.dto.WorkplaceAddDto;
 import com.seulmae.seulmae.workplace.dto.WorkplaceInfoDto;
@@ -11,7 +11,6 @@ import com.seulmae.seulmae.workplace.dto.WorkplaceModifyDto;
 import com.seulmae.seulmae.workplace.service.WorkplaceService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -50,11 +49,11 @@ public class WorkplaceController {
      * 근무지 전체 리스트
      */
     @GetMapping("info/all")
-    public ResponseEntity<?> getAllWorkplace(HttpServletRequest request) {
+    public ResponseEntity<?> getAllWorkplace(HttpServletRequest request, @RequestParam(required = false) String keyword) {
         try {
-            List<WorkplaceListInfoDto> workplaceListInfoDtoList = workplaceService.getAllWorkplace(request);
+            List<WorkplaceListInfoDto> workplaceListInfoDtoList = workplaceService.getAllWorkplace(request, keyword);
 
-            return ResponseUtil.createSuccessResponse(SuccessCode.INSERT_SUCCESS, workplaceListInfoDtoList);
+            return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, workplaceListInfoDtoList);
         } catch (Exception e) {
             return ResponseUtil.handleException(e);
         }
@@ -70,6 +69,21 @@ public class WorkplaceController {
             WorkplaceInfoDto workplaceInfoDto = workplaceService.getSpecificWorkplace(workplaceId, request);
 
             return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, workplaceInfoDto);
+        } catch (Exception e) {
+            return ResponseUtil.handleException(e);
+        }
+    }
+
+    /**
+     * 유저별 가입 근무지 리스트
+     * @param user
+     */
+    @GetMapping("info/join")
+    public ResponseEntity<?> getJoinWorkplaceList(@AuthenticationPrincipal User user) {
+        try {
+            List<UserWorkplaceInfoResponse> userWorkplaceInfoResponse = workplaceService.getJoinWorkplaceList(user);
+
+            return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, userWorkplaceInfoResponse);
         } catch (Exception e) {
             return ResponseUtil.handleException(e);
         }
@@ -97,11 +111,26 @@ public class WorkplaceController {
      * @param workplaceId
      */
     @DeleteMapping("delete")
-    public ResponseEntity<?> modifyWorkplace(@RequestParam Long workplaceId) {
+    public ResponseEntity<?> deleteWorkplace(@RequestParam Long workplaceId) {
         try {
             workplaceService.deleteWorkplace(workplaceId);
 
             return ResponseUtil.createSuccessResponse(SuccessCode.DELETE_SUCCESS);
+        } catch (Exception e) {
+            return ResponseUtil.handleException(e);
+        }
+    }
+
+    /**
+     * 근무지명 중복 확인
+     * @param workplaceName
+     * **/
+    @GetMapping("duplicate/name")
+    public ResponseEntity<?> checkWorkplaceNameDuplicate(@RequestParam String workplaceName) {
+        try {
+            workplaceService.checkWorkplaceNameDuplicate(workplaceName);
+
+            return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS);
         } catch (Exception e) {
             return ResponseUtil.handleException(e);
         }

@@ -1,6 +1,7 @@
 package com.seulmae.seulmae.global.util;
 
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -10,6 +11,7 @@ import org.springframework.util.FileCopyUtils;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.swing.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -23,6 +25,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Service
+@Slf4j
 public class FileUtil {
     private static final List<String> PUBLIC_KEY_EXTENSIONS = Arrays.asList("cer", "crt", "pem", "der");
 
@@ -69,6 +72,16 @@ public class FileUtil {
         }
     }
 
+    public static void deleteImage(String imagePath, String imageName) {
+        File image = new File(imagePath, imageName);
+        boolean deleted = image.delete();
+
+        if (!deleted) {
+            log.info("이미지 삭제에 실패했습니다.");
+        }
+
+    }
+
     public static String getFileExtension(MultipartFile file) {
         String originalFilename = file.getOriginalFilename();
         int dotIndex = originalFilename.lastIndexOf('.');
@@ -111,12 +124,33 @@ public class FileUtil {
         try {
             URL urlObj = new URL(url);
             String path = urlObj.getPath();
+            /** 수정한 부분 **/
+            String query = urlObj.getQuery();
+
+            if (query != null && query.contains("fname=")) {
+                String fname = extractFname(query);
+                System.out.println("fname = " + fname);
+                return fname.substring(fname.lastIndexOf('/') + 1);
+            }
+
+            /** 수정 마지막 부분 **/
+
             return path.substring(path.lastIndexOf('/') + 1);
         } catch (MalformedURLException e) {
             throw new RuntimeException("Invalid URL: " + url, e);
         }
     }
 
+    private static String extractFname(String url) {
+        String keyword = "fname=";
+        int startIndex = url.indexOf(keyword);
+
+        if (startIndex != -1) { // fname=이 존재하는 경우
+            return url.substring(startIndex + keyword.length());
+        } else {
+            throw new RuntimeException("URL에 fname 파라미터가 없습니다.");
+        }
+    }
 
     private static String checkMimeType(File file, String path) {
         String mimeType = getMimeType(file);

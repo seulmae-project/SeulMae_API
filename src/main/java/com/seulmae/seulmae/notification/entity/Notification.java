@@ -35,15 +35,19 @@ public class Notification {
     @Column(name = "notification_type")
     private NotificationType notificationType;
 
+    @Column(name = "linked_id")
+    private Long linkedId;
+
     @CreatedDate
     @Column(name = "reg_date_notification")
     private LocalDateTime regDateNotification;
 
     @Builder
-    public Notification(String title, String message, NotificationType notificationType, UserWorkplace userWorkplace) {
+    public Notification(String title, String message, NotificationType notificationType, Long linkedId, UserWorkplace userWorkplace) {
         this.title = title;
         this.message = message;
         this.notificationType = notificationType;
+        this.linkedId = linkedId;
         this.userWorkplace = userWorkplace;
     }
 }

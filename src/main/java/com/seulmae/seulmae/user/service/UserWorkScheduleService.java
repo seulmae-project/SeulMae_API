@@ -31,7 +31,7 @@ public class UserWorkScheduleService {
     public List<UserWorkScheduleListResponse> getUsersByWorkSchedule(Long workScheduleId, User user, HttpServletRequest request) {
         WorkSchedule workSchedule = workScheduleRepository.findById(workScheduleId)
                 .orElseThrow(() -> new NoSuchElementException("해당 근무일정 ID가 존재하지 않습니다."));
-        userWorkplaceService.checkMangerAuthority(workSchedule.getWorkplace(), user);
+        userWorkplaceService.checkManagerAuthority(workSchedule.getWorkplace(), user);
 
         List<UserWorkSchedule> userWorkSchedules = userWorkScheduleRepository.findAllByWorkSchedule(workSchedule);
 
@@ -45,7 +45,7 @@ public class UserWorkScheduleService {
     public void addUserWorkSchedule(UserWorkScheduleAddRequest userWorkScheduleAddRequest, User user) {
         WorkSchedule workSchedule = workScheduleRepository.findById(userWorkScheduleAddRequest.getWorkScheduleId())
                 .orElseThrow(() -> new NoSuchElementException("해당 근무일정 ID가 존재하지 않습니다."));
-        userWorkplaceService.checkMangerAuthority(workSchedule.getWorkplace(), user);
+        userWorkplaceService.checkManagerAuthority(workSchedule.getWorkplace(), user);
 
         User targetUser = userRepository.findById(userWorkScheduleAddRequest.getTargetUserId())
                         .orElseThrow(() -> new NoSuchElementException("해당 유저 ID가 존재하지 않습니다."));
@@ -62,7 +62,7 @@ public class UserWorkScheduleService {
     public void modifyUserWorkSchedule(Long userWorkScheduleId, UserWorkScheduleUpdateRequest request, User user) {
         WorkSchedule workSchedule = workScheduleRepository.findById(request.getWorkScheduleId())
                 .orElseThrow(() -> new NoSuchElementException("해당 근무일정 ID가 존재하지 않습니다."));
-        userWorkplaceService.checkMangerAuthority(workSchedule.getWorkplace(), user);
+        userWorkplaceService.checkManagerAuthority(workSchedule.getWorkplace(), user);
 
         UserWorkSchedule userWorkSchedule = userWorkScheduleRepository.findById(userWorkScheduleId)
                 .orElseThrow(() -> new NoSuchElementException("userWorkSchedule ID가 존재하지 않습니다."));
@@ -76,7 +76,7 @@ public class UserWorkScheduleService {
     public void deleteUserWorkSchedule(Long userWorkScheduleId, User user) {
         UserWorkSchedule userWorkSchedule = userWorkScheduleRepository.findById(userWorkScheduleId)
                 .orElseThrow(() -> new NoSuchElementException("userWorkSchedule ID가 존재하지 않습니다."));
-        userWorkplaceService.checkMangerAuthority(userWorkSchedule.getWorkSchedule().getWorkplace(), user);
+        userWorkplaceService.checkManagerAuthority(userWorkSchedule.getWorkSchedule().getWorkplace(), user);
 
         userWorkScheduleRepository.delete(userWorkSchedule);
     }

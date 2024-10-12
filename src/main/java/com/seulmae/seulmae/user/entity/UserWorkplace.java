@@ -36,6 +36,13 @@ public class UserWorkplace {
     @Column(name = "memo")
     private String memo;
 
+    @Column(name = "is_del_user_workplace")
+    @Builder.Default
+    private Boolean isDelUserWorkplace = false;
+
+    @Column(name = "del_date_user_workplace")
+    private LocalDateTime delDateUserWorkplace;
+
     @CreatedDate
     @Column(name = "reg_date_user_workplace")
     private LocalDateTime regDateUserWorkplace;
@@ -43,4 +50,17 @@ public class UserWorkplace {
     @LastModifiedDate
     @Column(name = "revision_date_user_workplace")
     private LocalDateTime revisionDateUserWorkplace;
+
+    public void setIsManagerTrue() {
+        this.isManager = true;
+    }
+
+    public void setIsManagerFalse() {
+            this.isManager = false;
+    }
+
+    public void deleteUserWorkplace() {
+        this.isDelUserWorkplace = true;
+        this.delDateUserWorkplace = LocalDateTime.now();
+    }
 }

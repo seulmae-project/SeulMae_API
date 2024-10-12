@@ -2,16 +2,20 @@ package com.seulmae.seulmae.attendanceRequestHistory.controller;
 
 import com.seulmae.seulmae.attendanceRequestHistory.dto.*;
 import com.seulmae.seulmae.attendanceRequestHistory.service.AttendanceHistoryService;
+import com.seulmae.seulmae.global.util.ResponseUtil;
 import com.seulmae.seulmae.global.util.enums.SuccessCode;
-import com.seulmae.seulmae.global.util.enums.SuccessResponse;
 import com.seulmae.seulmae.user.entity.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -21,19 +25,29 @@ public class AttendanceHistoryController {
 
 
     /*
-    * 근무 달력
-    * */
-    @GetMapping("calender")
-    public ResponseEntity<?> getCalender(@AuthenticationPrincipal User user,
-                                         @RequestParam Long workplaceId,
-                                         @RequestParam Integer year,
-                                         @RequestParam Integer month) {
+     * 근무 달력
+     * */
+    @GetMapping("calendar-employee")
+    public ResponseEntity<?> getEmployeeCalendar(@AuthenticationPrincipal User user,
+                                                 @RequestParam Long workplaceId,
+                                                 @RequestParam LocalDate todayDate) {
         try {
-            AttendanceCalendarDto attendanceCalendarDto = historyService.getCalender(user, workplaceId, year, month);
-            SuccessResponse successResponse = new SuccessResponse(SuccessCode.SELECT_SUCCESS, attendanceCalendarDto);
-            return ResponseEntity.ok(successResponse);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            List<AttendanceCalendarDto> attendanceCalendarDtoList = historyService.getEmployeeCalendar(user, workplaceId, todayDate);
+            return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, attendanceCalendarDtoList);
+        } catch (Exception e) {
+            return ResponseUtil.handleException(e);
+        }
+    }
+
+    @GetMapping("calendar-manager")
+    public ResponseEntity<?> getManagerCalendar(@AuthenticationPrincipal User user,
+                                                @RequestParam Long workplaceId,
+                                                @RequestParam LocalDate todayDate) {
+        try {
+            List<AttendanceCalendarDto> attendanceCalendarDtoList = historyService.getManagerCalendar(user, workplaceId, todayDate);
+            return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, attendanceCalendarDtoList);
+        } catch (Exception e) {
+            return ResponseUtil.handleException(e);
         }
     }
 
@@ -42,14 +56,12 @@ public class AttendanceHistoryController {
      * */
     @GetMapping("status")
     public ResponseEntity<?> getStatus(@AuthenticationPrincipal User user,
-                                     @RequestParam Long workplaceId) {
+                                       @RequestParam Long workplaceId) {
         try {
             WorkStatusDto workStatusDto = historyService.getStatus(user, workplaceId);
-
-            SuccessResponse successResponse = new SuccessResponse(SuccessCode.SELECT_SUCCESS, workStatusDto);
-            return ResponseEntity.ok(successResponse);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, workStatusDto);
+        } catch (Exception e) {
+            return ResponseUtil.handleException(e);
         }
     }
 
@@ -60,11 +72,9 @@ public class AttendanceHistoryController {
                                         @RequestParam Integer month) {
         try {
             MonthlyWorkSummaryDto monthlyWorkSummaryDto = historyService.getMonthlyWork(user, workplaceId, year, month);
-
-            SuccessResponse successResponse = new SuccessResponse(SuccessCode.SELECT_SUCCESS, monthlyWorkSummaryDto);
-            return ResponseEntity.ok(successResponse);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, monthlyWorkSummaryDto);
+        } catch (Exception e) {
+            return ResponseUtil.handleException(e);
         }
     }
 
@@ -76,12 +86,10 @@ public class AttendanceHistoryController {
                                             @RequestParam Integer page,
                                             @RequestParam Integer size) {
         try {
-            AttendanceRequestHistoryDto historyList = historyService.getHistoryList(user, workplaceId, year, month, page, size);
-
-            SuccessResponse successResponse = new SuccessResponse(SuccessCode.SELECT_SUCCESS, historyList);
-            return ResponseEntity.ok(successResponse);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            Page<AttendanceRequestHistoryDto> historyList = historyService.getHistoryList(user, workplaceId, year, month, page, size);
+            return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, historyList);
+        } catch (Exception e) {
+            return ResponseUtil.handleException(e);
         }
     }
 
@@ -90,35 +98,24 @@ public class AttendanceHistoryController {
      * */
     @GetMapping("detail")
     public ResponseEntity<?> getRequestHistoryDetail(@AuthenticationPrincipal User user,
-                                       @RequestParam Long idAttendanceRequestHistory) {
+                                                     @RequestParam Long idAttendanceRequestHistory) {
         try {
             AttendanceRequestHistoryDetailDto historyDetail = historyService.getHistoryDetail(user, idAttendanceRequestHistory);
-
-            SuccessResponse successResponse = new SuccessResponse(SuccessCode.SELECT_SUCCESS, historyDetail);
-            return ResponseEntity.ok(successResponse);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, historyDetail);
+        } catch (Exception e) {
+            return ResponseUtil.handleException(e);
         }
     }
-//    @PostMapping("detail-employee")
+
+//    @PostMapping("detail")
 //    public ResponseEntity<?> updateDetailUser(@RequestBody User user) {
 //        try {
 //            historyService.updateDetailEmployee(user);
-//            SuccessResponse successResponse = new SuccessResponse(SuccessCode.UPDATE_SUCCESS);
-//            return ResponseEntity.ok(successResponse);
-//        } catch (IllegalArgumentException e) {
-//            return ResponseEntity.badRequest().body(e.getMessage());
+//            return ResponseUtil.createSuccessResponse(SuccessCode.UPDATE_SUCCESS);
+//        } catch (Exception e) {
+//            return ResponseUtil.handleException(e);
 //        }
 //    }
-//    @PostMapping("detail-manager")
-//    public ResponseEntity<?> updateDetailManager(@RequestBody User user) {
-//        try {
-//            historyService.updateDetailManager(user);
-//            SuccessResponse successResponse = new SuccessResponse(SuccessCode.UPDATE_SUCCESS);
-//            return ResponseEntity.ok(successResponse);
-//        } catch (IllegalArgumentException e) {
-//            return ResponseEntity.badRequest().body(e.getMessage());
-//        }
-//    }
+
 
 }

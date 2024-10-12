@@ -39,15 +39,15 @@ public class UserImage {
     @Column(name = "reg_date_user_image")
     private LocalDateTime regDateUserImage;
 
-    @LastModifiedDate
-    @Column(name = "revision_date_user_image")
-    private LocalDateTime revisionDateUserImage;
-
-    @Column(name = "is_del_user_image")
-    private Boolean isDelUserImage = false;
-
-    @Column(name = "del_date_user_image")
-    private LocalDateTime delDateUserImage;
+//    @LastModifiedDate
+//    @Column(name = "revision_date_user_image")
+//    private LocalDateTime revisionDateUserImage;
+//
+//    @Column(name = "is_del_user_image")
+//    private Boolean isDelUserImage = false;
+//
+//    @Column(name = "del_date_user_image")
+//    private LocalDateTime delDateUserImage;
 
     public UserImage(User user, String userImageName, String userImagePath, String userImageExtension) {
         this.user = user;
@@ -62,10 +62,10 @@ public class UserImage {
         this.userImageExtension = userImageExtension;
     }
 
-    public void delete() {
-        this.isDelUserImage = true;
-        this.delDateUserImage = LocalDateTime.now();
-    }
+//    public void delete() {
+//        this.isDelUserImage = true;
+//        this.delDateUserImage = LocalDateTime.now();
+//    }
 
 
 }

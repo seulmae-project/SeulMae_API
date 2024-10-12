@@ -13,15 +13,15 @@ public class WorkplaceInfoDto {
     private String workplaceTel;
     private String MainAddress;
     private String SubAddress;
-    private List<String> workplaceImageUrl;
+    private List<String> workplaceImageUrlList;
 
-    public WorkplaceInfoDto(Workplace workplace, List<String> workplaceImageUrl) {
+    public WorkplaceInfoDto(Workplace workplace, List<String> workplaceImageUrlList) {
         this.workplaceId = workplace.getIdWorkPlace();
         this.workplaceCode = workplace.getWorkplaceCode();
         this.workplaceName = workplace.getWorkplaceName();
         this.workplaceTel = workplace.getWorkplaceTel();
         this.MainAddress = workplace.getAddressVo().getMainAddress();
         this.SubAddress = workplace.getAddressVo().getSubAddress();
-        this.workplaceImageUrl = workplaceImageUrl;
+        this.workplaceImageUrlList = workplaceImageUrlList;
     }
 }

@@ -9,6 +9,11 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class UserWorkplaceInfoResponse {
+    private Long workplaceId;
     private String workplaceName;
     private AddressVo address;
+    private String workplaceTel;
+    private String managerName;
+    private Boolean isManager;
+
 }

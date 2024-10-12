@@ -4,6 +4,7 @@ import com.seulmae.seulmae.global.util.ResponseUtil;
 import com.seulmae.seulmae.global.util.enums.SuccessCode;
 import com.seulmae.seulmae.notification.dto.response.NotificationResponse;
 import com.seulmae.seulmae.notification.service.NotificationService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,9 +23,9 @@ public class NotificationController {
      * @return
      */
     @GetMapping("list")
-    public ResponseEntity<?> getNotifications(@RequestParam Long userWorkplaceId) {
+    public ResponseEntity<?> getNotifications(@RequestParam Long userWorkplaceId, HttpServletRequest request) {
         try {
-            List<NotificationResponse> results = notificationService.getNotifications(userWorkplaceId);
+            List<NotificationResponse> results = notificationService.getNotifications(userWorkplaceId, request);
             return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, results);
         } catch (Exception e) {
             return ResponseUtil.handleException(e);

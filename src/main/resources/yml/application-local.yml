@@ -8,7 +8,6 @@ spring:
   datasource:
     driver-class-name: org.h2.Driver
     url: jdbc:h2:mem:testdb
-    username: sa
   h2:
     console:
       enabled: true
@@ -31,4 +30,5 @@ file:
       user: C:\\Users\\hany\\uploads\\users\\
 
   endPoint:
-    workplace: /api/workplace/v1/file
+    workplace: /api/workplace/file
+    user: /api/users/file

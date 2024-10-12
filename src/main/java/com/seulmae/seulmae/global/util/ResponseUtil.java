@@ -9,6 +9,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 
 import java.time.LocalDateTime;
+import java.util.NoSuchElementException;
 
 public class ResponseUtil {
 
@@ -27,8 +28,10 @@ public class ResponseUtil {
             return createErrorResponse(ErrorCode.FORBIDDEN_ERROR, e.getMessage());
         } else if (e instanceof AuthenticationException) {
             return createErrorResponse(ErrorCode.UNAUTHORIZED, e.getMessage());
-        } else if (e instanceof IllegalArgumentException) {
+        } else if (e instanceof IllegalArgumentException || e instanceof IllegalStateException) {
             return createErrorResponse(ErrorCode.BAD_REQUEST_ERROR, e.getMessage());
+        } else if (e instanceof NoSuchElementException) {
+            return createErrorResponse(ErrorCode.NOT_FOUND_ERROR, e.getMessage());
         } else {
             return createErrorResponse(ErrorCode.INTERNAL_SERVER_ERROR, e.getMessage());
         }

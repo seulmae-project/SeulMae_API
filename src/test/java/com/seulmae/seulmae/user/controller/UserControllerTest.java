@@ -3,7 +3,7 @@ package com.seulmae.seulmae.user.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.seulmae.seulmae.util.AuthenticationHelper;
 import com.seulmae.seulmae.util.MockUser;
-import com.seulmae.seulmae.user.Role;
+import com.seulmae.seulmae.user.enums.Role;
 import com.seulmae.seulmae.user.dto.request.*;
 import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.user.repository.UserRepository;
@@ -22,10 +22,14 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -54,7 +58,10 @@ class UserControllerTest {
 
     @BeforeEach
     public void mockMvcSetUp() {
-        this.mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
+        this.mockMvc = MockMvcBuilders
+                .webAppContextSetup(context)
+                .apply(springSecurity())
+                .build();
     }
 
     @AfterEach
@@ -78,7 +85,7 @@ class UserControllerTest {
 
         final String requestBody = objectMapper.writeValueAsString(userSignUpDto);
 
-        MockMultipartFile userSignUpDtoPart = new MockMultipartFile("userSignUpDto", "userSignUpDto", "application/json", requestBody.getBytes());
+        MockMultipartFile userSignUpDtoPart = new MockMultipartFile("userSignUpDto", "userSignUpDto", "application/json; charset=UTF-8", requestBody.getBytes(StandardCharsets.UTF_8));
 
 
         // when
@@ -91,6 +98,8 @@ class UserControllerTest {
         result.andExpect(status().isCreated());
 
         List<User> users = userRepository.findAll();
+
+        System.out.println(result.andReturn().getResponse().getContentAsString());
 
         assertThat(users.size()).isEqualTo(1);
         assertThat(users.getFirst().getAccountId()).isEqualTo(accountId);
@@ -126,7 +135,7 @@ class UserControllerTest {
 
         final String requestBody = objectMapper.writeValueAsString(userSignUpDto);
 
-        MockMultipartFile userSignUpDtoPart = new MockMultipartFile("userSignUpDto", "userSignUpDto", "application/json", requestBody.getBytes());
+        MockMultipartFile userSignUpDtoPart = new MockMultipartFile("userSignUpDto", "userSignUpDto", "application/json; charset=UTF-8", requestBody.getBytes(StandardCharsets.UTF_8));
 
 
         // when
@@ -140,42 +149,56 @@ class UserControllerTest {
     }
 
 
-//    @Test
-//    @MockUser()
-//    @DisplayName("프로필 수정 - 성공")
-//    void updateProfile() throws Exception {
-//
-//        // given
-//        final String url = "/api/users";
-//        final String newName = "수정이름";
-//
-//        User actualLoginMember = authenticationHelper.getCurrentUser();
-//
-//        UpdateUserRequest request = new UpdateUserRequest(newName);
-//        String requestBody = objectMapper.writeValueAsString(request);
-//        MockMultipartFile updateUserRequestPart = new MockMultipartFile("updateUserRequest", "updateUserRequest", "application/json", requestBody.getBytes());
-//
-//        // when
-//        ResultActions result = mockMvc.perform(multipart(url)
-//                .file(updateUserRequestPart)
-//                .with(_request -> {
-//                    _request.setMethod("PUT");
-//                    return _request;
-//                })
-//                .contentType(MediaType.MULTIPART_FORM_DATA)
-//                .accept(MediaType.APPLICATION_JSON)
-//                .param("id", String.valueOf(actualLoginMember.getIdUser())));
-//
-//        // then
-//        System.out.println(result.andReturn().getResponse().getContentAsString());
-//        result.andExpect(status().isOk());
-//        assertThat(actualLoginMember.getName()).isEqualTo(newName);
-//
-//    }
+    @Test
+    @DisplayName("프로필 수정 - 성공")
+    void updateProfile() throws Exception {
+
+        // given
+        final String url = "/api/users";
+        final String accountId = "test1234";
+        final String password = "qwer1234!";
+        final String phoneNumber = "01012341234";
+        final String name = "이름";
+        final Boolean isMale = true;
+        final String birthday = "19931221";
+        final String newName = "수정이름";
+
+        User savedUser = userRepository.saveAndFlush(User.builder()
+                .accountId(accountId)
+                .password(password)
+                .phoneNumber(phoneNumber)
+                .name(name)
+                .isMale(isMale)
+                .birthday(birthday)
+                .authorityRole(Role.USER)
+                .build());
+
+
+        UpdateUserRequest request = new UpdateUserRequest(newName);
+        String requestBody = objectMapper.writeValueAsString(request);
+        MockMultipartFile updateUserRequestPart = new MockMultipartFile("updateUserRequest", "updateUserRequest", "application/json", requestBody.getBytes());
+
+        // when
+        ResultActions result = mockMvc.perform(multipart(url)
+                .file(updateUserRequestPart)
+                .with(_request -> {
+                    _request.setMethod("PUT");
+                    return _request;
+                })
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .accept(MediaType.APPLICATION_JSON)
+                .with(user(savedUser)));
+
+        // then
+        User updatedUser = userRepository.findById(savedUser.getIdUser()).orElse(null);
+        System.out.println(result.andReturn().getResponse().getContentAsString());
+        result.andExpect(status().isOk());
+        assertThat(updatedUser.getName()).isEqualTo(newName);
+
+    }
 
     @Test
     @DisplayName("프로필 조회 - 성공")
-    @MockUser(accountId = "test2222", phoneNumber = "01011111111")
     void getUserProfile() throws Exception {
         final String url = "/api/users";
 
@@ -186,7 +209,7 @@ class UserControllerTest {
         final Boolean isMale = true;
         final String birthday = "19931221";
 
-        User savedUser = userRepository.save(User.builder()
+        User savedUser = userRepository.saveAndFlush(User.builder()
                 .accountId(accountId)
                 .password(password)
                 .phoneNumber(phoneNumber)
@@ -196,10 +219,10 @@ class UserControllerTest {
                 .authorityRole(Role.USER)
                 .build());
 
-        ResultActions result = mockMvc.perform(get(url)
-                .param("id", String.valueOf(savedUser.getIdUser())));
-
-        result
+        mockMvc.perform(get(url)
+                        .with(user(savedUser))
+                )
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.name").value(name))
                 .andExpect(jsonPath("$.data.phoneNumber").value(phoneNumber));
@@ -328,44 +351,74 @@ class UserControllerTest {
     }
 
     @Test
-    @MockUser()
     @DisplayName("유저 삭제 - 성공")
     void deleteUser() throws Exception {
         // given
         final String url = "/api/users";
+        final String accountId = "test1234";
+        final String password = "qwer1234!";
+        final String phoneNumber = "01012341234";
+        final String name = "이름";
+        final Boolean isMale = true;
+        final String birthday = "19931221";
 
-        User actualLoginMember = authenticationHelper.getCurrentUser();
+        User savedUser = userRepository.saveAndFlush(User.builder()
+                .accountId(accountId)
+                .password(password)
+                .phoneNumber(phoneNumber)
+                .name(name)
+                .isMale(isMale)
+                .birthday(birthday)
+                .authorityRole(Role.USER)
+                .build());
+
 
         // when
         ResultActions result = mockMvc.perform(delete(url)
-                .param("id", String.valueOf(actualLoginMember.getIdUser())));
+                .with(user(savedUser)));
 
 
         // then
         System.out.println(result.andReturn().getResponse().getContentAsString());
         result.andExpect(status().isOk());
-        assertThat(actualLoginMember.getIsDelUser()).isTrue();
+
+        User updatedUser = userRepository.findById(savedUser.getIdUser()).orElse(null);
+        assertThat(updatedUser.getIsDelUser()).isTrue();
     }
 
     @Test
-    @MockUser()
     @DisplayName("휴대폰번호 변경 - 성공")
     void changePhoneNumber() throws Exception {
         final String url = "/api/users/phone";
+        final String accountId = "test1234";
+        final String password = "qwer1234!";
+        final String phoneNumber = "01012341234";
+        final String name = "이름";
+        final Boolean isMale = true;
+        final String birthday = "19931221";
         final String changePhoneNumber = "01063463222";
 
-        User actualLoginMember = authenticationHelper.getCurrentUser();
+        User savedUser = userRepository.saveAndFlush(User.builder()
+                .accountId(accountId)
+                .password(password)
+                .phoneNumber(phoneNumber)
+                .name(name)
+                .isMale(isMale)
+                .birthday(birthday)
+                .authorityRole(Role.USER)
+                .build());
 
         ChangePhoneNumberRequest changePhoneNumberRequest = new ChangePhoneNumberRequest(changePhoneNumber);
         String request = objectMapper.writeValueAsString(changePhoneNumberRequest);
 
-        ResultActions result = mockMvc.perform(put(url)
+        mockMvc.perform(put(url)
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(request)
-                .param("id", String.valueOf(actualLoginMember.getIdUser())));
+                .with(user(savedUser)))
+                .andExpect(status().isOk());
 
-        result.andExpect(status().isOk());
-        assertThat(actualLoginMember.getPhoneNumber()).isEqualTo(changePhoneNumber);
+        User updatedUser = userRepository.findById(savedUser.getIdUser()).orElse(null);
+        assertThat(updatedUser.getPhoneNumber()).isEqualTo(changePhoneNumber);
     }
 }
