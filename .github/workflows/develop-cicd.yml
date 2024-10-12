@@ -73,7 +73,6 @@ jobs:
       - name: Push Docker image
         run: docker push hanui/seulmae-api:latest
 
-
       - name: Send Slack notification for build
         if: always()  # 성공 또는 실패 시 항상 실행
         run: |
@@ -121,4 +120,4 @@ jobs:
           fi
           curl -X POST -H 'Content-type: application/json' \
           --data "{\"text\":\"$MESSAGE\"}" \
-          ${{ secrets.SLACK_WEBHOOK_URL }}
+          ${{ secrets.SLACK_TEST_CICD_WEBHOOK_URL }}
