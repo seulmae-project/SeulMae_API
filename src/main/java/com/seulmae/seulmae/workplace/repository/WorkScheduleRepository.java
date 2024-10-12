@@ -1,7 +1,6 @@
 package com.seulmae.seulmae.workplace.repository;
 
 import com.seulmae.seulmae.user.entity.User;
-import com.seulmae.seulmae.workplace.Day;
 import com.seulmae.seulmae.workplace.entity.WorkSchedule;
 import com.seulmae.seulmae.workplace.entity.Workplace;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,15 +12,14 @@ import java.util.List;
 public interface WorkScheduleRepository extends JpaRepository<WorkSchedule, Long> {
     List<WorkSchedule> findAllByWorkplace(Workplace workplace);
 
-    @Query(value = "SELECT ws " +
+    @Query("SELECT ws.startTime, ws.endTime, wsd.day " +
             "FROM WorkSchedule ws " +
             "JOIN UserWorkSchedule uws ON uws.workSchedule = ws " +
             "JOIN WorkScheduleDay wsd ON wsd.workSchedule = ws " +
             "WHERE uws.user = :user " +
             "AND ws.workplace = :workplace " +
-            "AND wsd.day = :day")
-    List<WorkSchedule> findWorkSchedulesByUserAndWorkplace(
+            "AND ws.isActive IS TRUE")
+    List<Object[]> findWorkSchedulesByUserAndWorkplace(
             @Param("user") User user,
-            @Param("workplace") Workplace workplace,
-            @Param("day") Day day);
+            @Param("workplace") Workplace workplace);
 }

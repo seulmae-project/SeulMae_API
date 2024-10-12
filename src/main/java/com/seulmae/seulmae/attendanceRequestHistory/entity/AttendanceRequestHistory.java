@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter
-@Builder
+@Builder(toBuilder = true)
 @AllArgsConstructor
 @Table(name = "attendance_request_history")
 @EntityListeners(AuditingEntityListener.class)
@@ -33,6 +33,12 @@ public class AttendanceRequestHistory {
 
     @Column(name = "work_end_time")
     private LocalDateTime workEndTime;
+
+    @Column(name = "changed_work_start_time")
+    private LocalDateTime changedWorkStartTime;
+
+    @Column(name = "changed_work_end_time")
+    private LocalDateTime changedWorkEndTime;
 
     @Column(name = "total_work_time")
     private BigDecimal totalWorkTime = BigDecimal.ZERO;

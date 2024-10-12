@@ -1,9 +1,6 @@
 package com.seulmae.seulmae.attendance.controller;
 
-import com.seulmae.seulmae.attendance.dto.AttendanceApprovalDto;
-import com.seulmae.seulmae.attendance.dto.AttendanceManagerMainListDto;
-import com.seulmae.seulmae.attendance.dto.AttendanceRequestDto;
-import com.seulmae.seulmae.attendance.dto.AttendanceRequestListDto;
+import com.seulmae.seulmae.attendance.dto.*;
 import com.seulmae.seulmae.attendance.service.AttendanceService;
 import com.seulmae.seulmae.global.util.ResponseUtil;
 import com.seulmae.seulmae.global.util.enums.SuccessCode;
@@ -124,7 +121,7 @@ public class AttendanceController {
     @GetMapping("main/manager")
     public ResponseEntity<?> getDailyEmployeeAttendanceList(@RequestParam Workplace workplace, @RequestParam LocalDate localDate, HttpServletRequest request) {
         try {
-            List<AttendanceManagerMainListDto> attendanceManagerMainListDtoList = attendanceService.getDailyEmployeeAttendanceList(workplace, localDate, request);
+            List<AttendanceManagerMainListResponse> attendanceManagerMainListDtoList = attendanceService.getDailyEmployeeAttendanceList(workplace, localDate, request);
 
             return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, attendanceManagerMainListDtoList);
         } catch (Exception e) {
