@@ -64,7 +64,7 @@
 ---
 
 ## 🚀 03 - 서비스 아키텍처
-
+![seulmae.drawio.png](seulmae.drawio.png)
 ---
 ## 🕹️ 04 - 성능 개선
 - [JMeter 성능 테스트를 통한 개선](https://velog.io/@jin-young/JMeter-성능-테스트를-통한-개선)
