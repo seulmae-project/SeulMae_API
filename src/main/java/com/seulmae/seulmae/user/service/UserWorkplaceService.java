@@ -27,6 +27,7 @@ import java.util.Arrays;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -158,8 +159,7 @@ public class UserWorkplaceService {
                 .orElseThrow(() -> new NoSuchElementException("해당 유저 ID와 근무지 ID와 관련된 WorkplaceJoinHistory가 존재하지 않습니다."));
         String userImageURL = userService.getUserImageURL(userWorkplace.getUser(), request);
 
-        Wage wage = wageRepository.findByUserAndWorkplace(userWorkplace.getUser(), userWorkplace.getWorkplace())
-                .orElseThrow(() -> new NoSuchElementException("해당 유저 ID와 근무지 ID와 관련된 Wage가 존재하지 않습니다."));
+        Optional<Wage> wage = wageRepository.findByUserAndWorkplace(userWorkplace.getUser(), userWorkplace.getWorkplace());
 
         return new UserInfoWithWorkplaceResponse(userWorkplace, userWorkScheduleList, wage, workplaceJoinHistory, userImageURL);
     }
