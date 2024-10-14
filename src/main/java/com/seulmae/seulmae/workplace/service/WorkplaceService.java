@@ -15,6 +15,8 @@ import com.seulmae.seulmae.workplace.dto.WorkplaceListInfoDto;
 import com.seulmae.seulmae.workplace.dto.WorkplaceModifyDto;
 import com.seulmae.seulmae.workplace.entity.Workplace;
 import com.seulmae.seulmae.workplace.entity.WorkplaceImage;
+import com.seulmae.seulmae.workplace.entity.WorkplaceJoinHistory;
+import com.seulmae.seulmae.workplace.repository.WorkplaceJoinHistoryRepository;
 import com.seulmae.seulmae.workplace.repository.WorkplaceRepository;
 import com.seulmae.seulmae.workplace.vo.AddressVo;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -36,6 +39,7 @@ public class WorkplaceService {
     private final WorkplaceRepository workplaceRepository;
     private final WorkplaceFileService workplaceFileService;
     private final UserWorkplaceRepository userWorkplaceRepository;
+    private final WorkplaceJoinHistoryRepository workplaceJoinHistoryRepository;
 
     private final FcmTopicServiceImpl fcmTopicServiceImpl;
 
@@ -80,6 +84,15 @@ public class WorkplaceService {
                 .build();
 
         userWorkplaceRepository.save(userWorkplace);
+
+        WorkplaceJoinHistory workplaceJoinHistory = WorkplaceJoinHistory.builder()
+                .user(user)
+                .workplace(workplace)
+                .isApprove(true)
+                .decisionDate(LocalDateTime.now())
+                .build();
+
+        workplaceJoinHistoryRepository.save(workplaceJoinHistory);
     }
 
     @Transactional(readOnly = true)
