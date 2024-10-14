@@ -9,6 +9,7 @@ import lombok.Getter;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 
 @Getter
 public class UserInfoWithWorkplaceResponse {
@@ -26,7 +27,7 @@ public class UserInfoWithWorkplaceResponse {
 
 
 
-    public UserInfoWithWorkplaceResponse(UserWorkplace userWorkplace, List<UserWorkSchedule> userWorkScheduleList, Wage wage, WorkplaceJoinHistory workplaceJoinHistory, String imageURL) {
+    public UserInfoWithWorkplaceResponse(UserWorkplace userWorkplace, List<UserWorkSchedule> userWorkScheduleList, Optional<Wage> wage, WorkplaceJoinHistory workplaceJoinHistory, String imageURL) {
         this.name = userWorkplace.getUser().getName();
         this.phoneNumber = userWorkplace.getUser().getPhoneNumber();
         this.imageURL = imageURL;
@@ -34,8 +35,8 @@ public class UserInfoWithWorkplaceResponse {
 
         this.workScheduleInfoDtoList = WorkScheduleInfoDto.createWorkScheduleInfoDtoList(userWorkScheduleList);
 
-        this.payDay = wage.getPayday();
-        this.baseWage = wage.getBaseWage();
+        this.payDay = wage.isPresent() ? wage.get().getPayday() : null;
+        this.baseWage = wage.isPresent() ? wage.get().getBaseWage() : null;
         this.memo = userWorkplace.getMemo();
     }
 }
