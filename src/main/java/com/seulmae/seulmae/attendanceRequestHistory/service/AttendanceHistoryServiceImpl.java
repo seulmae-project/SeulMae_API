@@ -36,6 +36,10 @@ public class AttendanceHistoryServiceImpl implements AttendanceHistoryService {
     /*
      * 근무 달력 조회
      * 주어진 근무지 ID와 년, 월을 사용하여 근무 달력을 반환합니다.
+     *
+     * 추후 리팩토링 시 변경 필요(확장성을 위해)
+     * 메서드 통합 후 userWorkplace의 isManager여부로 구분
+     * 메서드 명 변경 Employee -> Monthly / Manager -> Weekly
      */
     @Override
     public List<AttendanceCalendarDto> getEmployeeCalendar(User user, Long workplaceId, LocalDate todayDate) {
@@ -157,4 +161,19 @@ public class AttendanceHistoryServiceImpl implements AttendanceHistoryService {
                 attendanceRequestHistorydetail.getAttendanceRequestMemo()
         );
     }
+
+    @Override
+    public void updateDetail(User user, AttendanceRequestHistoryDetailUpdateDto detailUpdateDto) {
+        Long idAttendanceRequestHistory = detailUpdateDto.getIdAttendanceRequestHistory();
+        AttendanceRequestHistory history = attendanceRequestHistoryRepository.findById(idAttendanceRequestHistory)
+                .orElseThrow(() -> new NoSuchElementException("해당 근무 이력 ID가 존재하지 않습니다."));
+
+        // JPA의 영속성 컨텍스트 활용
+        history.setAttendanceRequestMemo(detailUpdateDto.getAttendanceRequestMemo());
+
+        // 변경된 엔티티를 자동으로 업데이트
+        attendanceRequestHistoryRepository.save(history);
+    }
+
+
 }
