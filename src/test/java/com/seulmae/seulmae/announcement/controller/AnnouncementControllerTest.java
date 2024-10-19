@@ -13,6 +13,7 @@ import com.seulmae.seulmae.user.repository.UserWorkplaceRepository;
 import com.seulmae.seulmae.util.AuthenticationHelper;
 import com.seulmae.seulmae.workplace.dto.WorkplaceAddDto;
 import com.seulmae.seulmae.workplace.entity.Workplace;
+import com.seulmae.seulmae.workplace.repository.WorkplaceJoinHistoryRepository;
 import com.seulmae.seulmae.workplace.repository.WorkplaceRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,6 +39,7 @@ import java.util.NoSuchElementException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -67,6 +69,9 @@ class AnnouncementControllerTest {
 
     @Autowired
     private NotificationRepository notificationRepository;
+
+    @Autowired
+    private WorkplaceJoinHistoryRepository workplaceJoinHistoryRepository;
 
     @Autowired
     private AuthenticationHelper authenticationHelper;
@@ -128,6 +133,7 @@ class AnnouncementControllerTest {
     public void cleanUp() {
         announcementRepository.deleteAll();
         notificationRepository.deleteAll();
+        workplaceJoinHistoryRepository.deleteAll();
         userWorkplaceRepository.deleteAll();
         workplaceRepository.deleteAll();
         userRepository.deleteAll();
@@ -208,6 +214,7 @@ class AnnouncementControllerTest {
         System.out.println(result.andReturn().getResponse().getContentAsString());
 
         result
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.title").value(title));
 
