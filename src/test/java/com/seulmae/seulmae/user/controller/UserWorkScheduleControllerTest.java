@@ -16,6 +16,7 @@ import com.seulmae.seulmae.workplace.entity.WorkSchedule;
 import com.seulmae.seulmae.workplace.entity.WorkScheduleDay;
 import com.seulmae.seulmae.workplace.entity.Workplace;
 import com.seulmae.seulmae.workplace.repository.WorkScheduleRepository;
+import com.seulmae.seulmae.workplace.repository.WorkplaceJoinHistoryRepository;
 import com.seulmae.seulmae.workplace.repository.WorkplaceRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -71,6 +72,8 @@ class UserWorkScheduleControllerTest {
     @Autowired
     private WorkScheduleRepository workScheduleRepository;
 
+    @Autowired
+    private WorkplaceJoinHistoryRepository workplaceJoinHistoryRepository;
 
     @Autowired
     private UserWorkScheduleRepository userWorkScheduleRepository;
@@ -130,6 +133,7 @@ class UserWorkScheduleControllerTest {
     public void cleanUp() {
         userWorkScheduleRepository.deleteAll();
         workScheduleRepository.deleteAll();
+        workplaceJoinHistoryRepository.deleteAll();
         userWorkplaceRepository.deleteAll();
         workplaceRepository.deleteAll();
         userRepository.deleteAll();
