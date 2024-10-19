@@ -25,7 +25,7 @@ public class AttendanceUtil {
     public MvcResult sendAttendanceRequest(MockMvc mockMvc, AttendanceRequestDto attendanceRequestDto) throws Exception {
         String endPoint = attendanceEndPoint + "/finish";
 
-        userUtil.loginTestUser("test12345");
+        userUtil.loginTestUser("testAccountId2");
 
         String content = objectMapper.writeValueAsString(attendanceRequestDto);
 

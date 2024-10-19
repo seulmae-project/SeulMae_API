@@ -176,7 +176,7 @@ public class AttendanceControllerIntegrationTest {
         AttendanceRequestDto attendanceRequestDto = createAttendanceObject(workplace, "2024-09-21", "2024-09-21T10:09:07.328938", "2024-09-21T15:02:34", 60000, 60000, BigDecimal.valueOf(6), 3);
         String content = objectMapper.writeValueAsString(attendanceRequestDto);
 
-        userUtil.loginTestUser("test12345");
+        userUtil.loginTestUser("testAccountId2");
 
         mockMvc.perform(
                         post(endPoint)
