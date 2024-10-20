@@ -51,10 +51,11 @@ public class WorkplaceUtil {
 
     private String workplaceJoinEndPoint = "/api/workplace/join/v1";
 
+
     public MvcResult createWorkplace(MockMvc mockMvc) throws Exception {
         String addEndPoint = workplaceEndPoint + "/add";
 
-        userUtil.createDefaultTestUserAndLogin("test1234", "qwer1234!", "01012344321", "이름");
+        userUtil.createDefaultTestUserAndLogin("testAccountId1", "qwer1234!", "01012344321", "이름");
 
         WorkplaceAddDto workplaceAddDto = createAddWorkplaceObject();
 
@@ -91,7 +92,7 @@ public class WorkplaceUtil {
 
         createWorkplace(mockMvc);
 
-        userUtil.createDefaultTestUserAndLogin("test12345", "qwer1234!", "01043211234", "이름");
+        userUtil.createDefaultTestUserAndLogin("testAccountId2", "qwer1234!", "01043211234", "이름");
 
         List<Workplace> workplaceList = workplaceRepository.findAll();
         Workplace workplace = workplaceList.getFirst();
@@ -156,7 +157,7 @@ public class WorkplaceUtil {
         WorkScheduleAddDto workScheduleAddDto = new WorkScheduleAddDto(workplace.getIdWorkPlace(), "평일오전", LocalTime.of(9, 0), LocalTime.of(15, 0), List.of(1, 2));
         String request = objectMapper.writeValueAsString(workScheduleAddDto);
 
-        userUtil.loginTestUser("test1234");
+        userUtil.loginTestUser("testAccountId1");
 
         mockMvc.perform(
                         post(endPoint)

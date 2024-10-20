@@ -69,7 +69,7 @@ public class UserWorkplaceControllerIntegrationTest {
         workplaceUtil.joinApproval(mockMvc);
 
         Workplace workplace = workplaceRepository.findAll().getFirst();
-        User user = userRepository.findByAccountId("test12345").orElseThrow(() -> new NullPointerException("존재하지 않는 사용자 계정입니다."));
+        User user = userRepository.findByAccountId("testAccountId2").orElseThrow(() -> new NullPointerException("존재하지 않는 사용자 계정입니다."));
 
         UserWorkplace userWorkplace = userWorkplaceRepository.findByUserAndWorkplaceAndIsDelUserWorkplaceFalse(user, workplace).orElseThrow(() -> new NullPointerException("User 또는 Workplace가 존재하지 않습니다."));
 
@@ -93,7 +93,7 @@ public class UserWorkplaceControllerIntegrationTest {
         workplaceUtil.joinApproval(mockMvc);
 
         Workplace workplace = workplaceRepository.findAll().getFirst();
-        User user = userRepository.findByAccountId("test12345").orElseThrow(() -> new NullPointerException("존재하지 않는 사용자 계정입니다."));
+        User user = userRepository.findByAccountId("testAccountId2").orElseThrow(() -> new NullPointerException("존재하지 않는 사용자 계정입니다."));
 
         ManagerDelegationRequest managerDelegationObject = createManagerDelegationObject(user, workplace);
         String content = objectMapper.writeValueAsString(managerDelegationObject);
@@ -115,7 +115,7 @@ public class UserWorkplaceControllerIntegrationTest {
     public void testWithdrawWorkplace() throws Exception {
         workplaceUtil.joinApproval(mockMvc);
 
-        userUtil.loginTestUser("test12345");
+        userUtil.loginTestUser("testAccountId2");
 
         Workplace workplace = workplaceRepository.findAll().getFirst();
 
