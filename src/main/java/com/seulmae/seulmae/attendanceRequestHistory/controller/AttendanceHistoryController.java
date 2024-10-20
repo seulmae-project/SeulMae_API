@@ -9,10 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -107,15 +104,16 @@ public class AttendanceHistoryController {
         }
     }
 
-//    @PostMapping("detail")
-//    public ResponseEntity<?> updateDetailUser(@RequestBody User user) {
-//        try {
-//            historyService.updateDetailEmployee(user);
-//            return ResponseUtil.createSuccessResponse(SuccessCode.UPDATE_SUCCESS);
-//        } catch (Exception e) {
-//            return ResponseUtil.handleException(e);
-//        }
-//    }
+    @PostMapping("detail")
+    public ResponseEntity<?> updateDetailUser(@AuthenticationPrincipal User user,
+                                              @RequestBody AttendanceRequestHistoryDetailUpdateDto detailUpdateDto) {
+        try {
+            historyService.updateDetail(user, detailUpdateDto);
+            return ResponseUtil.createSuccessResponse(SuccessCode.UPDATE_SUCCESS);
+        } catch (Exception e) {
+            return ResponseUtil.handleException(e);
+        }
+    }
 
 
 }

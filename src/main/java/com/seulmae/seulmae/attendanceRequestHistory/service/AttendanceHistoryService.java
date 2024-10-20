@@ -19,4 +19,6 @@ public interface AttendanceHistoryService {
     Page<AttendanceRequestHistoryDto> getHistoryList(User user, Long workplaceId, Integer year, Integer month, Integer page, Integer size);
 
     AttendanceRequestHistoryDetailDto getHistoryDetail(User user, Long idAttendanceRequestHistory);
+
+    void updateDetail(User user, AttendanceRequestHistoryDetailUpdateDto detailUpdateDto);
 }

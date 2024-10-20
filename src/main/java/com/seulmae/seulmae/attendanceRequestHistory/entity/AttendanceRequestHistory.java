@@ -75,4 +75,7 @@ public class AttendanceRequestHistory {
         this.isRequestApprove = true;
     }
 
+    public void setAttendanceRequestMemo(String attendanceRequestMemo) {
+        this.attendanceRequestMemo = attendanceRequestMemo;
+    }
 }
