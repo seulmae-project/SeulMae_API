@@ -70,7 +70,7 @@ public class SecurityConfig {
                 // 세션 사용하지 않으므로 STATELESS 설정
                 .sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(new AntPathRequestMatcher("/api/token")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/api/token/**")).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/users/file").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/workplace/file").permitAll()
@@ -168,7 +168,7 @@ public class SecurityConfig {
 
     @Bean
     public JwtAuthenticationProcessingFilter jwtAuthenticationProcessingFilter() {
-        return new JwtAuthenticationProcessingFilter(jwtService, userRepository, userWorkplaceRepository);
+        return new JwtAuthenticationProcessingFilter(jwtService, userRepository, objectMapper);
     }
 
     @Bean
