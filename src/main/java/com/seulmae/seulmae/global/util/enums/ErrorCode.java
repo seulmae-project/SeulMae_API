@@ -72,8 +72,12 @@ public enum ErrorCode {
     JWT_TOKEN_IS_NOT_VALID_EXCEPTION(401,"G019" ,"Jwt token is not valid" ),
     INVALID_PASSWORD_EXCEPTION(401,"G020" ,"Password does not match" ),
     NO_SUCH_USER_EXCEPTION(401,"G021" ,"No such user exist" ),
-    UNAUTHORIZED(401, "G022", "UNAUTHORIZED");
+    UNAUTHORIZED(401, "G022", "UNAUTHORIZED"),
 
+    /**
+     * 405
+     */
+    METHOD_NOT_ALLOWED(405, "GO23", "METHOD_NOT_ALLOWED");
     // 에러 코드의 '코드 상태'을 반환한다.
     private final int status;
 

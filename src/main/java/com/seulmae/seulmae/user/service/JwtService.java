@@ -109,12 +109,12 @@ public class JwtService {
 
         List<UserWorkplace> userWorkplaces = userWorkplaceRepository.findAllByUserAndIsDelUserWorkplaceFalse(user);
         List<WorkplaceResponse> workplaceResponses = userWorkplaces.stream()
-                        .map(userWorkplace -> new WorkplaceResponse(userWorkplace)).collect(Collectors.toList());
+                .map(userWorkplace -> new WorkplaceResponse(userWorkplace)).collect(Collectors.toList());
         Role role = user.getAuthorityRole();
 
         response.getWriter()
                 .write(objectMapper.writeValueAsString(
-                        new SuccessResponse(SuccessCode.LOGIN_SUCCESS, new LoginSuccessResponse(tokenResponse, role, workplaceResponses))
+                                new SuccessResponse(SuccessCode.LOGIN_SUCCESS, new LoginSuccessResponse(tokenResponse, role, workplaceResponses))
                         )
                 );
         log.info("AccessToken & RefreshToken 바디 전달 완료");
@@ -202,13 +202,14 @@ public class JwtService {
             return true;
         } catch (TokenExpiredException e) {
             log.error("토큰이 만료되었습니다: [" + e.getMessage() + "]");
-            throw new RuntimeException("Token has expired.", e);
+            throw e;
         } catch (Exception e) {
             log.error("유효하지 않은 토큰입니다 [" + e.getMessage() + "]");
-            throw new RuntimeException("Invalid Token.", e);
+            throw e;
         }
-    }
 
+
+    }
 
     /**
      * AccessToken 헤더 설정

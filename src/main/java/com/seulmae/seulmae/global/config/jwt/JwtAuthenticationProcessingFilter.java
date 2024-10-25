@@ -54,7 +54,6 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String requestURI = request.getRequestURI();
-        System.out.println("requestURI = " + requestURI);
 
         if (NO_CHECK_URLS.contains(requestURI)) {
             filterChain.doFilter(request, response); // 로그인 url api 요청들어오면, 다음 필터 호출
@@ -62,42 +61,26 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
         }
 
         /**
-         * URI가 REFRESH-TOKEN 이라면,
-         * refresh가 타당한지 확인하고,
-         * 타당하지 않다면(유효기간이 만료된 경우는, 유효기간 만료 메시지,
-         * 그냥 형식이 올바르지 않다면, 형식이 올바르지 않다고 알리기)
-         *
-         * 타당하다면,
-         * - 유저 db에 존재하는지 토큰인지 확인
-         * - 존재한다면, accessToken 재발급 후 전달
-         * - 존재하지 않는다면, 에러 메시지 전달
+         * RefreshToken 타당성 검사 및 갱신
          */
-
         if (REFRESH_URL.equals(requestURI)) {
-            String refreshToken = jwtService.extractRefreshToken(request);
-            jwtService.isValidToken(refreshToken);
+            // POST 메서드인지 확인
+            if (!"POST".equalsIgnoreCase(request.getMethod())) {
+                sendErrorResponse(response, HttpServletResponse.SC_METHOD_NOT_ALLOWED, "POST method is required for token refresh", ErrorCode.METHOD_NOT_ALLOWED);
+                return;
+            }
 
-            checkRefreshToken(refreshToken)
-                    .ifPresentOrElse(user -> {
-                        try {
-                            jwtService.sendAccessTokenAndRefreshToken(response, jwtService.createAccessToken(user.getAccountId()), refreshToken, user);
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
-                        }
-                    }, () -> {
-                        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                        response.setContentType(CONTENT_TYPE);
-                        try {
-                            response.getWriter()
-                                    .write(objectMapper.writeValueAsString(
-                                                    new ErrorResponse(ErrorCode.BAD_REQUEST_ERROR, "해당 유저의 RefreshToken이 아닙니다.")
-                                            )
-                                    );
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
-                        }
+            try {
+                String refreshToken = jwtService.extractRefreshToken(request);
+                jwtService.isValidToken(refreshToken);
+                handleRefreshToken(response, refreshToken);
+            } catch (TokenExpiredException e) {
+                sendErrorResponse(response, HttpServletResponse.SC_FORBIDDEN, "RefreshToken has expired: " + e.getMessage(), ErrorCode.FORBIDDEN_ERROR);
+                return;
+            } catch (Exception e) {
+                sendErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST, "Token Error: " + e.getMessage(), ErrorCode.BAD_REQUEST_ERROR);
+            }
 
-                    });
             return;
         }
 
@@ -108,10 +91,34 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
         // 리프레쉬 토큰이 없다거나 유효하지 않다면, accessToken을 검사하고 인증을 처리한다.
         // accessToken이 없거나 유효하지 않다면, 인증 객체가 담기지 않은 상태로 다음 필터로 넘어가기 때문에 403 에러 발생
         // 유효하다면, 인증 객체에 담긴 상태로 다음 필터로 넘어가기 때문에 인증성공
-        checkAccessTokenAndAuthentication(request, response, filterChain);
+        checkAccessTokenAndAuthentication(request);
         filterChain.doFilter(request, response);
     }
 
+    private void handleRefreshToken(HttpServletResponse response, String refreshToken) {
+
+        checkRefreshToken(refreshToken).ifPresentOrElse(user -> {
+            try {
+                jwtService.sendAccessTokenAndRefreshToken(response, jwtService.createAccessToken(user.getAccountId()), refreshToken, user);
+            } catch (IOException e) {
+                sendErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST, e.getMessage(), ErrorCode.BAD_REQUEST_ERROR);
+            }
+        }, () -> {
+            sendErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST, "해당 유저의 RefreshToken이 아닙니다.", ErrorCode.BAD_REQUEST_ERROR);
+        });
+    }
+
+    private void sendErrorResponse(HttpServletResponse response, int status, String message, ErrorCode errorCode) {
+        response.setStatus(status);
+        response.setContentType(CONTENT_TYPE);
+
+        try {
+            response.getWriter().write(objectMapper.writeValueAsString(new ErrorResponse(errorCode, message)));
+        } catch (IOException e) {
+            log.error("Error writing response", e);
+            throw new RuntimeException("Error writing response", e);
+        }
+    }
 
     public Optional<User> checkRefreshToken(String refreshToken) {
         return userRepository.findByRefreshToken(refreshToken);
@@ -135,8 +142,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
      * 해당 아이디를 통해 유저를 얻어내고,
      * 유저 객체를 authentication에 저장
      */
-    public void checkAccessTokenAndAuthentication(HttpServletRequest request, HttpServletResponse response,
-                                                  FilterChain filterChain) {
+    public void checkAccessTokenAndAuthentication(HttpServletRequest request) {
         jwtService.extractAccessToken(request)
                 .filter(jwtService::isValidToken)
                 .ifPresent(accessToken -> jwtService.extractAccountIdFromAccessToken(accessToken)
