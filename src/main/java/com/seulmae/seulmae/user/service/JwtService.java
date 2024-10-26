@@ -2,6 +2,7 @@ package com.seulmae.seulmae.user.service;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.seulmae.seulmae.global.util.enums.SuccessCode;
 import com.seulmae.seulmae.global.util.enums.SuccessResponse;
@@ -108,12 +109,12 @@ public class JwtService {
 
         List<UserWorkplace> userWorkplaces = userWorkplaceRepository.findAllByUserAndIsDelUserWorkplaceFalse(user);
         List<WorkplaceResponse> workplaceResponses = userWorkplaces.stream()
-                        .map(userWorkplace -> new WorkplaceResponse(userWorkplace)).collect(Collectors.toList());
+                .map(userWorkplace -> new WorkplaceResponse(userWorkplace)).collect(Collectors.toList());
         Role role = user.getAuthorityRole();
 
         response.getWriter()
                 .write(objectMapper.writeValueAsString(
-                        new SuccessResponse(SuccessCode.LOGIN_SUCCESS, new LoginSuccessResponse(tokenResponse, role, workplaceResponses))
+                                new SuccessResponse(SuccessCode.LOGIN_SUCCESS, new LoginSuccessResponse(tokenResponse, role, workplaceResponses))
                         )
                 );
         log.info("AccessToken & RefreshToken 바디 전달 완료");
@@ -156,10 +157,11 @@ public class JwtService {
     /**
      * RefreshToken 추출
      */
-    public Optional<String> extractRefreshToken(HttpServletRequest request) {
+    public String extractRefreshToken(HttpServletRequest request) {
         return Optional.ofNullable(request.getHeader(refreshHeader))
                 .filter(refreshToken -> refreshToken.startsWith(BEARER))
-                .map(refreshToken -> refreshToken.replace(BEARER, ""));
+                .map(refreshToken -> refreshToken.replace(BEARER, ""))
+                .orElseThrow(() -> new NoSuchElementException("Refresh Token can't not be null"));
     }
 
     /**
@@ -198,12 +200,16 @@ public class JwtService {
                     .build()
                     .verify(token);
             return true;
+        } catch (TokenExpiredException e) {
+            log.error("토큰이 만료되었습니다: [" + e.getMessage() + "]");
+            throw e;
         } catch (Exception e) {
             log.error("유효하지 않은 토큰입니다 [" + e.getMessage() + "]");
-            return false;
+            throw e;
         }
-    }
 
+
+    }
 
     /**
      * AccessToken 헤더 설정

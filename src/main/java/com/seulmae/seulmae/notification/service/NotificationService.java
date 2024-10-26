@@ -117,7 +117,6 @@ public class NotificationService {
 
     public List<NotificationResponse> getNotifications(Long userWorkplaceId, HttpServletRequest request) {
         UserWorkplace userWorkplace = findByIdUtil.getUserWorkplaceById(userWorkplaceId);
-        System.out.println("userWorkplace = " + userWorkplace);
         return notificationRepository.findAllByUserWorkplace(userWorkplace).stream()
                 .map(notification -> {
                     String imageURL = switch (notification.getNotificationType()) {
