@@ -174,7 +174,7 @@ public class WorkplaceService {
     }
 
     @Transactional(readOnly = true)
-    public List<UserWorkplaceInfoResponse> getJoinWorkplaceList(User user) {
+    public List<UserWorkplaceInfoResponse> getJoinWorkplaceList(User user, HttpServletRequest httpServletRequest) {
         List<Workplace> workplaces = userWorkplaceRepository.findWorkplacesByUser(user);
 
         List<UserWorkplaceInfoResponse> userWorkplaceInfoResponses = workplaces.stream()
@@ -183,7 +183,9 @@ public class WorkplaceService {
                             .orElseThrow(() -> new NoSuchElementException("해당 유저는 해당 근무지 소속이 아닙니다."));
                     User manager = userWorkplaceRepository.findUserByWorkplaceAndIsManager(workplace, true)
                             .orElseThrow(() -> new NoSuchElementException("해당 근무지에 매니저가 존재하지 않습니다."));
-                    return new UserWorkplaceInfoResponse(workplace.getIdWorkPlace(), workplace.getWorkplaceName(), workplace.getAddressVo(), workplace.getWorkplaceTel(), manager.getName(), userWorkplace.getIsManager());
+
+                    List<String> workplaceImageUrlList = getWorkplaceImageUrlList(workplace, httpServletRequest);
+                    return new UserWorkplaceInfoResponse(workplace.getIdWorkPlace(), workplace.getWorkplaceName(), workplace.getAddressVo(), workplace.getWorkplaceTel(), workplaceImageUrlList, manager.getName(), userWorkplace.getIsManager());
                 })
                 .collect(Collectors.toList());
 
