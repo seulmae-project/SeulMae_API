@@ -21,6 +21,7 @@ import com.seulmae.seulmae.user.repository.UserImageRepository;
 import com.seulmae.seulmae.user.repository.UserRepository;
 import com.seulmae.seulmae.user.repository.UserWorkplaceRepository;
 import com.seulmae.seulmae.workplace.entity.Workplace;
+import com.seulmae.seulmae.workplace.service.WorkplaceService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -43,6 +44,7 @@ public class UserService {
     private final UserImageService userImageService;
     private final SmsService smsService;
 
+    private final WorkplaceService workplaceService;
     private final String FILE_ENDPOINT = "/api/users/file";
 
     @Transactional
@@ -121,7 +123,8 @@ public class UserService {
             User manager = userWorkplaceRepository.findUserByWorkplaceAndIsManager(workplace, true)
                     .orElseThrow(() -> new NoSuchElementException("해당 근무지에 매니저가 존재하지 않습니다."));
 
-            userWorkplaceInfoResponses.add(new UserWorkplaceInfoResponse(workplace.getIdWorkPlace(), workplace.getWorkplaceName(), workplace.getAddressVo(), workplace.getWorkplaceName(), manager.getName(), userWorkplace.getIsManager()));
+            List<String> workplaceImageUrlList = workplaceService.getWorkplaceImageUrlList(workplace, request);
+            userWorkplaceInfoResponses.add(new UserWorkplaceInfoResponse(workplace.getIdWorkPlace(), workplace.getWorkplaceName(), workplace.getAddressVo(), workplace.getWorkplaceName(), workplaceImageUrlList, manager.getName(), userWorkplace.getIsManager()));
         }
 
         return new UserProfileResponse(me.getName(), getUserImageURL(me, request), me.getPhoneNumber(), me.getBirthday(), userWorkplaceInfoResponses);

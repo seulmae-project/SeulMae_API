@@ -79,9 +79,9 @@ public class WorkplaceController {
      * @param user
      */
     @GetMapping("info/join")
-    public ResponseEntity<?> getJoinWorkplaceList(@AuthenticationPrincipal User user) {
+    public ResponseEntity<?> getJoinWorkplaceList(@AuthenticationPrincipal User user, HttpServletRequest httpServletRequest) {
         try {
-            List<UserWorkplaceInfoResponse> userWorkplaceInfoResponse = workplaceService.getJoinWorkplaceList(user);
+            List<UserWorkplaceInfoResponse> userWorkplaceInfoResponse = workplaceService.getJoinWorkplaceList(user, httpServletRequest);
 
             return ResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS, userWorkplaceInfoResponse);
         } catch (Exception e) {
