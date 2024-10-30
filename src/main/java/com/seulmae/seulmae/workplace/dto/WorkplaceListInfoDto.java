@@ -7,12 +7,10 @@ import java.util.List;
 
 @Getter
 public class WorkplaceListInfoDto extends WorkplaceInfoDto{
-    private String workplaceManagerName;
     private String workplaceThumbnailUrl;
 
-    public WorkplaceListInfoDto(Workplace workplace, List<String> workplaceImageUrl, String workplaceManagerName, String workplaceThumbnailUrl) {
-        super(workplace, workplaceImageUrl);
-        this.workplaceManagerName = workplaceManagerName;
+    public WorkplaceListInfoDto(Workplace workplace, String managerName, List<String> workplaceImageUrl, String workplaceThumbnailUrl) {
+        super(workplace, managerName, workplaceImageUrl);
         this.workplaceThumbnailUrl = workplaceThumbnailUrl;
     }
 }

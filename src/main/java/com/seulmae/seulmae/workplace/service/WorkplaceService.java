@@ -104,8 +104,9 @@ public class WorkplaceService {
         workplaceList.stream()
                 .forEach(workplace -> {
                     String workplaceManagerName = userWorkplaceRepository.findUserByWorkplaceAndIsManager(workplace, true).orElseThrow(() -> new NullPointerException("매니저가 존재하지 않는 근무지입니다.")).getName();
-                    String WorkplaceThumbnailUrl = getWorkplaceThumbnailUrl(workplace, request);
-                    WorkplaceListInfoDto workplaceListInfoDto = new WorkplaceListInfoDto(workplace, null, workplaceManagerName, WorkplaceThumbnailUrl);
+                    List<String> workplaceImageUrlList = getWorkplaceImageUrlList(workplace, request);
+                    String workplaceThumbnailUrl = getWorkplaceThumbnailUrl(workplace, request);
+                    WorkplaceListInfoDto workplaceListInfoDto = new WorkplaceListInfoDto(workplace, workplaceManagerName, workplaceImageUrlList, workplaceThumbnailUrl);
 
                     workplaceListInfoDtoList.add(workplaceListInfoDto);
                 });
@@ -117,9 +118,11 @@ public class WorkplaceService {
     public WorkplaceInfoDto getSpecificWorkplace(Long workplaceId, HttpServletRequest request) {
         Workplace workplace = findByIdUtil.getWorkplaceById(workplaceId);
 
+        User user = userWorkplaceRepository.findUserByWorkplaceAndIsManager(workplace, true).orElseThrow(() -> new NullPointerException("해당 Workplace에 매니저가 존재하지 않습니다."));
+
         List<String> workplaceImageUrlList = getWorkplaceImageUrlList(workplace, request);
 
-        return new WorkplaceInfoDto(workplace, workplaceImageUrlList);
+        return new WorkplaceInfoDto(workplace, user.getName(), workplaceImageUrlList);
     }
 
     @Transactional
