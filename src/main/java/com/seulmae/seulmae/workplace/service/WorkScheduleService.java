@@ -6,6 +6,7 @@ import com.seulmae.seulmae.workplace.Day;
 import com.seulmae.seulmae.workplace.dto.WorkScheduleAddDto;
 import com.seulmae.seulmae.workplace.dto.WorkScheduleInfoDto;
 import com.seulmae.seulmae.workplace.dto.WorkScheduleUpdateDto;
+import com.seulmae.seulmae.workplace.dto.WorkplaceScheduleAddResponse;
 import com.seulmae.seulmae.workplace.entity.WorkSchedule;
 import com.seulmae.seulmae.workplace.entity.WorkScheduleDay;
 import com.seulmae.seulmae.workplace.entity.Workplace;
@@ -47,7 +48,7 @@ public class WorkScheduleService {
     }
 
     @Transactional
-    public void createWorkSchedule(WorkScheduleAddDto request, User user) {
+    public WorkplaceScheduleAddResponse createWorkSchedule(WorkScheduleAddDto request, User user) {
         // 매니저 권한이 있는가?
         Workplace workplace = workplaceRepository.findById(request.getWorkplaceId())
                 .orElseThrow(() -> new NoSuchElementException("해당 근무지 ID가 존재하지 않습니다."));
@@ -72,11 +73,12 @@ public class WorkScheduleService {
                 }).toList();
 
         workSchedule.setWorkScheduleDays(workScheduleDays);
-        workScheduleRepository.save(workSchedule);
+
+        return new WorkplaceScheduleAddResponse(workScheduleRepository.save(workSchedule));
     }
 
     @Transactional
-    public void updateWorkSchedule(Long workScheduleId, WorkScheduleUpdateDto request, User user) {
+    public WorkplaceScheduleAddResponse updateWorkSchedule(Long workScheduleId, WorkScheduleUpdateDto request, User user) {
         WorkSchedule workSchedule = workScheduleRepository.findById(workScheduleId)
                 .orElseThrow(() -> new NoSuchElementException("해당 근무일정 ID가 존재하지 않습니다."));
         userWorkplaceService.checkManagerAuthority(workSchedule.getWorkplace(), user);
@@ -98,7 +100,7 @@ public class WorkScheduleService {
                 }).collect(Collectors.toList());
 
         updatedWorkSchedule.setWorkScheduleDays(workScheduleDays);
-        workScheduleRepository.save(updatedWorkSchedule);
+        return new WorkplaceScheduleAddResponse(workScheduleRepository.save(updatedWorkSchedule));
     }
 
     @Transactional
