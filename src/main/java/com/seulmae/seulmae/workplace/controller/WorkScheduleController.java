@@ -8,6 +8,8 @@ import com.seulmae.seulmae.user.entity.User;
 import com.seulmae.seulmae.workplace.dto.WorkScheduleAddDto;
 import com.seulmae.seulmae.workplace.dto.WorkScheduleInfoDto;
 import com.seulmae.seulmae.workplace.dto.WorkScheduleUpdateDto;
+import com.seulmae.seulmae.workplace.dto.WorkplaceScheduleAddResponse;
+import com.seulmae.seulmae.workplace.entity.WorkSchedule;
 import com.seulmae.seulmae.workplace.service.WorkScheduleService;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -29,8 +31,8 @@ public class WorkScheduleController {
     public ResponseEntity<?> addWorkSchedule(@RequestBody WorkScheduleAddDto workScheduleAddDto,
                                              @AuthenticationPrincipal User user) {
         try {
-            workScheduleService.createWorkSchedule(workScheduleAddDto, user);
-            return ResponseUtil.createSuccessResponse(SuccessCode.INSERT_SUCCESS);
+            WorkplaceScheduleAddResponse workSchedule = workScheduleService.createWorkSchedule(workScheduleAddDto, user);
+            return ResponseUtil.createSuccessResponse(SuccessCode.INSERT_SUCCESS, workSchedule);
         } catch (IllegalArgumentException e) {
             return ResponseUtil.createErrorResponse(ErrorCode.FORBIDDEN_ERROR, e.getMessage());
         } catch (Exception e) {
@@ -45,8 +47,8 @@ public class WorkScheduleController {
                                                 @RequestBody WorkScheduleUpdateDto workScheduleUpdateDto,
                                                 @AuthenticationPrincipal User user) {
         try {
-            workScheduleService.updateWorkSchedule(workScheduleId, workScheduleUpdateDto, user);
-            return ResponseUtil.createSuccessResponse(SuccessCode.UPDATE_SUCCESS);
+            WorkplaceScheduleAddResponse workSchedule = workScheduleService.updateWorkSchedule(workScheduleId, workScheduleUpdateDto, user);
+            return ResponseUtil.createSuccessResponse(SuccessCode.UPDATE_SUCCESS, workSchedule);
         } catch (IllegalArgumentException e) {
             return ResponseUtil.createErrorResponse(ErrorCode.FORBIDDEN_ERROR, e.getMessage());
         } catch (Exception e) {
