@@ -40,6 +40,7 @@ public interface UserWorkplaceRepository extends JpaRepository<UserWorkplace, Lo
 
     @Query(value = "SELECT uw " +
             "FROM UserWorkplace uw " +
-            "WHERE uw.workplace.idWorkPlace = :workplaceId")
+            "WHERE uw.workplace.idWorkPlace = :workplaceId " +
+            "AND uw.isDelUserWorkplace is false")
     List<UserWorkplace> findByWorkplaceId(Long workplaceId);
 }

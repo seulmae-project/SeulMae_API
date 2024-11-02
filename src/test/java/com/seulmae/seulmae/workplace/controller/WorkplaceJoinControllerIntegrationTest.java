@@ -114,5 +114,23 @@ public class WorkplaceJoinControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andReturn();
     }
+
+    @Test
+    @Transactional
+    @DisplayName("근무지 입장 요청 내역 리스트")
+    public void testGetJoinRequestList() throws Exception {
+        String endPoint = workplaceJoinEndPoint + "/request/history/list";
+
+        workplaceUtil.joinWorkplace(mockMvc);
+
+        mockMvc.perform(
+                        get(endPoint)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+    }
 }
 

@@ -8,6 +8,7 @@ import com.seulmae.seulmae.user.repository.UserRepository;
 import com.seulmae.seulmae.user.repository.UserWorkplaceRepository;
 import com.seulmae.seulmae.util.UserUtil;
 import com.seulmae.seulmae.util.WorkplaceUtil;
+import com.seulmae.seulmae.workplace.dto.EmployeeDismissDto;
 import com.seulmae.seulmae.workplace.entity.Workplace;
 import com.seulmae.seulmae.workplace.repository.WorkplaceRepository;
 import jakarta.transaction.Transactional;
@@ -86,6 +87,28 @@ public class UserWorkplaceControllerIntegrationTest {
 
     @Test
     @Transactional
+    @DisplayName("로그인된 근무지 유저 상세조회")
+    public void testGetUserInfoForCurrentUser() throws Exception {
+        String endPoint = userWorkplaceEndPoint + "/self";
+
+        workplaceUtil.joinApproval(mockMvc);
+
+        Workplace workplace = workplaceRepository.findAll().getFirst();
+        userUtil.loginTestUser("testAccountId2");
+
+        mockMvc.perform(
+                        get(endPoint)
+                                .param("workplaceId", String.valueOf(workplace.getIdWorkPlace()))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+    }
+
+    @Test
+    @Transactional
     @DisplayName("매니저 권한 위임")
     public void testDelegateManagerAuthority() throws Exception {
         String endPoint = userWorkplaceEndPoint + "/manager/delegate";
@@ -111,7 +134,7 @@ public class UserWorkplaceControllerIntegrationTest {
 
     @Test
     @Transactional
-    @DisplayName("근무지 유저 삭제")
+    @DisplayName("근무지 유저 탈퇴")
     public void testWithdrawWorkplace() throws Exception {
         workplaceUtil.joinApproval(mockMvc);
 
@@ -141,11 +164,36 @@ public class UserWorkplaceControllerIntegrationTest {
         Workplace workplace = workplaceRepository.findAll().getFirst();
 
         mockMvc.perform(
-                get(endPoint)
-                        .param("workplaceId", String.valueOf(workplace.getIdWorkPlace()))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-        )
+                        get(endPoint)
+                                .param("workplaceId", String.valueOf(workplace.getIdWorkPlace()))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("근무자 추방")
+    public void testDismissEmployee() throws Exception {
+        String endPoint = userWorkplaceEndPoint + "/dismiss";
+        workplaceUtil.joinApproval(mockMvc);
+
+        Workplace workplace = workplaceRepository.findAll().getFirst();
+        User user = userRepository.findByAccountId("testAccountId2").orElseThrow(() -> new NullPointerException("존재하지 않는 사용자 계정입니다."));
+        UserWorkplace userWorkplace = userWorkplaceRepository.findByUserAndWorkplaceAndIsDelUserWorkplaceFalse(user, workplace).orElseThrow(() -> new NullPointerException("User 또는 Workplace가 존재하지 않습니다."));
+
+        EmployeeDismissDto employeeDismissObject = createEmployeeDismissObject(userWorkplace.getIdUserWorkplace());
+        String content = objectMapper.writeValueAsString(employeeDismissObject);
+
+        mockMvc.perform(
+                        post(endPoint)
+                                .content(content)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON)
+                )
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andReturn();
@@ -155,6 +203,12 @@ public class UserWorkplaceControllerIntegrationTest {
         return ManagerDelegationRequest.builder()
                 .userId(user.getIdUser())
                 .workplaceId(workplace.getIdWorkPlace())
+                .build();
+    }
+
+    public EmployeeDismissDto createEmployeeDismissObject(Long userWorkplaceId) {
+        return EmployeeDismissDto.builder()
+                .userWorkplaceId(userWorkplaceId)
                 .build();
     }
 }
