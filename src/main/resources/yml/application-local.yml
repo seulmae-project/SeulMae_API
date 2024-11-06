@@ -26,8 +26,7 @@ file:
   storage:
     path:
       workplace: C:\workplace\
-#      user: C:\userSeulmae\
-      user: C:\\Users\\hany\\uploads\\users\\
+      user: C:\\uploads\\users\\
 
   endPoint:
     workplace: /api/workplace/file
