@@ -31,3 +31,27 @@ file:
   endPoint:
     workplace: /api/workplace/file
     user: /api/users/file
+
+management:
+  health:
+    redis:
+      enabled: false
+  endpoint:
+    health:
+      show-details: always
+  info:
+    java:
+      enabled: true
+    os:
+      enabled: true
+    env:
+      enabled: false
+    git:
+      enabled: true
+      mode: full
+    build:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"

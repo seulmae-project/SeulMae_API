@@ -9,7 +9,7 @@
     <!-- err log file name -->
     <property name="ERR_LOG_FILE_NAME" value="error"/>
     <!-- pattern -->
-    <property name="CONSOLE_LOG_PATTERN" value="%clr(%-5level) %d{yy-MM-dd HH:mm:ss}[%thread] %cyan([%logger{0}:%line]) - %msg%n"/>
+    <property name="CONSOLE_LOG_PATTERN" value="%clr(%-5level) %d{yy-MM-dd HH:mm:ss} [%thread] %cyan([%logger{0}:%line]) - %msg%n"/>
     <!--추후에 필요하다면 MDN 설정 해보자-->
     <property name="FILE_LOG_PATTERN" value="%-5level %d{yy-MM-dd HH:mm:ss} [%thread] [%logger{0}:%line] - %msg%n"/>
 
