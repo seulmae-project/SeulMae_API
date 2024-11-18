@@ -33,12 +33,27 @@ file:
     user: /api/users/file
 
 management:
-  health:
-    redis:
-      enabled: false
+#  server:
+#    port: 1313
+  endpoints:
+    web:
+      exposure:
+        include: "health, info, loggers, httpexchanges, metrics, prometheus"
+    enabled-by-default: false
   endpoint:
     health:
       show-details: always
+    info:
+      enabled: true
+    httpexchanges:
+      enabled: true
+    loggers:
+      enabled: true
+    metrics:
+      enabled: true
+  health:
+    redis:
+      enabled: false
   info:
     java:
       enabled: true
@@ -51,7 +66,4 @@ management:
       mode: full
     build:
       enabled: true
-  endpoints:
-    web:
-      exposure:
-        include: "*"
+
